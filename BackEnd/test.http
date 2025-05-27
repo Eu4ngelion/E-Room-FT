@@ -1,0 +1,22 @@
+### lOGIN 
+POST http://localhost:8080/api/v1/auth/login
+Content-Type: application/json
+
+{
+    "akunId": "2309106028",
+    "password": "password",
+    "role": "MAHASISWA"
+}
+
+### Akun
+## POST Akun Baru
+POST http://localhost:8080/api/v1/akun
+Content-Type: application/json
+
+{
+    "akunId": "2309106028",
+    "email": "mahasiswa@gmail.com",
+    "password": "password",
+    "nama": "John Doe",
+    "role": "ADMIN"
+}
