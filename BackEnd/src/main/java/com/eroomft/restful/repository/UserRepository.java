@@ -19,4 +19,6 @@ public interface UserRepository extends JpaRepository<User, String> {
     @Query("SELECT u FROM User u WHERE u.akunId = ?1 AND u.role = ?2")
     Optional<User> findByAkunId(String akunId, Akun.Role role);
 
+    // Cek Email
+    boolean existsByEmail(String email);
 }

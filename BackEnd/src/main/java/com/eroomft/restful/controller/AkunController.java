@@ -6,29 +6,31 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.eroomft.restful.dto.ResponseWrapper;
-import com.eroomft.restful.model.Akun;
+import com.eroomft.restful.dto.data.akun.CreateAkunRequest;
 
 import com.eroomft.restful.service.AkunService;
 
 @RestController
 @RequestMapping("api/v1/akun")
-public abstract class AkunController {
+public class AkunController {
 
     @Autowired
     private AkunService akunService;
 
     @PostMapping
-    public ResponseEntity<ResponseWrapper> createAkun(@RequestBody Akun akun) {
+    public ResponseEntity<ResponseWrapper> createAkun(@RequestBody CreateAkunRequest request) {
         try {
-            ResponseWrapper response = akunService.createAkun(akun);
+            ResponseWrapper response = akunService.createAkun(request);
             return ResponseEntity.ok(response);
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(new ResponseWrapper("error", e.getMessage(), null));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                .body(new ResponseWrapper("error", e.getReason() + e.getMessage(), null));
+
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseWrapper("error", "Internal Server Error", null));
         }
     }
-    
 }

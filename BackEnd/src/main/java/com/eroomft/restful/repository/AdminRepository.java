@@ -8,5 +8,7 @@ import com.eroomft.restful.model.Admin;
 
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, String> {
-
+    
+    // Cek Email 
+    boolean existsByEmail(String email);
 }

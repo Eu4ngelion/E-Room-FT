@@ -1,9 +1,12 @@
 package com.eroomft.restful.service;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
 import com.eroomft.restful.dto.ResponseWrapper;
+import com.eroomft.restful.dto.data.akun.CreateAkunRequest;
 import com.eroomft.restful.model.Admin;
 import com.eroomft.restful.model.Akun;
 import com.eroomft.restful.repository.AdminRepository;
@@ -20,31 +23,50 @@ public class AkunService {
     private UserRepository userRepository;
 
     // Buat Akun
-    public ResponseWrapper createAkun(Akun akun) {
-        try {
-            if (akun.getAkunId() == null || akun.getPassword() == null || akun.getRole() == null) {
-                throw new IllegalArgumentException("Akun ID, Password, dan Role harus diisi");
-            }
-        } catch (IllegalArgumentException e) {
-            return new ResponseWrapper("error", e.getMessage(), null);
-        } catch (Exception e) {
-            return new ResponseWrapper("error", "Internal Server Error", null);
+    public ResponseWrapper createAkun(CreateAkunRequest request) {
+        // Validasi Input
+        if (request.getAkunId() == null || 
+            request.getPassword() == null ||
+            request.getRole() == null || 
+            request.getNama() == null ||
+            request.getEmail() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request tidak valid: Semua field harus diisi");
         }
-        if (akun.getRole() != null && akun.getRole().name().equalsIgnoreCase("Admin")) {
+
+        // Akun Id Unik
+        if (adminRepository.existsById(request.getAkunId()) || userRepository.existsById(request.getAkunId())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Akun ID sudah digunakan");
+        }
+
+        // Email Unik
+        if (adminRepository.existsByEmail(request.getEmail()) || userRepository.existsByEmail(request.getEmail())) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Email sudah digunakan");
+        }
+
+        // Buat Akun Berdasarkan Role
+        if (request.getRole().equalsIgnoreCase("Admin")) {
             Admin admin = new Admin();
-            admin.setAkunId(akun.getAkunId());
-            admin.setPassword(akun.getPassword());
+            admin.setAkunId(request.getAkunId());
+            admin.setPassword(request.getPassword());
+            admin.setEmail(request.getEmail());
+            admin.setNama(request.getNama());
             adminRepository.save(admin);
             return new ResponseWrapper("success", "Akun Admin berhasil dibuat", null);
-        } else if (akun.getRole() != null && (akun.getRole().name().equalsIgnoreCase("Mahasiswa") || akun.getRole().name().equalsIgnoreCase("Dosen"))) {
+
+        } else if (request.getRole().equalsIgnoreCase("Mahasiswa") ||
+                   request.getRole().equalsIgnoreCase("Dosen")) {
             User user = new User();
-            user.setAkunId(akun.getAkunId());
-            user.setPassword(akun.getPassword());
-            user.setRole(akun.getRole());
+            user.setAkunId(request.getAkunId());
+            user.setPassword(request.getPassword());
+            user.setEmail(request.getEmail());
+            user.setNama(request.getNama());
+            user.setRole(Akun.Role.valueOf(request.getRole().toUpperCase()));
             userRepository.save(user);
-            return new ResponseWrapper("success", "Akun " + akun.getRole() + " berhasil dibuat", null);
+            return new ResponseWrapper("success", "Akun " + request.getRole() + " berhasil dibuat", null);
         } else {
-            return new ResponseWrapper("error", "Role tidak dikenali", null);
+            throw new IllegalArgumentException("Role tidak dikenali");
         }
     }
+
+
 }

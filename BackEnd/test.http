@@ -4,17 +4,21 @@ Content-Type: application/json
 
 {
     "akunId": "2309106028",
-    "password": "password",
+    "password": "password"
 }
 
-### Admin (WIP)
-## POST Admin
-POST http://localhost:8081/api/v1/admin
+### AKUN
+## POST Akun
+POST http://localhost:8081/api/v1/akun
 Content-Type: application/json
 
 {
-    "akunId": "01",
+    "akunId": "2309106028",
+    "nama": "Staff1",
+    "role": "ADMIN",
     "password": "admin123",
-    "nama": "Staff 1",
-    "email": "admin@gmail.com",
+    "email": "damn@gmail.com"
 }
+
+
+## GET Akun
