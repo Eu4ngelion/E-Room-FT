@@ -16,6 +16,7 @@ import com.eroomft.restful.dto.ResponseWrapper;
 import com.eroomft.restful.dto.data.akun.CreateAkunRequest;
 import com.eroomft.restful.service.AkunService;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 
 
@@ -29,6 +30,7 @@ public class AkunController {
     private AkunService akunService;
 
     @PostMapping
+    @Operation(summary = "Create Akun", description = "Endpoint untuk membuat akun baru (Dev Only)")
     public ResponseEntity<ResponseWrapper> createAkun(@RequestBody CreateAkunRequest request) {
         try {
             ResponseWrapper response = akunService.createAkun(request);
@@ -43,6 +45,7 @@ public class AkunController {
     }
     
     @GetMapping
+    @Operation(summary = "Get All Akun", description = "Endpoint untuk mendapatkan semua akun (Dev Only)")
     public ResponseEntity<ResponseWrapper> getAllAkun() {
         try {
             ResponseWrapper response = akunService.getAllAkun();
@@ -56,6 +59,7 @@ public class AkunController {
     }
 
     @PutMapping("/{akunId}")
+    @Operation(summary = "Update Akun", description = "Endpoint untuk memperbarui akun (Dev Only)")
     public ResponseEntity<ResponseWrapper> updateAkun(@PathVariable("akunId") String akunId, @RequestBody CreateAkunRequest request) {
         try {
             ResponseWrapper response = akunService.updateAkun(akunId, request);
@@ -69,6 +73,7 @@ public class AkunController {
     }
 
     @DeleteMapping("/{akunId}")
+    @Operation(summary = "Delete Akun", description = "Endpoint untuk menghapus akun (Dev Only)")
     public ResponseEntity<ResponseWrapper> deleteAkun(@PathVariable("akunId") String akunId) {
         try {
             ResponseWrapper response = akunService.deleteAkun(akunId);

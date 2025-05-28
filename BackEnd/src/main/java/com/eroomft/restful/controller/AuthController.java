@@ -12,6 +12,8 @@ import com.eroomft.restful.dto.ResponseWrapper;
 import com.eroomft.restful.dto.data.auth.LoginRequest;
 import com.eroomft.restful.service.AuthService;
 
+import io.swagger.v3.oas.annotations.Operation;
+
 @RestController
 @RequestMapping("api/v1/auth")
 public class AuthController {
@@ -20,6 +22,7 @@ public class AuthController {
     private AuthService authService;
 
     @PostMapping("/login")
+    @Operation(summary = "Login", description = "Endpoint untuk login ke sistem")
     public ResponseEntity<ResponseWrapper> login(@RequestBody LoginRequest request) {
         try {
             ResponseWrapper loginResult = authService.login(request);

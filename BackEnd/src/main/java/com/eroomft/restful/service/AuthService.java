@@ -11,12 +11,12 @@ import com.eroomft.restful.dto.data.auth.LoginRequest;
 import com.eroomft.restful.dto.data.auth.LoginResponse;
 import com.eroomft.restful.model.Akun;
 import com.eroomft.restful.repository.AkunRepository;
-// http status
 import org.springframework.http.HttpStatus;
 
 
 @Service
 public class AuthService {
+    
     @Autowired
     private AkunRepository akunRepo;
 

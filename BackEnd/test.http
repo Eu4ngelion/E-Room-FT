@@ -35,4 +35,7 @@ Content-Type: application/json
     "email": "email@gmail.com"
 }
 
+## Delete Akun
+DELETE http://localhost:8081/api/v1/akun/2309106028
+
 
