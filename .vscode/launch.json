@@ -1,0 +1,13 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Debug using Hotswap Agent",
+            "request": "launch",
+            "javaExec": "C:\\Users\\MSI-GK\\.vaadin\\jdk\\jbrsdk-21.0.7-windows-x64-b992.24\\bin\\java.exe",
+            "mainClass": "com.eroomft.Application",
+            "vmArgs": "-XX:+AllowEnhancedClassRedefinition -XX:+ClassUnloading -XX:HotswapAgent=fatjar"
+        }
+    ]
+}

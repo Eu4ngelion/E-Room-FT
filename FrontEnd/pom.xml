@@ -26,6 +26,11 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
+    
+    <dependency>
+    <groupId>com.vaadin</groupId>
+    <artifactId>vaadin-core</artifactId>
+</dependency>
 
     <build>
         <plugins>
