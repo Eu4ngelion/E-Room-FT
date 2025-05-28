@@ -93,7 +93,7 @@ public class AkunService {
             admin.setEmail(request.getEmail());
             admin.setNama(request.getNama());
             adminRepository.save(admin);
-            return new ResponseWrapper("success", "Akun Admin berhasil diperbarui", null);
+            return new ResponseWrapper("success", "Akun berhasil diperbarui", null);
         } else if (userRepository.existsById(akunId)) {
             User user = userRepository.findById(akunId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan"));
@@ -101,12 +101,24 @@ public class AkunService {
             user.setEmail(request.getEmail());
             user.setNama(request.getNama());
             userRepository.save(user);
-            return new ResponseWrapper("success", "Akun " + user.getRole() + " berhasil diperbarui", null);
+            return new ResponseWrapper("success", "Akun berhasil diperbarui", null);
         } else {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan");
         }
     }
 
     // Delete Akun (Dev Only)
+    public ResponseWrapper deleteAkun(String akunId) {
+        // Cari Akun Berdasarkan ID
+        if (adminRepository.existsById(akunId)) {
+            adminRepository.deleteById(akunId);
+            return new ResponseWrapper("success", "Akun Admin berhasil dihapus", null);
+        } else if (userRepository.existsById(akunId)) {
+            userRepository.deleteById(akunId);
+            return new ResponseWrapper("success", "Akun berhasil dihapus", null);
+        } else {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan");
+        }
+    }
 
 }
