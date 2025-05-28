@@ -2,33 +2,32 @@ package com.eroomft.restful.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eroomft.restful.dto.ResponseWrapper;
-import com.eroomft.restful.model.Akun;
+import com.eroomft.restful.dto.data.admin.CreateAdminRequest;
+import com.eroomft.restful.service.AdminService;
 
-import com.eroomft.restful.service.AkunService;
 
 @RestController
-@RequestMapping("api/v1/akun")
-public abstract class AkunController {
+@RequestMapping("api/v1/admin")
+public class AdminController {
 
     @Autowired
-    private AkunService akunService;
+    private AdminService adminService;
 
     @PostMapping
-    public ResponseEntity<ResponseWrapper> createAkun(@RequestBody Akun akun) {
+    public ResponseEntity<ResponseWrapper> createAdmin(@RequestBody CreateAdminRequest request) {
         try {
-            ResponseWrapper response = akunService.createAkun(akun);
+            ResponseWrapper response = adminService.createAdmin(request);
             return ResponseEntity.ok(response);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(new ResponseWrapper("error", e.getMessage(), null));
+            return ResponseEntity.status(400).body(new ResponseWrapper("test", e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseWrapper("error", "Internal Server Error", null));
         }
     }
-    
 }

@@ -1,11 +1,9 @@
 package com.eroomft.restful.controller;
 
 import org.springframework.web.bind.annotation.RestController;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
-
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PostMapping;
 
@@ -26,7 +24,7 @@ public class AuthController {
             ResponseWrapper loginResult = authService.login(request);
             return ResponseEntity.ok(loginResult);
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().body(new ResponseWrapper("error", e.getMessage(), null));
+            return ResponseEntity.status(400).body(new ResponseWrapper("error", e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseWrapper("error", e.getMessage(), null));
         }
