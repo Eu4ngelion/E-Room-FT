@@ -8,7 +8,6 @@ import com.eroomft.restful.model.Admin;
 import com.eroomft.restful.model.Akun;
 import com.eroomft.restful.repository.AdminRepository;
 import com.eroomft.restful.repository.UserRepository;
-
 import com.eroomft.restful.model.User;
 
 @Service

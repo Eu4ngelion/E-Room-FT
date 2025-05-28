@@ -5,7 +5,6 @@ Content-Type: application/json
 {
     "akunId": "2309106028",
     "password": "password",
-    "role": 
 }
 
 ### Admin (WIP)
