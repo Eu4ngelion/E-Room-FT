@@ -5,8 +5,5 @@
     "spacing",
     "badge",
     "utility"
-  ],
-  "importCss": [
-    "styles.css"
   ]
 }
