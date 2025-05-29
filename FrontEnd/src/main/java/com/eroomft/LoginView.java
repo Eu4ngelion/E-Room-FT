@@ -4,9 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.button.Button;
@@ -47,6 +45,7 @@ public class LoginView extends VerticalLayout {
         login.getStyle()
                 .set("font-weight", "bold")
                 .set("text-align", "center")
+                .set("font-family", " 'poppins', sans-serif")
                 .set("margin-bottom", "10px");
     
         Paragraph text = new Paragraph("Silahkan gunakan akun portal AIS anda untuk login");
@@ -57,12 +56,12 @@ public class LoginView extends VerticalLayout {
                 .set("font-weight", "bold")
                 .set("margin-bottom", "10px");
     
-        TextField txtBox = new TextField("Username");
+        TextField txtBox = new TextField("NIM/NIP");
         txtBox.setWidth("350px");
         txtBox.setPlaceholder("Masukkan NIM/NIP");
         txtBox.getStyle().set("margin-bottom", "10px");
         
-        PasswordField txtPass = new PasswordField("Password");
+        PasswordField txtPass = new PasswordField("Kata Sandi");
         txtPass.setWidth("350px");
         txtPass.setPlaceholder("Masukkan Kata Sandi");
         txtPass.getStyle().set("margin-bottom", "20px");      
@@ -77,6 +76,14 @@ public class LoginView extends VerticalLayout {
                 .set("border-radius", "5px")
                 .set("cursor", "pointer")
                 .set("margin-bottom", "20px");
+
+        btnLogin.getElement().addEventListener("mouseenter", e -> {
+            btnLogin.getStyle().set("background-color", "#cc5200");
+        });
+        
+        btnLogin.getElement().addEventListener("mouseleave", e -> {
+            btnLogin.getStyle().set("background-color", "#FF7700");
+        });
 
         Anchor Kembali = new Anchor();
         Kembali.setHref("/");
@@ -106,7 +113,7 @@ public class LoginView extends VerticalLayout {
             .set("border-radius", "10px")
             .set("box-shadow", "0 4px 8px rgba(0,0,0,0.2)")
             .set("text-align", "center");
-formLogin.add(logo, login, text, txtBox, txtPass, btnLogin, Kembali);
+        formLogin.add(logo, login, text, txtBox, txtPass, btnLogin, Kembali);
     
         add(formLogin);
     }

@@ -6,9 +6,7 @@ import com.vaadin.flow.component.orderedlayout.*;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-
 @Route("")
-
 public class Landing extends VerticalLayout {
 
     public Landing() {
@@ -16,7 +14,7 @@ public class Landing extends VerticalLayout {
         setPadding(false);
         setSpacing(false);
         getStyle()
-                .set("background", "linear-gradient(rgba(255, 255, 255, 0.5)), url('/frontend/background.png') no-repeat center center / cover")
+                .set("background", "linear-gradient(rgba(255, 255, 255, 0.9)), url('/frontend/background.png') no-repeat center center / cover")
                 .set("flex-direction", "column")
                 .set("min-height", "100vh");
 
@@ -86,13 +84,14 @@ public class Landing extends VerticalLayout {
         content.setSpacing(true);
         content.getStyle().set("padding-top", "40px");
 
-        H1 judul = new H1("E–ROOM FT");
+        H1 judul = new H1("E-ROOM FT");
         judul.getStyle()
                 .set("color", "#FF6600")
                 .set("font-weight", "bold")
+                .set("font-family", " 'poppins', sans-serif")
                 .set("text-align", "center");
 
-        Paragraph deskripsi = new Paragraph("Aplikasi E–ROOM ini hadir untuk mendukung efisiensi pemanfaatan ruang di Gedung Teknik Baru Fakultas Teknik Universitas Mulawarman. Klik tombol di bawah untuk mulai meminjam ruangan.");
+        Paragraph deskripsi = new Paragraph("Aplikasi E-ROOM ini hadir untuk mendukung efisiensi pemanfaatan ruang di Gedung Teknik Baru Fakultas Teknik Universitas Mulawarman. Klik tombol di bawah untuk mulai meminjam ruangan.");
         deskripsi.getStyle()
                 .set("text-align", "center")
                 .set("font-weight", "bold")
@@ -118,8 +117,8 @@ public class Landing extends VerticalLayout {
                     .set("align-items", "center")
                     .set("justify-content", "center")
                     .set("height", "80px")
-                    .set("background-color", "#FF6600")
-                    .set("color", "white")
+                    .set("background-color", "#FF7700")
+                    .set("color", "black")
                     .set("width", "100%")
                     .set("box-sizing", "border-box");
             add(footer);
@@ -134,6 +133,15 @@ public class Landing extends VerticalLayout {
                 .set("font-weight", "bold")
                 .set("border", "none")
                 .set("cursor", "pointer");
+
+        button.getElement().addEventListener("mouseenter", e -> {
+        button.getStyle().set("border-bottom", "2px solid #FF7700");
+        });
+        
+        button.getElement().addEventListener("mouseleave", e -> {
+        button.getStyle().remove("border-bottom");
+        });
+
         return button;
     }
 
@@ -151,11 +159,11 @@ public class Landing extends VerticalLayout {
                 .set("align-items", "center")
                 .set("justify-content", "space-between");
     
-        Div imageWrapper = new Div();
-        imageWrapper.getStyle()
+        Div borderLogo = new Div();
+        borderLogo.getStyle()
                 .set("width", "100px")
                 .set("height", "100px")
-                .set("background-color", "#FF6600")
+                .set("background-color", "#FF8B26")
                 .set("border-radius", "50%")
                 .set("display", "flex")
                 .set("align-items", "center")
@@ -166,22 +174,31 @@ public class Landing extends VerticalLayout {
         icon.getStyle()
                 .set("object-fit", "cover");
     
-        imageWrapper.add(icon);
+        borderLogo.add(icon);
     
         Paragraph roleText = new Paragraph(role);
         roleText.getStyle()
                 .set("font-weight", "bold")
                 .set("margin", "10px 0 0 0");
     
-        Button loginBtn = new Button("Login", event ->
+        Button btnLogin = new Button("Login", event ->
                 getUI().ifPresent(ui -> ui.navigate(route))
         );
-        loginBtn.getStyle()
-                .set("background-color", "#FF6600")
+        btnLogin.getStyle()
+                .set("background-color", "#FF7700")
                 .set("color", "white")
-                .set("cursor", "pointer");
+                .set("cursor", "pointer")
+                .set("border-radius", "10px");
+
+        btnLogin.getElement().addEventListener("mouseenter", e -> {
+            btnLogin.getStyle().set("background-color", "#cc5200");
+        });
+        
+        btnLogin.getElement().addEventListener("mouseleave", e -> {
+            btnLogin.getStyle().set("background-color", "#FF7700");
+        });
     
-        card.add(imageWrapper, roleText, loginBtn);
+        card.add(borderLogo, roleText, btnLogin);
         return card;
     }    
 }
