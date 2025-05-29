@@ -141,18 +141,38 @@ public class Landing extends VerticalLayout {
         Div card = new Div();
         card.getStyle()
                 .set("width", "200px")
+                .set("height", "220px")
                 .set("padding", "20px")
                 .set("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
                 .set("border-radius", "10px")
-                .set("background-color", "#fff")
-                .set("text-align", "center");
-
+                .set("background-color", "#ffffff")
+                .set("display", "flex")
+                .set("flex-direction", "column")
+                .set("align-items", "center")
+                .set("justify-content", "space-between");
+    
+        Div imageWrapper = new Div();
+        imageWrapper.getStyle()
+                .set("width", "100px")
+                .set("height", "100px")
+                .set("background-color", "#FF6600")
+                .set("border-radius", "50%")
+                .set("display", "flex")
+                .set("align-items", "center")
+                .set("justify-content", "center")
+                .set("overflow", "hidden");
+    
         Image icon = new Image(iconUrl, role);
-icon.getStyle().setHeight("40px");
-
+        icon.getStyle()
+                .set("object-fit", "cover");
+    
+        imageWrapper.add(icon);
+    
         Paragraph roleText = new Paragraph(role);
-        roleText.getStyle().set("font-weight", "bold");
-
+        roleText.getStyle()
+                .set("font-weight", "bold")
+                .set("margin", "10px 0 0 0");
+    
         Button loginBtn = new Button("Login", event ->
                 getUI().ifPresent(ui -> ui.navigate(route))
         );
@@ -160,8 +180,8 @@ icon.getStyle().setHeight("40px");
                 .set("background-color", "#FF6600")
                 .set("color", "white")
                 .set("cursor", "pointer");
-
-        card.add(icon, roleText, loginBtn);
+    
+        card.add(imageWrapper, roleText, loginBtn);
         return card;
-    }
+    }    
 }
