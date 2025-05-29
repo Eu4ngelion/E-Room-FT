@@ -1,8 +1,16 @@
 package com.eroomft.restful.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
+@Schema(description = "Wrapper standar untuk semua response API. Field 'data' dapat berupa objek, array, atau null tergantung endpoint.")
 public class ResponseWrapper {
+    @Schema(description = "Status response (success/error)", example = "success")
     private String status;
+
+    @Schema(description = "Pesan hasil operasi", example = "Login berhasil")
     private String message;
+
+     @Schema(description = "Data hasil operasi, bisa berupa objek, array, atau null")
     private Object data;
 
     public ResponseWrapper() {
