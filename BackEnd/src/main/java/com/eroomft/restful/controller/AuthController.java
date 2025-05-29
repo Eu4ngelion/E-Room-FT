@@ -10,9 +10,13 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.eroomft.restful.dto.ResponseWrapper;
 import com.eroomft.restful.dto.data.auth.LoginRequest;
+import com.eroomft.restful.dto.data.auth.LoginResponse;
 import com.eroomft.restful.service.AuthService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 
 @RestController
 @RequestMapping("api/v1/auth")
@@ -21,8 +25,37 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
+    // Success Schema for Login Response
+    class LoginResponseWrapper {
+        private final String status;
+        private final String message;
+        private final LoginResponse data;
+
+        public LoginResponseWrapper(String status, String message, LoginResponse data) {
+            this.status = status;
+            this.message = message;
+            this.data = data;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public LoginResponse getData() {
+            return data;
+        }
+    }
+
     @PostMapping("/login")
     @Operation(summary = "Login", description = "Endpoint untuk login ke sistem")
+    @ApiResponse(responseCode = "200", description = "Login berhasil", content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = LoginResponseWrapper.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid Request -Request tidak valid")
     public ResponseEntity<ResponseWrapper> login(@RequestBody LoginRequest request) {
         try {
             ResponseWrapper loginResult = authService.login(request);
