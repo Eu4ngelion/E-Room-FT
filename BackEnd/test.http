@@ -1,22 +1,41 @@
 ### lOGIN 
-POST http://localhost:8080/api/v1/auth/login
+POST http://localhost:8081/api/v1/auth/login
 Content-Type: application/json
 
 {
     "akunId": "2309106028",
-    "password": "password",
-    "role": "MAHASISWA"
+    "password": "password"
 }
 
-### Akun
-## POST Akun Baru
-POST http://localhost:8080/api/v1/akun
+### AKUN
+## Create Akun
+POST http://localhost:8081/api/v1/akun
 Content-Type: application/json
 
 {
     "akunId": "2309106028",
-    "email": "mahasiswa@gmail.com",
-    "password": "password",
-    "nama": "John Doe",
-    "role": "ADMIN"
+    "nama": "Staff1",
+    "role": "ADMIN",
+    "password": "admin123",
+    "email": "damn@gmail.com"
 }
+
+
+## View All Akun
+GET http://localhost:8081/api/v1/akun
+
+## Update Akun
+PUT http://localhost:8081/api/v1/akun/2309106028
+Content-Type: application/json
+
+{
+    "nama": "Injil Karepowan",
+    "role": "MAHASISWA",
+    "password": "admin123",
+    "email": "email@gmail.com"
+}
+
+## Delete Akun
+DELETE http://localhost:8081/api/v1/akun/2309106028
+
+

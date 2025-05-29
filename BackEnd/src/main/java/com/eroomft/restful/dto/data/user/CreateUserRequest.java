@@ -1,19 +1,18 @@
-package com.eroomft.restful.dto.data.akun;
+package com.eroomft.restful.dto.data.user;
 
-public class CreateAkunRequest {
+public class CreateUserRequest {
     private String akunId;
     private String password;
     private String role;
     private String nama;
     private String email;
 
-    public CreateAkunRequest() {
+    public CreateUserRequest() {
     }
 
-    public CreateAkunRequest(String akunId, String password, String role, String nama, String email) {
+    public CreateUserRequest(String akunId, String password, String role, String nama, String email) {
         this.akunId = akunId;
         this.password = password;
-        this.role = role;
         this.nama = nama;
         this.email = email;
     }

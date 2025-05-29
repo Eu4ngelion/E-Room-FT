@@ -1,3 +1,5 @@
 .env
 .log
 .tmp
+
+BackEnd/src/main/resources/application.properties

@@ -1,18 +1,15 @@
-package com.eroomft.restful.dto.data.login;
+package com.eroomft.restful.dto.data.auth;
 
-public class loginRequest {
+public class LoginRequest {
     private String akunId;
     private String password;
-    private String role;
 
-
-    public loginRequest() {
+    public LoginRequest() {
     }
 
-    public loginRequest(String akunId, String password, String role) {
+    public LoginRequest(String akunId, String password) {
         this.akunId = akunId;
         this.password = password;
-        this.role = role;
     }
     public String getAkunId() {
         return akunId;
@@ -26,11 +23,4 @@ public class loginRequest {
     public void setPassword(String password) {
         this.password = password;
     }
-    public String getRole() {
-        return role;
-    }
-    public void setRole(String role) {
-        this.role = role;
-    }
-
 }
