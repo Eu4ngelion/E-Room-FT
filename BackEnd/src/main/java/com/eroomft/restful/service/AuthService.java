@@ -4,70 +4,46 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.server.ResponseStatusException;
 
-import com.eroomft.restful.repository.AdminRepository;
-import com.eroomft.restful.repository.UserRepository;
-import com.eroomft.restful.dto.data.login.loginRequest;
 import com.eroomft.restful.dto.ResponseWrapper;
-import com.eroomft.restful.model.Admin;
+import com.eroomft.restful.dto.data.auth.LoginRequest;
+import com.eroomft.restful.dto.data.auth.LoginResponse;
 import com.eroomft.restful.model.Akun;
-import com.eroomft.restful.model.User;
+import com.eroomft.restful.repository.AkunRepository;
+import org.springframework.http.HttpStatus;
 
 
 @Service
 public class AuthService {
+    
     @Autowired
-    private AdminRepository adminRepo;
-
-    @Autowired
-    private UserRepository userRepo;
+    private AkunRepository akunRepo;
 
 
-    public ResponseWrapper login(loginRequest request) {
-        if (request.getRole() == null || request.getRole().isEmpty()) {
-            throw new IllegalArgumentException("Mohon menginput role yang valid");
+    public ResponseWrapper login(LoginRequest request) {
+    
+        // Validasi Request
+        if (request.getAkunId() == null || request.getAkunId().isEmpty()) {
+            throw new IllegalArgumentException("Request tidak valid: Akun ID tidak boleh kosong");
+        } else if (request.getPassword() == null || request.getPassword().isEmpty()) {
+            throw new IllegalArgumentException("Request tidak valid: Password tidak boleh kosong");
         }
 
-        if (request.getRole().equalsIgnoreCase("ADMIN")) {
-            Optional<Admin> adminOpt = adminRepo.findById(request.getAkunId());
-            if (adminOpt.isPresent()) {
-                Admin admin = adminOpt.get();
-                if (admin.getPassword().equals(request.getPassword())) {
-                    return new ResponseWrapper("success", "Login Berhasil", "Admin");
-                }
-            }
+        // Autentikasi Akun
+        Optional<Akun> akunOpt = akunRepo.findById(request.getAkunId());
+        if (akunOpt.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan");
+        }  
 
-        } else if (request.getRole().equalsIgnoreCase("MAHASISWA")) {
-            Optional<User> mahasiswaOpt = userRepo.findById(request.getAkunId());
-            if (mahasiswaOpt.isPresent()) {
-                User mahasiswa = mahasiswaOpt.get();
-                if (mahasiswa.getPassword().equals(request.getPassword())) {
-                    return new ResponseWrapper("success", "Login Berhasil", "Mahasiswa");
-                }
-            }
-
-        } else if (request.getRole().equalsIgnoreCase("DOSEN")) {
-            Optional<User> dosenOpt = userRepo.findByAkunId(request.getAkunId(), Akun.Role.DOSEN);
-            if (dosenOpt.isPresent()) {
-                User dosen = dosenOpt.get();
-                if (dosen.getPassword().equals(request.getPassword())) {
-                    return new ResponseWrapper("success", "Login Berhasil", "Dosen");
-                }
-            }
+        Akun akun = akunOpt.get();
+        if (!(akun.getPassword().equals(request.getPassword()))) {
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "Password salah");
         }
 
-        if (request.getRole().equalsIgnoreCase("Admin")) {
-            return new ResponseWrapper("error", "NIP atau Password Salah", null);
+        // Tipe Response Berdasarkan Role
+        return new ResponseWrapper("success","Login Berhasil", 
+            new LoginResponse(akun.getAkunId(), akun.getEmail(), akun.getNama(), akun.getRole().name()));
 
-        } else if (request.getRole().equalsIgnoreCase("Mahasiswa")) {
-            return new ResponseWrapper("error", "NIM atau Password Salah", null);
-
-        } else if (request.getRole().equalsIgnoreCase("Dosen")) {
-        return new ResponseWrapper("error", "NIP atau Password Salah", null);
-
-        } else {
-            return new ResponseWrapper("error", "Role tidak dikenali", null);
-        }            
     }
-
 }
