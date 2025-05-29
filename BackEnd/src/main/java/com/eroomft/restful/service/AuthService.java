@@ -3,6 +3,7 @@ package com.eroomft.restful.service;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -11,7 +12,6 @@ import com.eroomft.restful.dto.data.auth.LoginRequest;
 import com.eroomft.restful.dto.data.auth.LoginResponse;
 import com.eroomft.restful.model.Akun;
 import com.eroomft.restful.repository.AkunRepository;
-import org.springframework.http.HttpStatus;
 
 
 @Service
@@ -25,9 +25,9 @@ public class AuthService {
     
         // Validasi Request
         if (request.getAkunId() == null || request.getAkunId().isEmpty()) {
-            throw new IllegalArgumentException("Request tidak valid: Akun ID tidak boleh kosong");
+            throw new IllegalArgumentException("Akun ID tidak boleh kosong");
         } else if (request.getPassword() == null || request.getPassword().isEmpty()) {
-            throw new IllegalArgumentException("Request tidak valid: Password tidak boleh kosong");
+            throw new IllegalArgumentException("Password tidak boleh kosong");
         }
 
         // Autentikasi Akun
