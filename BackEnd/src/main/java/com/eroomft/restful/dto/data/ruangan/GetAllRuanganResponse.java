@@ -7,18 +7,20 @@ public class GetAllRuanganResponse {
     private String nama;
     private int kapasitas;
     private String fasilitas;
+    private String gedung;
     private String lokasi;
     private String pathGambar;
 
     public GetAllRuanganResponse() {
     }
 
-    public GetAllRuanganResponse(String ruanganId, String tipe, String nama, int kapasitas, String fasilitas, String lokasi, String pathGambar) {
+    public GetAllRuanganResponse(String ruanganId, String tipe, String nama, int kapasitas, String fasilitas, String gedung, String lokasi, String pathGambar) {
         this.ruanganId = ruanganId;
         this.tipe = tipe;
         this.nama = nama;
         this.kapasitas = kapasitas;
         this.fasilitas = fasilitas;
+        this.gedung = gedung;
         this.lokasi = lokasi;
         this.pathGambar = pathGambar;
     }
@@ -52,6 +54,12 @@ public class GetAllRuanganResponse {
     }
     public void setFasilitas(String fasilitas) {
         this.fasilitas = fasilitas;
+    }
+    public String getGedung() {
+        return gedung;
+    }
+    public void setGedung(String gedung) {
+        this.gedung = gedung;
     }
     public String getLokasi() {
         return lokasi;
