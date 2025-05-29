@@ -4,85 +4,103 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.html.Image;
+import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H6;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 @Route("/login")
 @AnonymousAllowed
-public class MainView extends VerticalLayout {
+public class LoginView extends VerticalLayout {
 
-    public MainView() {
+    public LoginView() {
         setSizeFull();
         getStyle().set("background", "linear-gradient(to bottom, #FF7213, #FA812F, #FB9A59, #ffffff)");
         setAlignItems(Alignment.CENTER);
         setJustifyContentMode(JustifyContentMode.CENTER);
         setSpacing(true);
 
-        Avatar avatar = new Avatar("UNMUL");
-        avatar.setImage("/frontend/unmul.png");
-        avatar.setWidth("100px");
-        avatar.setHeight("100px");
-        avatar.getStyle()
+        Image logo = new Image("/frontend/unmul.png", "Logo UNMUL");
+        logo.setWidth("100px");
+        logo.setHeight("100px");
+        logo.getStyle()
             .set("background-color", "white")
             .set("font-size", "20px")
             .set("margin-bottom", "20px")
             .set("display", "flex")
-            .set("justify-self", "center");        
+            .set("justify-self", "center");
        
-        H2 heading2 = new H2("Login");
-        heading2.setWidth("350px");
-        heading2.getStyle().set("font-weight", "bold")
-                           .set("text-align", "center")
-                           .set("margin-bottom", "10px");
+        H2 login = new H2("Login");
+        login.setWidth("350px");
+        login.getStyle()
+                .set("font-weight", "bold")
+                .set("text-align", "center")
+                .set("font-family", " 'poppins', sans-serif")
+                .set("margin-bottom", "10px");
     
-        H6 heading6 = new H6("Silahkan gunakan akun anda untuk login");
-        heading6.setWidth("350px");
-        heading6.getStyle().set("font-weight", "bold")
-                           .set("text-align", "center")
-                           .set("margin-bottom", "20px");
+        Paragraph text = new Paragraph("Silahkan gunakan akun portal AIS anda untuk login");
+        text.setWidth("350px");
+        text.getStyle()
+                .set("text-align", "center")
+                .set("font-size", "14px")
+                .set("font-weight", "bold")
+                .set("margin-bottom", "10px");
     
-        TextField usernameField = new TextField("Username");
-        usernameField.setWidth("350px");
-        usernameField.getStyle().set("margin-bottom", "10px");
+        TextField txtBox = new TextField("NIM/NIP");
+        txtBox.setWidth("350px");
+        txtBox.setPlaceholder("Masukkan NIM/NIP");
+        txtBox.getStyle().set("margin-bottom", "10px");
+        
+        PasswordField txtPass = new PasswordField("Kata Sandi");
+        txtPass.setWidth("350px");
+        txtPass.setPlaceholder("Masukkan Kata Sandi");
+        txtPass.getStyle().set("margin-bottom", "20px");     
     
-        PasswordField passwordField = new PasswordField("Password");
-        passwordField.setWidth("350px");
-        passwordField.getStyle().set("margin-bottom", "20px");
-    
-        Button loginButton = new Button("Login");
-        loginButton.setWidth("350px");
-        loginButton.getStyle().set("background-color", "#FA812F")
-                              .set("color", "white")
-                              .set("font-weight", "bold")
-                              .set("border", "none")
-                              .set("border-radius", "5px")
-                              .set("cursor", "pointer")
-                              .set("margin-bottom", "20px");
+        Button btnLogin = new Button("Login");
+        btnLogin.setWidth("350px");
+        btnLogin.getStyle()
+                .set("background-color", "#FA812F")
+                .set("color", "white")
+                .set("font-weight", "bold")
+                .set("border", "none")
+                .set("border-radius", "5px")
+                .set("cursor", "pointer")
+                .set("margin-bottom", "20px");
 
-        Anchor BackHome = new Anchor();
-        BackHome.setHref("/");
-        BackHome.setText("Back To Home");
-        BackHome.getStyle().set("color", "#FA812F")
-                           .set("margin-top", "10px");
+        btnLogin.getElement().addEventListener("mouseenter", e -> {
+            btnLogin.getStyle().set("background-color", "#cc5200");
+        });
+        
+        btnLogin.getElement().addEventListener("mouseleave", e -> {
+            btnLogin.getStyle().set("background-color", "#FF7700");
+        });
+
+        Anchor Kembali = new Anchor();
+        Kembali.setHref("/");
+        Kembali.setText("Kembali Ke Beranda");
+        Kembali.getStyle()
+                .set("color", "black")
+                .set("margin-top", "10px");
     
-        loginButton.addClickListener(e -> {
-            String username = usernameField.getValue();
-            String password = passwordField.getValue();
+        btnLogin.addClickListener(e -> {
+            String username = txtBox.getValue();
+            String password = txtPass.getValue();
     
             if (username.isEmpty() || password.isEmpty()) {
-                Notification.show("Username dan password harus diisi!", 3500, Notification.Position.MIDDLE);
+                Notification.show("NIM/NIP dan password harus diisi!", 3500, Notification.Position.MIDDLE);
             }
             else{
                 login(username, password);
@@ -98,9 +116,50 @@ public class MainView extends VerticalLayout {
             .set("border-radius", "10px")
             .set("box-shadow", "0 4px 8px rgba(0,0,0,0.2)")
             .set("text-align", "center");
-formLogin.add(avatar, heading2, heading6, usernameField, passwordField, loginButton, BackHome);
+        formLogin.add(logo, login, text, txtBox, txtPass, btnLogin, Kembali);
     
         add(formLogin);
+    }
+
+    private void errorPopup(String message) {
+        Dialog dialog = new Dialog();
+        dialog.setCloseOnEsc(true);
+        dialog.setCloseOnOutsideClick(true);
+    
+        Icon errorIcon = VaadinIcon.CLOSE_CIRCLE.create();
+        errorIcon.setSize("48px");
+        errorIcon.getStyle()
+            .set("color", "#FA812F")
+            .set("margin-bottom", "10px");
+    
+        Span text = new Span(message);
+        text.getStyle()
+            .set("font-size", "16px")
+            .set("font-weight", "500")
+            .set("text-align", "center")
+            .set("display", "block")
+            .set("margin-bottom", "10px")
+            .set("white-space", "pre-line");
+    
+        Button btnTutup = new Button("Tutup", event -> dialog.close());
+        btnTutup.getStyle()
+            .set("background-color", "#FA812F")
+            .set("color", "white")
+            .set("border", "none")
+            .set("border-radius", "5px")
+            .set("cursor", "pointer");
+    
+        VerticalLayout lapisan = new VerticalLayout(errorIcon, text, btnTutup);
+        lapisan.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        lapisan.setPadding(true);
+        lapisan.setSpacing(false);
+        lapisan.getStyle()
+            .set("background", "#FFF5EB")
+            .set("border-radius", "10px")
+            .set("text-align", "center");
+    
+        dialog.add(lapisan);
+        dialog.open();
     }
 
     // Method untuk request api POST login
@@ -152,7 +211,7 @@ formLogin.add(avatar, heading2, heading6, usernameField, passwordField, loginBut
             String finalTargetRoute = targetRoute;
             getUI().ifPresent(ui -> ui.navigate(finalTargetRoute));
         } else { // Jika login gagal
-            Notification.show("Login gagal: " + loginResponse.getMessage(), 3500, Notification.Position.MIDDLE);
+            errorPopup("NIM atau Kata Sandi anda salah, silahkan \n masukkan kembali kredensial yang benar");
         }
     } 
     // Tambahkan Exception untuk jenis-jenis error lainnya kalau perlu
