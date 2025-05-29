@@ -17,6 +17,10 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 
 @Route("/login")
 @AnonymousAllowed
@@ -38,7 +42,6 @@ public class LoginView extends VerticalLayout {
             .set("margin-bottom", "20px")
             .set("display", "flex")
             .set("justify-self", "center");
-            
        
         H2 login = new H2("Login");
         login.setWidth("350px");
@@ -64,7 +67,7 @@ public class LoginView extends VerticalLayout {
         PasswordField txtPass = new PasswordField("Kata Sandi");
         txtPass.setWidth("350px");
         txtPass.setPlaceholder("Masukkan Kata Sandi");
-        txtPass.getStyle().set("margin-bottom", "20px");      
+        txtPass.getStyle().set("margin-bottom", "20px");     
     
         Button btnLogin = new Button("Login");
         btnLogin.setWidth("350px");
@@ -118,6 +121,47 @@ public class LoginView extends VerticalLayout {
         add(formLogin);
     }
 
+    private void errorPopup(String message) {
+        Dialog dialog = new Dialog();
+        dialog.setCloseOnEsc(true);
+        dialog.setCloseOnOutsideClick(true);
+    
+        Icon errorIcon = VaadinIcon.CLOSE_CIRCLE.create();
+        errorIcon.setSize("48px");
+        errorIcon.getStyle()
+            .set("color", "#FA812F")
+            .set("margin-bottom", "10px");
+    
+        Span text = new Span(message);
+        text.getStyle()
+            .set("font-size", "16px")
+            .set("font-weight", "500")
+            .set("text-align", "center")
+            .set("display", "block")
+            .set("margin-bottom", "10px")
+            .set("white-space", "pre-line");
+    
+        Button btnTutup = new Button("Tutup", event -> dialog.close());
+        btnTutup.getStyle()
+            .set("background-color", "#FA812F")
+            .set("color", "white")
+            .set("border", "none")
+            .set("border-radius", "5px")
+            .set("cursor", "pointer");
+    
+        VerticalLayout lapisan = new VerticalLayout(errorIcon, text, btnTutup);
+        lapisan.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        lapisan.setPadding(true);
+        lapisan.setSpacing(false);
+        lapisan.getStyle()
+            .set("background", "#FFF5EB")
+            .set("border-radius", "10px")
+            .set("text-align", "center");
+    
+        dialog.add(lapisan);
+        dialog.open();
+    }
+
     // Method untuk request api POST login
     private void login(String akunId, String password) {
         try {
@@ -167,7 +211,7 @@ public class LoginView extends VerticalLayout {
             String finalTargetRoute = targetRoute;
             getUI().ifPresent(ui -> ui.navigate(finalTargetRoute));
         } else { // Jika login gagal
-            Notification.show("Login gagal: " + loginResponse.getMessage(), 3500, Notification.Position.MIDDLE);
+            errorPopup("NIM atau Kata Sandi anda salah, silahkan \n masukkan kembali kredensial yang benar");
         }
     } 
     // Tambahkan Exception untuk jenis-jenis error lainnya kalau perlu

@@ -69,7 +69,7 @@ public class Landing extends VerticalLayout {
         headerKanan.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
         headerKanan.getStyle().set("gap", "20px");
 
-        headerKanan.add(btnNavbar("Beranda"),
+        headerKanan.add(btnNavbar("Halaman Utama"),
                         btnNavbar("Tentang Kami"),
                         btnNavbar("Peminjaman"),
                         btnNavbar("Kontak"));
