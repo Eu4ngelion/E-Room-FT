@@ -11,6 +11,7 @@ import com.eroomft.restful.model.Admin;
 import com.eroomft.restful.model.Akun;
 import com.eroomft.restful.model.User;
 import com.eroomft.restful.repository.AdminRepository;
+import com.eroomft.restful.repository.AkunRepository;
 import com.eroomft.restful.repository.UserRepository;
 
 @Service
@@ -21,6 +22,10 @@ public class AkunService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AkunRepository akunRepository;
+    
 
     // Buat Akun (Dev Only)
     public ResponseWrapper createAkun(CreateAkunRequest request) {
@@ -71,11 +76,15 @@ public class AkunService {
     // View All Akun (Dev Only)
     public ResponseWrapper getAllAkun() {
         // Ambil Semua Akun
-        Iterable<Admin> admins = adminRepository.findAll();
-        Iterable<User> users = userRepository.findAll();
+        // Iterable<Admin> admins = adminRepository.findAll();
+        // Iterable<User> users = userRepository.findAll();
+        Iterable<Akun> akun = akunRepository.findAll();
+        if (!akun.iterator().hasNext()) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tidak ada akun ditemukan");
+        }
 
         // Gabungkan Hasil
-        return new ResponseWrapper("success", "Daftar semua akun", new Object[] { admins, users });
+        return new ResponseWrapper("success", "Daftar semua akun", new Object[]{akun});
     }
 
     // Update Akun (Dev Only)
