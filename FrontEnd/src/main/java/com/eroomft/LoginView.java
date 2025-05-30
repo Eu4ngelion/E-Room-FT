@@ -46,33 +46,46 @@ public class LoginView extends VerticalLayout {
         H2 login = new H2("Login");
         login.setWidth("350px");
         login.getStyle()
-                .set("font-weight", "bold")
+                .set("font-weight", "600")
                 .set("text-align", "center")
                 .set("font-family", " 'poppins', sans-serif")
-                .set("margin-bottom", "10px");
+                .set("font-size", "36px")
+                .set("margin-bottom", "10px")
+                .setWidth("400px");
     
         Paragraph text = new Paragraph("Silahkan gunakan akun portal AIS anda untuk login");
-        text.setWidth("350px");
+        text.setWidth("400px");
         text.getStyle()
                 .set("text-align", "center")
-                .set("font-size", "14px")
+                .set("font-size", "16px")
+                .set("font-family", " 'Plus Jakarta Sans', sans-serif")
                 .set("font-weight", "bold")
                 .set("margin-bottom", "10px");
     
         TextField txtBox = new TextField("NIM/NIP");
-        txtBox.setWidth("350px");
+        txtBox.setWidth("400px");
         txtBox.setPlaceholder("Masukkan NIM/NIP");
-        txtBox.getStyle().set("margin-bottom", "10px");
+        txtBox.getStyle()
+                .set("margin-bottom", "10px")
+                .set("font-size", "16px")
+                .set("font-color", "black")
+                .set("font-weight", "600")
+                .set("font-family", " 'poppins', sans-serif");
         
         PasswordField txtPass = new PasswordField("Kata Sandi");
-        txtPass.setWidth("350px");
+        txtPass.setWidth("400px");
         txtPass.setPlaceholder("Masukkan Kata Sandi");
-        txtPass.getStyle().set("margin-bottom", "20px");     
+        txtPass.getStyle()
+                .set("margin-bottom", "20px")
+                .set("font-size", "16px")
+                .set("font-color", "black")
+                .set("font-weight", "600")
+                .set("font-family", " 'poppins', sans-serif"); 
     
         Button btnLogin = new Button("Login");
-        btnLogin.setWidth("350px");
+        btnLogin.setWidth("400px");
         btnLogin.getStyle()
-                .set("background-color", "#FA812F")
+                .set("background-color", "#FF9F4C")
                 .set("color", "white")
                 .set("font-weight", "bold")
                 .set("border", "none")
@@ -85,7 +98,7 @@ public class LoginView extends VerticalLayout {
         });
         
         btnLogin.getElement().addEventListener("mouseleave", e -> {
-            btnLogin.getStyle().set("background-color", "#FF7700");
+            btnLogin.getStyle().set("background-color", "#FF9F4C");
         });
 
         Anchor Kembali = new Anchor();
@@ -109,7 +122,7 @@ public class LoginView extends VerticalLayout {
         });
     
         Div formLogin = new Div();
-        formLogin.setWidth("350px");
+        formLogin.setWidth("400px");
         formLogin.getStyle()
             .set("background-color", "white")
             .set("padding", "20px")
@@ -127,24 +140,29 @@ public class LoginView extends VerticalLayout {
         dialog.setCloseOnOutsideClick(true);
     
         Icon errorIcon = VaadinIcon.CLOSE_CIRCLE.create();
-        errorIcon.setSize("48px");
+        errorIcon.setSize("63px");
         errorIcon.getStyle()
-            .set("color", "#FA812F")
+            .set("color", "#FF7700")
             .set("margin-bottom", "10px");
     
         Span text = new Span(message);
         text.getStyle()
-            .set("font-size", "16px")
-            .set("font-weight", "500")
+            .set("font-size", "24px")
+            .set("font-weight", "600")
             .set("text-align", "center")
+            .set("font-family", " 'Plus Jakarta Sans', sans-serif")
             .set("display", "block")
             .set("margin-bottom", "10px")
             .set("white-space", "pre-line");
+            
     
         Button btnTutup = new Button("Tutup", event -> dialog.close());
         btnTutup.getStyle()
-            .set("background-color", "#FA812F")
+            .set("background-color", "#FF7700")
             .set("color", "white")
+            .set("font-size", "16px")
+            .set("font-family", " 'Plus Jakarta Sans', sans-serif")
+            .set("font-weight", "600")
             .set("border", "none")
             .set("border-radius", "5px")
             .set("cursor", "pointer");
@@ -154,7 +172,7 @@ public class LoginView extends VerticalLayout {
         lapisan.setPadding(true);
         lapisan.setSpacing(false);
         lapisan.getStyle()
-            .set("background", "#FFF5EB")
+            .set("background", "#ffffff")
             .set("border-radius", "10px")
             .set("text-align", "center");
     
@@ -211,7 +229,7 @@ public class LoginView extends VerticalLayout {
             String finalTargetRoute = targetRoute;
             getUI().ifPresent(ui -> ui.navigate(finalTargetRoute));
         } else { // Jika login gagal
-            errorPopup("NIM atau Kata Sandi anda salah, silahkan \n masukkan kembali kredensial yang benar");
+            errorPopup("NIM atau Kata Sandi salah, Silahkan masukkan \nkembali kredensial yang benar");
         }
     } 
     // Tambahkan Exception untuk jenis-jenis error lainnya kalau perlu

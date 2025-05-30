@@ -38,14 +38,14 @@ public class Landing extends VerticalLayout {
 
         Image logo = new Image("/frontend/unmul.png", "Logo Unmul");
         logo.getStyle()
-                .set("width", "50px")
-                .set("height", "50px");
+                .set("width", "55px")
+                .set("height", "55px")
+                .set("margin-top", "10px");
                 
 
         Span garis = new Span("|");
         garis.getStyle()
-                .set("font-size", "32px")
-                .set("margin", "0 10px");
+                .set("font-size", "50px");
 
         Div blokNamaWeb = new Div();
         blokNamaWeb.getStyle()
@@ -56,11 +56,19 @@ public class Landing extends VerticalLayout {
 
         Paragraph namaWeb = new Paragraph("E-ROOM FT");
         namaWeb.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
-        namaWeb.getStyle().set("margin", "0");
+        namaWeb.getStyle()
+                .set("margin", "0")
+                .set("font-family", "'poppins', sans-serif")
+                .set("font-size", "30px")
+                .set("font-weight", "600");
 
         Paragraph subText = new Paragraph("Sistem Peminjaman Ruangan");
         subText.addClassNames(LumoUtility.FontSize.SMALL);
-        subText.getStyle().set("margin", "0");
+        subText.getStyle()
+                .set("margin", "0")
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-size", "24px")
+                .set("font-weight", "600");
 
         blokNamaWeb.add(namaWeb, subText);
         headerKiri.add(logo, garis, blokNamaWeb);
@@ -86,15 +94,18 @@ public class Landing extends VerticalLayout {
 
         H1 judul = new H1("E-ROOM FT");
         judul.getStyle()
-                .set("color", "#FF6600")
-                .set("font-weight", "bold")
+                .set("color", "#FF7700")
+                .set("font-weight", "600")
                 .set("font-family", " 'poppins', sans-serif")
+                .set("font-size", "50px")
                 .set("text-align", "center");
 
         Paragraph deskripsi = new Paragraph("Aplikasi E-ROOM ini hadir untuk mendukung efisiensi pemanfaatan ruang di Gedung Teknik Baru Fakultas Teknik Universitas Mulawarman. Klik tombol di bawah untuk mulai meminjam ruangan.");
         deskripsi.getStyle()
                 .set("text-align", "center")
-                .set("font-weight", "bold")
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-size", "17.5px")
+                .set("font-weight", "600")
                 .set("max-width", "600px");
 
         HorizontalLayout kotak = new HorizontalLayout();
@@ -117,6 +128,9 @@ public class Landing extends VerticalLayout {
                     .set("align-items", "center")
                     .set("justify-content", "center")
                     .set("height", "80px")
+                    .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                    .set("font-size", "16px")
+                    .set("font-weight", "500")
                     .set("background-color", "#FF7700")
                     .set("color", "black")
                     .set("width", "100%")
@@ -130,8 +144,11 @@ public class Landing extends VerticalLayout {
         button.getStyle()
                 .set("background-color", "transparent")
                 .set("color", "black")
-                .set("font-weight", "bold")
+                .set("font-family", " 'poppins', sans-serif ")
+                .set("font-size", "16px")
+                .set("font-weight", "550")
                 .set("border", "none")
+                .set("border-radius", "0")
                 .set("cursor", "pointer");
 
         button.getElement().addEventListener("mouseenter", e -> {
