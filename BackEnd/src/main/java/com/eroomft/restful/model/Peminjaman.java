@@ -10,12 +10,13 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name = "peminjaman")
 public class Peminjaman {
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int peminjamanId;
 
     @ManyToOne
@@ -41,9 +42,10 @@ public class Peminjaman {
     @Column(nullable = false)
     private Status status; 
     public enum Status {
-        DIAJUKAN,
         DITOLAK,
-        DIPINJAM,
+        DIBATALKAN,
+        MENUNGGU,
+        BERHASIL,
         SELESAI
     } 
 
@@ -68,17 +70,17 @@ public class Peminjaman {
     public void setPeminjamanId(int peminjamanId) {
         this.peminjamanId = peminjamanId;
     }
-    public Akun getAkunId() {
+    public Akun getAkun() {
         return akun;
     }
-    public void setAkunId(Akun akun) {
+    public void setAkun(Akun akun) {
         this.akun = akun;
     }
-    public Ruangan getRuanganId() {
+    public Ruangan getRuangan() {
         return ruangan;
     }
-    public void setRuanganId(Ruangan ruanganId) {
-        this.ruangan = ruanganId;
+    public void setRuangan(Ruangan ruangan) {
+        this.ruangan = ruangan;
     }
     public String getKeperluan() {
         return keperluan;

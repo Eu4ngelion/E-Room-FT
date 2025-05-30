@@ -13,10 +13,10 @@ import org.springframework.web.server.ResponseStatusException;
 import com.eroomft.restful.dto.ResponseWrapper;
 import com.eroomft.restful.dto.data.ruangan.CreateRuanganRequest;
 import com.eroomft.restful.dto.data.ruangan.GetAllRuanganResponse;
-import com.eroomft.restful.model.Ruangan;
-import com.eroomft.restful.repository.RuanganRepository;
-import com.eroomft.restful.repository.PeminjamanRepository;
 import com.eroomft.restful.model.Peminjaman;
+import com.eroomft.restful.model.Ruangan;
+import com.eroomft.restful.repository.PeminjamanRepository;
+import com.eroomft.restful.repository.RuanganRepository;
 
 @Service
 public class RuanganService {
@@ -32,11 +32,12 @@ public class RuanganService {
 
         // Validasi Input
         if (request.getNama() == null || 
-        request.getKapasitas() <= 0 ||
-        request.getFasilitas() == null ||
-        request.getGedung() == null ||
-        request.getLokasi() == null ||
-        request.getPathGambar() == null) {
+            request.getKapasitas() <= 0 ||
+            request.getFasilitas() == null ||
+            request.getGedung() == null ||
+            request.getLokasi() == null ||
+            request.getPathGambar() == null) 
+        {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request tidak valid: Semua field harus diisi");
         }
 
@@ -49,7 +50,7 @@ public class RuanganService {
 
         // Cek apakah nama ruangan unique
         if (ruanganRepo.existsByNama(request.getNama())) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Ruangan dengan nama '" + request.getNama() + "' sudah ada");
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ruangan dengan nama '" + request.getNama() + "' sudah ada");
         }
 
         // Buat Ruangan Baru
@@ -67,7 +68,7 @@ public class RuanganService {
     }
     
     // Get All Ruangan
-    public ResponseWrapper getAllRuangan(String keyword, String tipe, String gedung) {
+    public ResponseWrapper getAllRuangan(String keyword, String tipe, String gedung, int kapasitas) {
         try{
             List<Ruangan> ruanganList;
             if (keyword == null || keyword.isEmpty()) {
@@ -98,10 +99,20 @@ public class RuanganService {
                 return new ResponseWrapper("success", "Tidak ada ruangan yang ditemukan", null);
             }
 
+            // FIlter daftar ruangan berdasarkan kapasitas
+            if (kapasitas > 0) {
+                ruanganList.removeIf(ruangan -> ruangan.getKapasitas() < kapasitas);
+            }
+
+            // Jika Ruangan kosong setelah difilter
+            if (ruanganList.isEmpty()) {
+                return new ResponseWrapper("success", "Tidak ada ruangan yang ditemukan", null);
+            }
+
             List<GetAllRuanganResponse> responseList = new ArrayList<>();
             for (Ruangan ruangan : ruanganList) {
                 GetAllRuanganResponse response = new GetAllRuanganResponse(
-                    String.valueOf(ruangan.getRuanganId()),
+                    ruangan.getRuanganId(),
                     ruangan.getTipe().name(),
                     ruangan.getNama(),
                     ruangan.getKapasitas(),
@@ -134,7 +145,7 @@ public class RuanganService {
             // Kembalikan detail ruangan sesuai id
             Ruangan ruangan = optionalRuangan.get();
             GetAllRuanganResponse response = new GetAllRuanganResponse(
-                String.valueOf(ruangan.getRuanganId()),
+                ruangan.getRuanganId(),
                 ruangan.getTipe().name(),
                 ruangan.getNama(),
                 ruangan.getKapasitas(),

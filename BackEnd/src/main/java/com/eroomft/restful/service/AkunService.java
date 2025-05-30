@@ -76,8 +76,6 @@ public class AkunService {
     // View All Akun (Dev Only)
     public ResponseWrapper getAllAkun() {
         // Ambil Semua Akun
-        // Iterable<Admin> admins = adminRepository.findAll();
-        // Iterable<User> users = userRepository.findAll();
         Iterable<Akun> akun = akunRepository.findAll();
         if (!akun.iterator().hasNext()) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tidak ada akun ditemukan");

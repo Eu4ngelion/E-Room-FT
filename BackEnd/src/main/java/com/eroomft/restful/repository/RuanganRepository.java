@@ -1,6 +1,7 @@
 package com.eroomft.restful.repository;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -12,6 +13,8 @@ import com.eroomft.restful.model.Ruangan;
 public interface RuanganRepository extends JpaRepository<Ruangan, Integer> {
 
     boolean existsByNama(String nama);
+
+    Optional<Ruangan> findByNama(String nama);
 
     // find all by nama containing ignore case
     List<Ruangan> findByNamaContainingIgnoreCase(String keyword);

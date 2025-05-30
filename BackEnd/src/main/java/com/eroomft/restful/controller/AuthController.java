@@ -25,51 +25,18 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    @Schema(description = "Wrapper response login. Data berisi objek LoginResponse jika sukses.")
-    class LoginResponseWrapper {
-        @Schema(description = "Status response (success/error)", example = "success")
-        private final String status;
-        @Schema(description = "Pesan hasil operasi", example = "Login berhasil")
-        private final String message;
-        @Schema(description = "Data hasil login, berupa objek LoginResponse jika sukses, null jika gagal")
-        private final LoginResponse data;
-
-        public LoginResponseWrapper(String status, String message, LoginResponse data) {
-            this.status = status;
-            this.message = message;
-            this.data = data;
-        }
-
-        public String getStatus() {
-            return status;
-        }
-
-        public String getMessage() {
-            return message;
-        }
-
-        public LoginResponse getData() {
-            return data;
-        }
-    }
-
+    
     @PostMapping("/login")
-    @Operation(
-        summary = "Login",
-        description = "Endpoint untuk login ke sistem. Kirim username dan password, jika berhasil akan mendapatkan token JWT dan data user."
-    )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Login berhasil",
+    @Operation(summary = "Login",description = "Endpoint untuk login ke sistem. Kirim username dan password, data user dan rolenya.")
+    @ApiResponse(responseCode = "200",description = "Login berhasil",
         content = @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = LoginResponseWrapper.class)
+            schema = @Schema(implementation = LoginSuccessWrapper.class)
         )
     )
+
     @ApiResponse(responseCode = "400", description = "Request tidak valid (field kosong)")
     @ApiResponse(responseCode = "401", description = "Username/password salah")
-    @ApiResponse(responseCode = "404", description = "Akun tidak ditemukan")
-    @ApiResponse(responseCode = "500", description = "Terjadi kesalahan pada server")
     public ResponseEntity<ResponseWrapper> login(@RequestBody LoginRequest request) {
         try {
             ResponseWrapper loginResult = authService.login(request);
@@ -92,4 +59,34 @@ public class AuthController {
         }
     }
 
+
+    @Schema(description = "DTO  LoginResponse jika sukses.")
+    public static class LoginSuccessWrapper {
+        @Schema(description = "Status response", example = "success")
+        private final String status;
+
+        @Schema(description = "Pesan hasil operasi", example = "Login Berhasil")
+        private final String message;
+
+        @Schema(description = "Data hasil login, berupa objek LoginResponse jika sukses, null jika gagal")
+        private final LoginResponse data;
+
+        public LoginSuccessWrapper(String status, String message, LoginResponse data) {
+            this.status = status;
+            this.message = message;
+            this.data = data;
+        }
+
+        public String getStatus() {
+            return status;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+
+        public LoginResponse getData() {
+            return data;
+        }
+    }
 }

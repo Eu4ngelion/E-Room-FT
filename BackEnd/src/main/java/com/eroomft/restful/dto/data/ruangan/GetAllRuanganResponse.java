@@ -1,9 +1,16 @@
 package com.eroomft.restful.dto.data.ruangan;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class GetAllRuanganResponse {
-    private String ruanganId;
+
+    @Schema(example = "1")
+    private int ruanganId;
+
+    @Schema(example = "KELAS")
     private String tipe;
+
+    @Schema(example = "2309106001")
     private String nama;
     private int kapasitas;
     private String fasilitas;
@@ -14,7 +21,7 @@ public class GetAllRuanganResponse {
     public GetAllRuanganResponse() {
     }
 
-    public GetAllRuanganResponse(String ruanganId, String tipe, String nama, int kapasitas, String fasilitas, String gedung, String lokasi, String pathGambar) {
+    public GetAllRuanganResponse(int ruanganId, String tipe, String nama, int kapasitas, String fasilitas, String gedung, String lokasi, String pathGambar) {
         this.ruanganId = ruanganId;
         this.tipe = tipe;
         this.nama = nama;
@@ -25,10 +32,10 @@ public class GetAllRuanganResponse {
         this.pathGambar = pathGambar;
     }
 
-    public String getRuanganId() {
+    public int getRuanganId() {
         return ruanganId;
     }
-    public void setRuanganId(String ruanganId) {
+    public void setRuanganId(int ruanganId) {
         this.ruanganId = ruanganId;
     }
     public String getTipe() {

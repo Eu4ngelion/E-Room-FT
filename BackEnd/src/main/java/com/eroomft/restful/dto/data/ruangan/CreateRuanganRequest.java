@@ -1,12 +1,28 @@
 package com.eroomft.restful.dto.data.ruangan;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class CreateRuanganRequest {
+
+    @Schema(example = "KELAS")
     private String tipe;
+
+    @Schema(example = "C301")
     private String nama;
+
+    @Schema(example = "30")
     private int kapasitas;
+
+    @Schema(example = "AC, Proyektor, Papan Tulis")
     private String fasilitas;
+
+    @Schema(example = "Gedung C")
     private String gedung;
+
+    @Schema(example = "Lantai 3, Ruang C301")
     private String lokasi;
+
+    @Schema(example = "/images/ruangan/c301.jpg")
     private String pathGambar;
 
     public CreateRuanganRequest() {

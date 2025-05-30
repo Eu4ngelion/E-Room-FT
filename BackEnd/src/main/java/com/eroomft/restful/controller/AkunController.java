@@ -2,7 +2,14 @@ package com.eroomft.restful.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.eroomft.restful.dto.ResponseWrapper;
@@ -25,26 +32,15 @@ public class AkunController {
     @Autowired
     private AkunService akunService;
 
+
     // Create Akun
     @PostMapping
-    @Operation(
-        summary = "Create Akun",
-        description = "Membuat akun baru. Hanya untuk development.",
-        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Data akun yang akan dibuat",
-            required = true,
-            content = @Content(
-                schema = @Schema(implementation = CreateAkunRequest.class)
-            )
-        )
-    )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Akun berhasil dibuat",
-        content = @Content(schema = @Schema(implementation = ResponseWrapper.class))
-    )
+    @Operation(summary = "Create Akun", description = "Membuat akun baru. Hanya untuk development.")
+    @ApiResponse(responseCode = "200", description = "Akun berhasil dibuat", 
+    content = @Content(schema = @Schema(implementation = CreateAkunSuccessSchema.class)))
     @ApiResponse(responseCode = "400", description = "Request tidak valid")
     @ApiResponse(responseCode = "500", description = "Terjadi kesalahan pada server")
+
     public ResponseEntity<ResponseWrapper> createAkun(@RequestBody CreateAkunRequest request) {
         try {
             ResponseWrapper response = akunService.createAkun(request);
@@ -59,15 +55,11 @@ public class AkunController {
 
     // Get Data All Akun
     @GetMapping
-    @Operation(
-        summary = "Get All Akun",
-        description = "Mengambil semua akun yang terdaftar. Hanya untuk development."
+    @Operation(summary = "Get All Akun",description = "Mengambil semua akun yang terdaftar. Hanya untuk development.")
+    @ApiResponse(responseCode = "200",description = "Daftar akun berhasil diambil",
+        content = @Content(schema = @Schema(implementation = GetAllAkunSuccessSchema.class))
     )
-    @ApiResponse(
-        responseCode = "200",
-        description = "Daftar akun berhasil diambil",
-        content = @Content(schema = @Schema(implementation = ResponseWrapper.class))
-    )
+    @ApiResponse(responseCode = "404", description = "Tidak ada akun ditemukan")
     @ApiResponse(responseCode = "500", description = "Terjadi kesalahan pada server")
     public ResponseEntity<ResponseWrapper> getAllAkun() {
         try {
@@ -86,20 +78,12 @@ public class AkunController {
     @PutMapping("/{akunId}")
     @Operation(
         summary = "Update Akun",
-        description = "Memperbarui data akun berdasarkan ID. Hanya untuk development.",
-        parameters = {
-            @Parameter(name = "akunId", description = "ID akun yang akan diupdate", required = true, example = "123")
-        },
-        requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Data akun yang diperbarui",
-            required = true,
-            content = @Content(schema = @Schema(implementation = CreateAkunRequest.class))
-        )
+        description = "Memperbarui data akun berdasarkan ID. Hanya untuk development."
     )
     @ApiResponse(
         responseCode = "200",
         description = "Akun berhasil diperbarui",
-        content = @Content(schema = @Schema(implementation = ResponseWrapper.class))
+        content = @Content(schema = @Schema(implementation = UpdateAkunSuccessSchema.class))
     )
     @ApiResponse(responseCode = "404", description = "Akun tidak ditemukan")
     @ApiResponse(responseCode = "500", description = "Terjadi kesalahan pada server")
@@ -144,6 +128,73 @@ public class AkunController {
                 .body(new ResponseWrapper("error", e.getReason() + e.getMessage(), null));
         } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseWrapper("error", "Internal Server Error", null));
+        }
+    }
+
+
+    //  ## Schema
+    @Schema(
+        example="""
+        {
+            "status": "success",
+            "message": "Akun berhasil dibuat",
+            "data": {}
+        }
+        """
+    )
+    class CreateAkunSuccessSchema extends ResponseWrapper {
+        public CreateAkunSuccessSchema(String status, String message, Object data) {
+            super(status, message, data);
+        }
+    }
+
+
+    @Schema(
+        example="""
+            {
+                "status": "success",
+                "message": "Daftar akun berhasil diambil",
+                "data": [
+                    {
+                        "akunId": "2309106001",
+                        "nama": "Mahasiswa 1",
+                        "email": "mahasiswa1@gmail.com",
+                        "role": "MAHASISWA"
+                    },
+                    {
+                        "akunId": "2309106002",
+                        "nama": "Dosen 1",
+                        "email": "admin1@gmail.com",
+                        "role": "DOSEN"
+                    },
+                    {
+                        "akunId": "2309106003",
+                        "nama": "Admin 1",
+                        "email": "Admin@gmail.com",
+                        "role": "ADMIN"
+                    }
+                ]
+            }   
+        """
+    )
+    class GetAllAkunSuccessSchema extends ResponseWrapper {
+        public GetAllAkunSuccessSchema(String status, String message, Object data) {
+            super(status, message, data);
+        }
+    }
+
+    @Schema(
+        example="""
+        {
+            "status": "success",
+            "message": "Akun berhasil diperbarui",
+            "data": {}
+        }
+        """
+    )
+    class UpdateAkunSuccessSchema extends ResponseWrapper {
+        public UpdateAkunSuccessSchema(String status, String message, Object data) {
+            super(status, message, data);
         }
     }
 }
