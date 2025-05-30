@@ -3,10 +3,12 @@ package com.eroomft.restful.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -50,9 +52,11 @@ public class PeminjamanController {
     @ApiResponse(responseCode = "200", description = "Data peminjaman berhasil diambil", content = @Content(schema = @Schema(implementation = GetAllPeminjamanSchema.class)))
     @ApiResponse(responseCode = "500", description = "Terjadi kesalahan pada server")
 
-    public ResponseEntity<ResponseWrapper> getAllPeminjaman() {
+    public ResponseEntity<ResponseWrapper> getAllPeminjaman(
+        @RequestParam(value = "status", required = false, defaultValue= "MENUNGGU") String status
+    ) {
         try {
-            return ResponseEntity.ok(peminjamanService.getAllPeminjaman());
+            return ResponseEntity.ok(peminjamanService.getAllPeminjaman(status));
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode())
                 .body(new ResponseWrapper("error", e.getReason(), null));
@@ -68,6 +72,22 @@ public class PeminjamanController {
     public ResponseEntity<ResponseWrapper> getSinglePeminjaman(@PathVariable("peminjamanId") int peminjamanId) {
         try {
             return ResponseEntity.ok(peminjamanService.getPeminjamanByPeminjamanId(peminjamanId));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                .body(new ResponseWrapper("error", e.getReason(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseWrapper("error", "Internal Server Error", null));
+        }
+    }
+
+    @PatchMapping("/{peminjamanId}")
+    @Operation(summary = "Update Peminjaman", description = "Endpoint untuk memperbarui status peminjaman berdasarkan ID peminjaman.")
+    
+    public ResponseEntity<ResponseWrapper> updatePeminjaman(
+        @PathVariable("peminjamanId") int peminjamanId, 
+        @RequestParam("status") Boolean status) {
+        try {
+            return ResponseEntity.ok(peminjamanService.updatePeminjamanStatus(peminjamanId, status));
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode())
                 .body(new ResponseWrapper("error", e.getReason(), null));

@@ -15,8 +15,8 @@ import com.eroomft.restful.dto.data.peminjaman.CreatePeminjamanRequest;
 import com.eroomft.restful.dto.data.peminjaman.GetAllPeminjamanResponse;
 import com.eroomft.restful.dto.data.peminjaman.GetSinglePeminjamanResponse;
 import com.eroomft.restful.model.Akun;
-import com.eroomft.restful.model.Ruangan;
 import com.eroomft.restful.model.Peminjaman;
+import com.eroomft.restful.model.Ruangan;
 import com.eroomft.restful.repository.AkunRepository;
 import com.eroomft.restful.repository.PeminjamanRepository;
 import com.eroomft.restful.repository.RuanganRepository;
@@ -120,11 +120,25 @@ public class PeminjamanService {
     }
 
     // Get All Peminjaman For Admin
-    public ResponseWrapper getAllPeminjaman() {
+    public ResponseWrapper getAllPeminjaman(String status) {
+        List<Peminjaman> peminjamanList;
         try {
-            List<Peminjaman> peminjamanList = peminjamanRepo.findAllPeminjamanStatusMenunggu(Peminjaman.Status.MENUNGGU);
+            // Validasi Status
+            if (status == null || status.isEmpty()) {
+                peminjamanList = peminjamanRepo.findAll();
+            } else {
+                try {
+                    // Menggunakan enum untuk status
+                    Peminjaman.Status statusEnum = Peminjaman.Status.valueOf(status.toUpperCase());
+                    peminjamanList = peminjamanRepo.findByStatus(statusEnum);
+                } catch (IllegalArgumentException e) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status peminjaman tidak valid");
+                }
+            }
+
+            // Cek apakah ada peminjaman
             if (peminjamanList.isEmpty()) {
-                return new ResponseWrapper("success", "Tidak ada peminjaman yang ditemukan", null);
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tidak ada peminjaman ditemukan");
             }
 
             // Simpan data peminjaman ke dalam ResponseWrapper
@@ -178,6 +192,38 @@ public class PeminjamanService {
 
             // Kembalikan Response
             return new ResponseWrapper("success", "Detail peminjaman berhasil diambil", response);
+
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan pada server: " + e.getMessage(), e);
+        }
+    }
+
+    // Patch Setujui atau Tolak Peminjaman
+    public ResponseWrapper updatePeminjamanStatus(int peminjamanId, boolean isSetuju) {
+        try {
+            // Validasi Peminjaman ID
+            if (peminjamanId <= 0) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "ID peminjaman tidak valid");
+            }
+
+            Optional<Peminjaman> peminjamanOpt = peminjamanRepo.findById(peminjamanId);
+            if (peminjamanOpt.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Peminjaman tidak ditemukan");
+            }
+            Peminjaman peminjaman = peminjamanOpt.get();
+
+            // Set status sesuai dengan parameter
+            if (isSetuju) {
+                peminjaman.setStatus(Peminjaman.Status.BERHASIL);
+            } else {
+                peminjaman.setStatus(Peminjaman.Status.DITOLAK);
+            }
+            peminjamanRepo.save(peminjaman);
+
+            // Kembalikan Response
+            return new ResponseWrapper("success", "Peminjaman berhasil " + (isSetuju ? "disetujui" : "ditolak"), null);
 
         } catch (ResponseStatusException e) {
             throw e;
