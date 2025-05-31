@@ -80,6 +80,24 @@ public class PeminjamanController {
         }
     }
 
+    @GetMapping("/riwayat")
+    @Operation(summary = "Get Riwayat Peminjaman", description = "Endpoint untuk mengambil riwayat peminjaman berdasarkan akun ID.")
+
+    public ResponseEntity<ResponseWrapper> getRiwayatPeminjaman(
+        @RequestParam("akunId") String akunId
+    ) {
+        try {
+            return ResponseEntity.ok(peminjamanService.getAllRiwayatPeminjaman(akunId));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                .body(new ResponseWrapper("error", e.getReason(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseWrapper("error", "Internal Server Error", null));
+        }
+    }
+
+
+
     @PatchMapping("/{peminjamanId}")
     @Operation(summary = "Update Peminjaman", description = "Endpoint untuk memperbarui status peminjaman berdasarkan ID peminjaman.")
     
