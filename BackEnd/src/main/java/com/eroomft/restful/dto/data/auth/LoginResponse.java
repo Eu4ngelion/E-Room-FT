@@ -1,9 +1,18 @@
 package com.eroomft.restful.dto.data.auth;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class LoginResponse {
+    @Schema(example = "2309106001")
     private String akunId;
+
+    @Schema(example = "email@gmail.com")
     private String email;
+
+    @Schema(example = "John Doe")
     private String nama;
+
+    @Schema(example = "MAHASISWA")
     private String role;
 
     public LoginResponse() {
