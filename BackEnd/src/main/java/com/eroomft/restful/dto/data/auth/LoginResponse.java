@@ -3,13 +3,13 @@ package com.eroomft.restful.dto.data.auth;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class LoginResponse {
-    @Schema(example = "2309106001")
+    @Schema(example = "2309106999")
     private String akunId;
 
-    @Schema(example = "email@gmail.com")
+    @Schema(example = "contoh@gmail.com")
     private String email;
 
-    @Schema(example = "John Doe")
+    @Schema(example = "Contoh Contohan")
     private String nama;
 
     @Schema(example = "MAHASISWA")

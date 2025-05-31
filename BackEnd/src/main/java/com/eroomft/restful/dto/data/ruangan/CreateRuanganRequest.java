@@ -7,7 +7,7 @@ public class CreateRuanganRequest {
     @Schema(example = "KELAS")
     private String tipe;
 
-    @Schema(example = "C301")
+    @Schema(example = "B101")
     private String nama;
 
     @Schema(example = "30")
@@ -16,13 +16,13 @@ public class CreateRuanganRequest {
     @Schema(example = "AC, Proyektor, Papan Tulis")
     private String fasilitas;
 
-    @Schema(example = "Gedung C")
+    @Schema(example = "Gedung B")
     private String gedung;
 
-    @Schema(example = "Lantai 3, Ruang C301")
+    @Schema(example = "Lantai 3")
     private String lokasi;
 
-    @Schema(example = "/images/ruangan/c301.jpg")
+    @Schema(example = "/uploads/B101.jpg")
     private String pathGambar;
 
     public CreateRuanganRequest() {

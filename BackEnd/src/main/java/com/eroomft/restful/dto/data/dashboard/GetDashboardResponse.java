@@ -4,13 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class GetDashboardResponse {
 
-    @Schema(description = "Jumlah total ruangan di database", example = "10")
+    @Schema(description = "Jumlah total ruangan di database", example = "999")
     private Long jumlahRuangan;
 
-    @Schema(description = "Jumlah peminjaman hari ini", example = "5")
+    @Schema(description = "Jumlah peminjaman hari ini", example = "99")
     private int jumlahPeminjamanHariIni;
 
-    @Schema(description = "Jumlah peminjaman yang masih menunggu persetujuan", example = "3")
+    @Schema(description = "Jumlah peminjaman yang masih menunggu persetujuan", example = "89")
     private int jumlahPeminjamanMenunggu;
 
     public GetDashboardResponse(long jumlahRuangan, int jumlahPeminjamanHariIni, int jumlahPeminjamanMenunggu) {

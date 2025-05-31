@@ -3,22 +3,22 @@ package com.eroomft.restful.dto.data.peminjaman;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 public class GetAllPeminjamanResponse {
-    @Schema(description = "ID peminjaman", example = "23091060001")
+    @Schema(description = "ID peminjaman", example = "999")
     private int idPeminjaman;
 
-    @Schema(description = "Nama akun yang melakukan peminjaman", example = "John Doe")
+    @Schema(description = "Nama akun yang melakukan peminjaman", example = "Contoh Contohan")
     private String namaAkun;
     
-    @Schema(description = "Akun Id yang melakukan peminjaman", example = "1234567890")
+    @Schema(description = "Akun Id yang melakukan peminjaman", example = "2309106999")
     private String akunId;
 
-    @Schema(description = "Tipe ruangan yang dipinjam", example = "RAPAT")
+    @Schema(description = "Tipe ruangan yang dipinjam", example = "KELAS")
     private String tipeRuangan;
 
-    @Schema(description = "Nama ruangan yang dipinjam", example = "Ruang Rapat A")
+    @Schema(description = "Nama ruangan yang dipinjam", example = "A999")
     private String namaRuangan;
 
-    @Schema(description = "Tanggal peminjaman (format: YYYY-MM-DD)", example = "2023-10-01")
+    @Schema(description = "Tanggal peminjaman (format: YYYY-MM-DD)", example = "2025-06-30")
     private String tanggalPeminjaman;
 
     @Schema(description = "Waktu mulai peminjaman (format: HH:mm)", example = "10:00")

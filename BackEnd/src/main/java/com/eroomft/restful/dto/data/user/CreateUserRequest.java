@@ -1,10 +1,21 @@
 package com.eroomft.restful.dto.data.user;
 
+import io.swagger.v3.oas.annotations.media.Schema;
+
 public class CreateUserRequest {
+    @Schema(description = "ID akun yang akan dibuat", example = "2309106001")
     private String akunId;
+
+    @Schema(description = "Password untuk akun", example = "Password123")
     private String password;
+
+    @Schema(description = "Role akun", example = "MAHASISWA")
     private String role;
+
+    @Schema(description = "Nama lengkap pengguna", example = "Budi Budian")
     private String nama;
+
+    @Schema(description = "Email pengguna", example = "Budi@gmail.com")
     private String email;
 
     public CreateUserRequest() {

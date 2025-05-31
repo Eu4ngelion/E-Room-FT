@@ -30,7 +30,7 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     //  Method find peminjaman bystatus and akun
     List<Peminjaman> findByStatusAndAkun(Peminjaman.Status status, Akun akun);
 
-    // Method find peminjaman by tanggal dan waktu selesai
+    // Method find peminjaman aktif by tanggal dan waktu selesai
     @Query("""
         SELECT p
         FROM Peminjaman p
@@ -66,5 +66,22 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     // Count Jumlah Peminjaman Menuggu
     @Query("SELECT COUNT(p) FROM Peminjaman p WHERE p.status = :statusMenunggu")
     int countPeminjamanMenunggu(@Param("statusMenunggu") Peminjaman.Status statusMenunggu);
+
+    // cari semua peminjaman dengan status:, dan waktu mulai < :waktumulai and waktu selesai > :waktumulai
+    @Query("""
+    SELECT p
+    FROM Peminjaman p
+    WHERE
+        p.status = :status
+        AND p.tanggalPeminjaman = :tanggalPeminjaman
+        AND p.waktuMulai < :waktuSelesai
+        AND p.waktuSelesai > :waktuMulai
+            """)
+    List<Peminjaman> findByStatusAndTanggalPeminjamanAndWaktuMulai(
+        @Param("status") Peminjaman.Status status,
+        @Param("tanggalPeminjaman") LocalDate tanggalPeminjaman,
+        @Param("waktuMulai") LocalTime waktuMulai,
+        @Param("waktuSelesai") LocalTime waktuSelesai
+    );
 }
 

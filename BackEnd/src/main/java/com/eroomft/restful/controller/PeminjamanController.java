@@ -2,6 +2,7 @@ package com.eroomft.restful.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -120,6 +121,28 @@ public class PeminjamanController {
     }
     
 
+    @DeleteMapping("/{peminjamanId}")
+    @Operation(summary = "Batalkan Peminjaman", description = "Endpoint untuk membatalkan peminjaman aktif berdasarkan ID peminjaman.")
+    @ApiResponse(responseCode = "200", description = "Peminjaman berhasil dibatalkan", content = @Content(schema = @Schema(implementation = BatalkanPeminjamanSchema.class)))
+    @ApiResponse(responseCode = "404", description = "Peminjaman tidak ditemukan")
+    @ApiResponse(responseCode = "500", description = "Terjadi kesalahan pada server")
+    public ResponseEntity<ResponseWrapper> batalkanPeminjaman(
+        @Parameter(description = "ID peminjaman yang ingin dibatalkan", example = "1")
+        @PathVariable("peminjamanId") Integer peminjamanId
+    ) {
+        try {
+            return ResponseEntity.ok(peminjamanService.batalkanPeminjaman(peminjamanId));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                .body(new ResponseWrapper("error", e.getReason(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseWrapper("error", "Internal Server Error", null));
+        }
+    }
+
+
+
+
     
     // SCHEMA Ruangan Berhasil Dipinjam
     @Schema(example = """
@@ -212,6 +235,19 @@ public class PeminjamanController {
     """)
     public static class GetSinglePeminjamanSchema extends ResponseWrapper {
         public GetSinglePeminjamanSchema(String status, String message, Object data) {
+            super(status, message, data);
+        }
+    }
+
+    @Schema(example = """
+        {
+            "status": "success",
+            "message": "Peminjaman berhasil dibatalkan",
+            "data": null
+        }
+        """)
+    public static class BatalkanPeminjamanSchema extends ResponseWrapper {
+        public BatalkanPeminjamanSchema(String status, String message, Object data) {
             super(status, message, data);
         }
     }

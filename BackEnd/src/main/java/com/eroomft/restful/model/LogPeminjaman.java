@@ -34,7 +34,8 @@ public class LogPeminjaman {
     private Status status;
     public enum Status {
         DITOLAK,
-        SELESAI
+        SELESAI,
+        DIBATALKAN
     }
     private boolean isDeleted;
 
