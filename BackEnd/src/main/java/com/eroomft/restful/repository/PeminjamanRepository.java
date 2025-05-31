@@ -27,7 +27,7 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     List<Peminjaman> findByRuangan(Ruangan ruangan);
 
 
-     //  Method find peminjaman bystatus and akun
+    //  Method find peminjaman bystatus and akun
     List<Peminjaman> findByStatusAndAkun(Peminjaman.Status status, Akun akun);
 
     // Method find peminjaman by tanggal dan waktu selesai
@@ -55,20 +55,16 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     @Query("SELECT p FROM Peminjaman p WHERE p.status = :statusMenunggu")
     List<Peminjaman> findAllPeminjamanStatusMenunggu(@Param("statusMenunggu") Peminjaman.Status statusMenunggu);
 
-
-    // @Query("""
-    //     SELECT p from Peminjaman p
-    //     WHERE p.tanggalPeminjaman = :tanggalPeminjaman
-    //     AND p.waktuSelesai > :waktuSelesai
-    //     """)
-    // List<Peminjaman> findByTanggalPeminjamanAndWaktuSelesai(
-    //     @Param("tanggalPeminjaman") LocalDate tanggalPeminjaman,
-    //     @Param("waktuSelesai") LocalTime waktuSelesai
-    // );
-
-
+    // Get All Peminjaman by tanggal dan waktu selesai
     @Query("SELECT p FROM Peminjaman p WHERE p.tanggalPeminjaman = :tanggal AND p.waktuSelesai <= :waktu")
     List<Peminjaman> findByTanggalPeminjamanAndWaktuSelesai(@Param("tanggal") LocalDate tanggal, @Param("waktu") LocalTime waktu);
 
+    // Count Jumlah Peminjaman Hari ini
+    @Query("SELECT COUNT(p) FROM Peminjaman p WHERE p.tanggalPeminjaman = CURRENT_DATE")
+    int countPeminjamanToday();
+
+    // Count Jumlah Peminjaman Menuggu
+    @Query("SELECT COUNT(p) FROM Peminjaman p WHERE p.status = :statusMenunggu")
+    int countPeminjamanMenunggu(@Param("statusMenunggu") Peminjaman.Status statusMenunggu);
 }
 

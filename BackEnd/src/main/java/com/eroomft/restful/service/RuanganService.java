@@ -175,6 +175,16 @@ public class RuanganService {
         }
     }
 
+    // Get Jumlah Ruangan
+    public ResponseWrapper getJumlahRuangan() {
+        try {
+            long jumlahRuangan = ruanganRepo.count();
+            return new ResponseWrapper("success", "Jumlah ruangan berhasil diambil", jumlahRuangan);
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Gagal mengambil jumlah ruangan: " + e.getMessage());
+        }
+    }
+
     // Update Ruangan By Id
     public ResponseWrapper updateRuanganById(int ruanganId, CreateRuanganRequest request) {
         try{

@@ -303,13 +303,13 @@ public class PeminjamanService {
     }
 
     // interval 0, 15, 30, 45 WITA
-    // @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
+    @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
 
     // Testing interval 1 menit WITA
     // @Scheduled(cron = "0 0/1 * * * *", zone = "Asia/Makassar") 
 
     // Testing fixed rate = 5 detik
-    @Scheduled(fixedRate = 5000)
+    // @Scheduled(fixedRate = 5000)
     public void updatePeminjamanStatusScheduled() {
         try {
             LocalDate today = LocalDate.now();
