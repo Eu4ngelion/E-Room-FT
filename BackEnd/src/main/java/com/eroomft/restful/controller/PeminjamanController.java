@@ -17,6 +17,7 @@ import com.eroomft.restful.dto.data.peminjaman.CreatePeminjamanRequest;
 import com.eroomft.restful.service.PeminjamanService;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -35,7 +36,6 @@ public class PeminjamanController {
     @ApiResponse(responseCode = "404", description = "Akun atau Ruangan tidak ditemukan")
     @ApiResponse(responseCode = "409", description = "Ruangan sudah dipinjam pada waktu yang diminta", content = @Content(schema = @Schema(implementation = RuanganSudahDipinjamSchema.class)))
     @ApiResponse(responseCode = "500", description = "Terjadi kesalahan pada server")
-
     public ResponseEntity<ResponseWrapper> createPeminjaman(@RequestBody CreatePeminjamanRequest request) {
         try {
             return ResponseEntity.ok(peminjamanService.createPeminjaman(request));
@@ -51,12 +51,14 @@ public class PeminjamanController {
     @Operation(summary = "Get All Peminjaman", description = "Endpoint untuk mengambil semua data peminjaman dengan status menunggu.")
     @ApiResponse(responseCode = "200", description = "Data peminjaman berhasil diambil", content = @Content(schema = @Schema(implementation = GetAllPeminjamanSchema.class)))
     @ApiResponse(responseCode = "500", description = "Terjadi kesalahan pada server")
-
     public ResponseEntity<ResponseWrapper> getAllPeminjaman(
-        @RequestParam(value = "status", required = false, defaultValue= "MENUNGGU") String status
+        @Parameter(description = "Status peminjaman yang ingin diambil. Jika tidak diberikan, akan mengambil semua peminjaman.", example = "MENUNGGU")
+        @RequestParam(value = "status", required = false) String status,
+        @Parameter(description = "Filter ID akun, Jika kosong, akan mengambil peminjaman dari semua akun.", example = "2309106028")
+        @RequestParam(value = "akunId", required = false) String akunId
     ) {
         try {
-            return ResponseEntity.ok(peminjamanService.getAllPeminjaman(status));
+            return ResponseEntity.ok(peminjamanService.getAllPeminjaman(status, akunId));
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode())
                 .body(new ResponseWrapper("error", e.getReason(), null));
@@ -65,11 +67,13 @@ public class PeminjamanController {
         }
     }
 
+
     @GetMapping("detail/{peminjamanId}")
     @Operation(summary = "Get Single Peminjaman", description = "Endpoint untuk mengambil detail peminjaman berdasarkan ID peminjaman.")
     @ApiResponse(responseCode = "200", description = "Detail peminjaman berhasil diambil", content = @Content(schema = @Schema(implementation = GetSinglePeminjamanSchema.class)))
-    
-    public ResponseEntity<ResponseWrapper> getSinglePeminjaman(@PathVariable("peminjamanId") int peminjamanId) {
+    public ResponseEntity<ResponseWrapper> getSinglePeminjaman(
+        @Parameter(description = "ID peminjaman yang ingin diambil", example = "1")    
+        @PathVariable("peminjamanId") int peminjamanId) {
         try {
             return ResponseEntity.ok(peminjamanService.getPeminjamanByPeminjamanId(peminjamanId));
         } catch (ResponseStatusException e) {
@@ -80,11 +84,12 @@ public class PeminjamanController {
         }
     }
 
+
     @GetMapping("/riwayat")
     @Operation(summary = "Get Riwayat Peminjaman", description = "Endpoint untuk mengambil riwayat peminjaman berdasarkan akun ID.")
-
     public ResponseEntity<ResponseWrapper> getRiwayatPeminjaman(
-        @RequestParam("akunId") String akunId
+        @Parameter(description = "Filter ID akun, Jika kosong, akan mengambil riwayat peminjaman dari semua akun.", example = "2309106028")
+        @RequestParam(value= "akunId", required = false) String akunId
     ) {
         try {
             return ResponseEntity.ok(peminjamanService.getAllRiwayatPeminjaman(akunId));
@@ -97,13 +102,13 @@ public class PeminjamanController {
     }
 
 
-
     @PatchMapping("/{peminjamanId}")
     @Operation(summary = "Update Peminjaman", description = "Endpoint untuk memperbarui status peminjaman berdasarkan ID peminjaman.")
-    
     public ResponseEntity<ResponseWrapper> updatePeminjaman(
-        @PathVariable("peminjamanId") int peminjamanId, 
-        @RequestParam("status") Boolean status) {
+        @Parameter(description = "ID peminjaman yang ingin diperbarui", example = "1")
+        @PathVariable("peminjamanId") Integer peminjamanId, 
+        @Parameter(description = "Status peminjaman yang ingin diperbarui", example = "true")
+        @RequestParam("isSetuju") Boolean status) {
         try {
             return ResponseEntity.ok(peminjamanService.updatePeminjamanStatus(peminjamanId, status));
         } catch (ResponseStatusException e) {
@@ -115,7 +120,7 @@ public class PeminjamanController {
     }
     
 
-
+    
     // SCHEMA Ruangan Berhasil Dipinjam
     @Schema(example = """
         {

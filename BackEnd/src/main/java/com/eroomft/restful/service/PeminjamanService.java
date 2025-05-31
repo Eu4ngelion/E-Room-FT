@@ -7,6 +7,7 @@ import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
@@ -15,9 +16,11 @@ import com.eroomft.restful.dto.data.peminjaman.CreatePeminjamanRequest;
 import com.eroomft.restful.dto.data.peminjaman.GetAllPeminjamanResponse;
 import com.eroomft.restful.dto.data.peminjaman.GetSinglePeminjamanResponse;
 import com.eroomft.restful.model.Akun;
+import com.eroomft.restful.model.LogPeminjaman;
 import com.eroomft.restful.model.Peminjaman;
 import com.eroomft.restful.model.Ruangan;
 import com.eroomft.restful.repository.AkunRepository;
+import com.eroomft.restful.repository.LogPeminjamanRepository;
 import com.eroomft.restful.repository.PeminjamanRepository;
 import com.eroomft.restful.repository.RuanganRepository;
 
@@ -27,6 +30,9 @@ public class PeminjamanService {
 
     @Autowired
     private PeminjamanRepository peminjamanRepo;
+
+    @Autowired
+    private LogPeminjamanRepository logPeminjamanRepo;
 
     @Autowired
     private AkunRepository akunRepo;
@@ -120,28 +126,45 @@ public class PeminjamanService {
     }
 
     // Get All Peminjaman For Admin
-    public ResponseWrapper getAllPeminjaman(String status) {
-        List<Peminjaman> peminjamanList;
+    public ResponseWrapper getAllPeminjaman(String status, String akunId) {
         try {
-            // Validasi Status
-            if (status == null || status.isEmpty()) {
-                peminjamanList = peminjamanRepo.findAll();
-            } else {
+            List<Peminjaman> peminjamanList;
+
+            // Validasii Status
+            if (status != null && !status.isEmpty()) {
                 try {
-                    // Menggunakan enum untuk status
-                    Peminjaman.Status statusEnum = Peminjaman.Status.valueOf(status.toUpperCase());
-                    peminjamanList = peminjamanRepo.findByStatus(statusEnum);
+                    Peminjaman.Status.valueOf(status.toUpperCase());
                 } catch (IllegalArgumentException e) {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status peminjaman tidak valid");
                 }
             }
 
-            // Cek apakah ada peminjaman
-            if (peminjamanList.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tidak ada peminjaman ditemukan");
+            // Validate akunId
+            Akun akun = null;
+            if (akunId != null && !akunId.isEmpty()) {
+                Optional<Akun> akunOpt = akunRepo.findById(akunId);
+                if (akunOpt.isEmpty()) {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan");
+                }
+                akun = akunOpt.get();
             }
 
-            // Simpan data peminjaman ke dalam ResponseWrapper
+            // Ambil Data Sesuai Filter
+            if (status != null && !status.isEmpty() && akun != null) { // Filter status dan akun
+                peminjamanList = peminjamanRepo.findByStatusAndAkun(Peminjaman.Status.valueOf(status.toUpperCase()), akun);
+            } else if (status != null && !status.isEmpty()) { // Filter status only
+                peminjamanList = peminjamanRepo.findByStatus(Peminjaman.Status.valueOf(status.toUpperCase()));
+            } else if (akun != null) {
+                peminjamanList = peminjamanRepo.findByAkun(akun); // Filter akun only
+            } else {
+                peminjamanList = peminjamanRepo.findAll(); // No filter, get All
+            }
+
+            if (peminjamanList.isEmpty()) {
+                return new ResponseWrapper("success", "Tidak ada peminjaman ditemukan", null);
+            }
+
+            // Simpan Data ke ResponseWrapper
             List<GetAllPeminjamanResponse> responseList = peminjamanList.stream()
                 .map(p -> new GetAllPeminjamanResponse(
                     p.getPeminjamanId(),
@@ -156,6 +179,35 @@ public class PeminjamanService {
                 )).toList();
 
             return new ResponseWrapper("success", "Daftar peminjaman berhasil diambil", responseList);
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan pada server: " + e.getMessage(), e);
+        }
+    }
+
+    // Get ALl Riwayat Peminjaman
+    public ResponseWrapper getAllRiwayatPeminjaman(String akunId){
+        try {
+            List<LogPeminjaman> LogPeminjamanList; 
+            if (akunId == null || akunId.isEmpty()){
+                LogPeminjamanList = logPeminjamanRepo.findAll();
+            } else {
+                LogPeminjamanList = logPeminjamanRepo.findByAkunIdAndIsDeletedFalse(akunId);
+            }
+
+            // Cek apakah ada riwayat peminjaman
+            if (LogPeminjamanList.isEmpty()) {
+                if (akunId == null || akunId.isEmpty()) {
+                    return new ResponseWrapper("success", "Tidak ada riwayat peminjaman ditemukan", null);
+                } else {
+                    throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tidak ada riwayat peminjaman ditemukan untuk akun ID: " + akunId);
+                }
+            }
+
+            // Simpan data riwayat peminjaman ke dalam ResponseWrapper
+            return new ResponseWrapper("success", "Daftar riwayat peminjaman berhasil diambil", LogPeminjamanList);
+
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
@@ -216,19 +268,87 @@ public class PeminjamanService {
 
             // Set status sesuai dengan parameter
             if (isSetuju) {
+                // Ubah Status Menjadi Berhasil
                 peminjaman.setStatus(Peminjaman.Status.BERHASIL);
+                peminjamanRepo.save(peminjaman);
+                return new ResponseWrapper("success", "Peminjaman berhasil disetujui", null);
             } else {
-                peminjaman.setStatus(Peminjaman.Status.DITOLAK);
+                // Tambahkan Log Peminjaman Baru dengan status DITOLAK
+                LogPeminjaman logPeminjaman = new LogPeminjaman(
+                    peminjaman.getAkun().getAkunId(), 
+                    peminjaman.getAkun().getNama(),
+                    LogPeminjaman.Tipe.valueOf(peminjaman.getRuangan().getTipe().name()),
+                    peminjaman.getRuangan().getGedung(),
+                    peminjaman.getRuangan().getNama(), 
+                    peminjaman.getKeperluan(), 
+                    peminjaman.getTanggalPeminjaman(), 
+                    peminjaman.getWaktuMulai(), 
+                    peminjaman.getWaktuSelesai(), 
+                    LogPeminjaman.Status.DITOLAK, 
+                    false
+                );
+
+                // Simpan Log Peminjaman
+                logPeminjamanRepo.save(logPeminjaman);
+
+                // Hapus dari peminjaman aktif
+                peminjamanRepo.delete(peminjaman);
+                return new ResponseWrapper("success", "Peminjaman berhasil ditolak dan dicatat dalam log", null);
             }
-            peminjamanRepo.save(peminjaman);
-
-            // Kembalikan Response
-            return new ResponseWrapper("success", "Peminjaman berhasil " + (isSetuju ? "disetujui" : "ditolak"), null);
-
         } catch (ResponseStatusException e) {
             throw e;
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan pada server: " + e.getMessage(), e);
         }
     }
+
+    // interval 0, 15, 30, 45 WITA
+    // @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
+
+    // Testing interval 1 menit WITA
+    // @Scheduled(cron = "0 0/1 * * * *", zone = "Asia/Makassar") 
+
+    // Testing fixed rate = 5 detik
+    @Scheduled(fixedRate = 5000)
+    public void updatePeminjamanStatusScheduled() {
+        try {
+            LocalDate today = LocalDate.now();
+            LocalTime now = LocalTime.now();
+
+            List<Peminjaman> peminjamanList = peminjamanRepo.findByTanggalPeminjamanAndWaktuSelesai(today, now);
+            for (Peminjaman peminjaman : peminjamanList) {
+                // Pilih Status Baru
+                Peminjaman.Status newStatus = switch (peminjaman.getStatus()) {
+                    case MENUNGGU -> Peminjaman.Status.DITOLAK;
+                    case BERHASIL -> Peminjaman.Status.SELESAI;
+                    default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status peminjaman tidak valid untuk update");
+                };
+
+                // Tambahkan Log Peminjaman Baru sesuai dengan status baru
+                LogPeminjaman logPeminjaman = new LogPeminjaman();
+                logPeminjaman.setAkunId(peminjaman.getAkun().getAkunId());
+                logPeminjaman.setNamaPeminjam(peminjaman.getAkun().getNama());
+                logPeminjaman.setTipeRuangan(LogPeminjaman.Tipe.valueOf(peminjaman.getRuangan().getTipe().name()));
+                logPeminjaman.setGedung(peminjaman.getRuangan().getGedung());
+                logPeminjaman.setNamaRuangan(peminjaman.getRuangan().getNama());
+                logPeminjaman.setKeperluan(peminjaman.getKeperluan());
+                logPeminjaman.setTanggalPeminjaman(peminjaman.getTanggalPeminjaman());
+                logPeminjaman.setWaktuMulai(peminjaman.getWaktuMulai());
+                logPeminjaman.setWaktuSelesai(peminjaman.getWaktuSelesai());
+                logPeminjaman.setStatus(LogPeminjaman.Status.valueOf(newStatus.name()));
+                logPeminjaman.setIsDeleted(false);
+            
+                logPeminjamanRepo.save(logPeminjaman);
+
+                // Hapus Peminjaman Lama
+                peminjamanRepo.delete(peminjaman);
+            }
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan pada server saat memperbarui status peminjaman: " + e.getMessage(), e);
+        }
+    }
+
+
 }

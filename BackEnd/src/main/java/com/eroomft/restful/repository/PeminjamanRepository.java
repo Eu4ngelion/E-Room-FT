@@ -17,7 +17,7 @@ import com.eroomft.restful.model.Ruangan;
 @Repository
 public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer> {
 
-    // Method  find all peminjaman by akunId
+    // Method  find all peminjaman by akun
     List<Peminjaman> findByAkun(Akun akun);
 
     // Method  find peminjaman by status
@@ -26,7 +26,11 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     // Method find all peminjaman by ruangan
     List<Peminjaman> findByRuangan(Ruangan ruangan);
 
-    // Cek apakah ruangaan tersedia pada tanggal dan waktu tertentu
+
+     //  Method find peminjaman bystatus and akun
+    List<Peminjaman> findByStatusAndAkun(Peminjaman.Status status, Akun akun);
+
+    // Method find peminjaman by tanggal dan waktu selesai
     @Query("""
         SELECT p
         FROM Peminjaman p
@@ -51,6 +55,20 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     @Query("SELECT p FROM Peminjaman p WHERE p.status = :statusMenunggu")
     List<Peminjaman> findAllPeminjamanStatusMenunggu(@Param("statusMenunggu") Peminjaman.Status statusMenunggu);
 
-    
+
+    // @Query("""
+    //     SELECT p from Peminjaman p
+    //     WHERE p.tanggalPeminjaman = :tanggalPeminjaman
+    //     AND p.waktuSelesai > :waktuSelesai
+    //     """)
+    // List<Peminjaman> findByTanggalPeminjamanAndWaktuSelesai(
+    //     @Param("tanggalPeminjaman") LocalDate tanggalPeminjaman,
+    //     @Param("waktuSelesai") LocalTime waktuSelesai
+    // );
+
+
+    @Query("SELECT p FROM Peminjaman p WHERE p.tanggalPeminjaman = :tanggal AND p.waktuSelesai <= :waktu")
+    List<Peminjaman> findByTanggalPeminjamanAndWaktuSelesai(@Param("tanggal") LocalDate tanggal, @Param("waktu") LocalTime waktu);
 
 }
+

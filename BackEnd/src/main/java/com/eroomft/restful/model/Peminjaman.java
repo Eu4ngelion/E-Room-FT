@@ -6,11 +6,11 @@ import java.time.LocalTime;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import jakarta.persistence.GenerationType;
 
 @Entity
 @Table(name = "peminjaman")
@@ -22,7 +22,7 @@ public class Peminjaman {
     @ManyToOne
     @JoinColumn(name = "akun_id", referencedColumnName = "akunId", nullable = false)
     private Akun akun;
-
+    
     @ManyToOne
     @JoinColumn(name = "ruangan_id", referencedColumnName = "ruanganId", nullable = false)
     private Ruangan ruangan;
