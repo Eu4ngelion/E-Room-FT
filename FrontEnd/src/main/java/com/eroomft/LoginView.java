@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
@@ -21,10 +22,16 @@ import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.QueryParameters;
 
 @Route("/login")
 @AnonymousAllowed
-public class LoginView extends VerticalLayout {
+public class LoginView extends VerticalLayout implements BeforeEnterObserver {
+
+    // variable Global
+    String pickedRole;
 
     public LoginView() {
         setSizeFull();
@@ -180,9 +187,34 @@ public class LoginView extends VerticalLayout {
         dialog.open();
     }
 
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+    // Get query parameters from the URL
+    QueryParameters queryParameters = event.getLocation().getQueryParameters();
+
+    // Check if the "role" parameter exists
+    if (queryParameters.getParameters().containsKey("role")) {
+        // Get the value of the "role" parameter
+        String role = queryParameters.getParameters().get("role").get(0);
+        
+
+        // dev debugging
+        Notification.show("Role: " + role, 3500, Notification.Position.MIDDLE);
+
+        // You can now use the role value as needed
+        pickedRole = role;
+    } else
+        //   kembalikan ke route index
+        getUI().ifPresent(ui -> ui.navigate(""));
+    }
+
     // Method untuk request api POST login
     private void login(String akunId, String password) {
         try {
+
+            // DEbugging
+            Notification.show("Picked Role =" + pickedRole);
+
             // Membuat JSON payload
             ObjectMapper mapper = new ObjectMapper();
             String jsonPayload = mapper.writeValueAsString(
@@ -208,15 +240,22 @@ public class LoginView extends VerticalLayout {
 
         // Cek apakah login berhasil
         if ("success".equalsIgnoreCase(loginResponse.getStatus())) {
-            Notification.show("Login berhasil!", 3500, Notification.Position.MIDDLE);
-
+            // cek apakah role sesuai
             // Ambil role dari response Data 
             String role = "";
-            if (loginResponse.getData() instanceof java.util.Map) {
-            Object roleObj = ((java.util.Map<?, ?>) loginResponse.getData()).get("role");
-            if (roleObj != null) {
-                role = roleObj.toString();
+                if (loginResponse.getData() instanceof java.util.Map) {
+                Object roleObj = ((java.util.Map<?, ?>) loginResponse.getData()).get("role");
+                if (roleObj != null) {
+                    role = roleObj.toString();
+                }
             }
+
+            Notification.show("Response Role = " + role);
+
+            // jika role tidak sesai getROle
+            if (!role.equals(pickedRole)){
+                Notification.show("Login Gagal (DEV: Role tidak sesuai) " + role + " != " + pickedRole);
+                return;
             }
 
             // Route default = beranda
