@@ -87,7 +87,7 @@ public class PeminjamanService {
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Format waktu tidak valid");
         }
-        if (waktuMulai.isBefore(LocalTime.now(ZoneId.of("Asia/Makassar")))) {
+        if (tanggalPeminjaman.isEqual(LocalDate.now()) && waktuMulai.isBefore(LocalTime.now(ZoneId.of("Asia/Makassar")))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Waktu mulai tidak boleh sebelum waktu sekarang");
         }
         if (waktuMulai.isAfter(waktuSelesai)) {
@@ -273,7 +273,7 @@ public class PeminjamanService {
             // Set status sesuai dengan parameter
             if (isSetuju) {
                 // Ubah Status Menjadi Berhasil
-                peminjaman.setStatus(Peminjaman.Status.BERHASIL);
+                peminjaman.setStatus(Peminjaman.Status.DIIZINKAN);
                 peminjamanRepo.save(peminjaman);
 
                 LocalDate tanggalPeminjaman = peminjaman.getTanggalPeminjaman();
@@ -337,7 +337,7 @@ public class PeminjamanService {
         }
     }
 
-    // Batalkan Peminjaman (BERHASIL -> DIBATALKAN)
+    // Batalkan Peminjaman (DIIZINKAN -> DIBATALKAN)
     public ResponseWrapper batalkanPeminjaman(int peminjamanId) {
         try {
             // Validasi Peminjaman ID
@@ -353,8 +353,8 @@ public class PeminjamanService {
             Peminjaman peminjaman = peminjamanOpt.get();
 
             // Cek status
-            if (!(peminjaman.getStatus() == Peminjaman.Status.BERHASIL || peminjaman.getStatus() == Peminjaman.Status.MENUNGGU)) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hanya peminjaman dengan status BERHASIL atau MENUNGGU yang dapat dibatalkan");
+            if (!(peminjaman.getStatus() == Peminjaman.Status.DIIZINKAN || peminjaman.getStatus() == Peminjaman.Status.MENUNGGU)) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Hanya peminjaman dengan status DIIZINKAN atau MENUNGGU yang dapat dibatalkan");
             }
             // Proses Pembatalan Peminjaman
             switch (peminjaman.getStatus()) {
@@ -362,43 +362,26 @@ public class PeminjamanService {
                     peminjamanRepo.delete(peminjaman);
                     return new ResponseWrapper("success", "Peminjaman berhasil dibatalkan", null);
                 }
-                case BERHASIL -> {
-                    LocalDate today = LocalDate.now();
-                    LocalTime now = LocalTime.now();
-                    // Log Peminjaman Status SELESAI, untuk waktu yang sudah lewat
-                    if (peminjaman.getTanggalPeminjaman().isBefore(today) || (peminjaman.getTanggalPeminjaman().isEqual(today) && peminjaman.getWaktuMulai().isBefore(now))){
-                        LogPeminjaman logPeminjamanSelesai = new LogPeminjaman(
-                            peminjaman.getAkun().getAkunId(), 
-                            peminjaman.getAkun().getNama(),
-                            LogPeminjaman.Tipe.valueOf(peminjaman.getRuangan().getTipe().name()),
-                            peminjaman.getRuangan().getGedung(),
-                            peminjaman.getRuangan().getNama(), 
-                            peminjaman.getKeperluan(), 
-                            peminjaman.getTanggalPeminjaman(), 
-                            peminjaman.getWaktuMulai(),
-                            (peminjaman.getWaktuSelesai().isBefore(now) ? peminjaman.getWaktuSelesai() : now),
-                            LogPeminjaman.Status.SELESAI, 
-                            false
-                        );
-                        logPeminjamanRepo.save(logPeminjamanSelesai);
-                    } 
-                    // Log Peminjaman Status DIBATALKAN, untuk waktu yang belum lewat
+                case DIIZINKAN -> {
+                    // Log Peminjaman Status DIBATALKAN
                     LogPeminjaman logPeminjamanDibatalkan = new LogPeminjaman(
-                        peminjaman.getAkun().getAkunId(), 
-                        peminjaman.getAkun().getNama(),
-                        LogPeminjaman.Tipe.valueOf(peminjaman.getRuangan().getTipe().name()),
-                        peminjaman.getRuangan().getGedung(),
-                        peminjaman.getRuangan().getNama(), 
-                        peminjaman.getKeperluan(), 
-                        peminjaman.getTanggalPeminjaman(), 
-                        (peminjaman.getWaktuMulai().isAfter(now) ? peminjaman.getWaktuMulai() : now),
-                        peminjaman.getWaktuSelesai(),
-                        LogPeminjaman.Status.DIBATALKAN, 
-                        false
+                    peminjaman.getAkun().getAkunId(),
+                    peminjaman.getAkun().getNama(),
+                    LogPeminjaman.Tipe.valueOf(peminjaman.getRuangan().getTipe().name()),
+                    peminjaman.getRuangan().getGedung(),
+                    peminjaman.getRuangan().getNama(),
+                    peminjaman.getKeperluan(),
+                    peminjaman.getTanggalPeminjaman(),
+                    peminjaman.getWaktuMulai(),
+                    peminjaman.getWaktuSelesai(),
+                    LogPeminjaman.Status.DIBATALKAN,
+                    false
                     );
+                    
                     logPeminjamanRepo.save(logPeminjamanDibatalkan);
                     peminjamanRepo.delete(peminjaman);
                     return new ResponseWrapper("success", "Peminjaman berhasil dibatalkan dan dicatat dalam log", null);
+
                 }
                 default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Peminjaman gagal dibatalkan karena status(" + peminjaman.getStatus() + ") tidak valid");
             }
@@ -430,7 +413,7 @@ public class PeminjamanService {
                 // Pilih Status Baru
                 Peminjaman.Status newStatus = switch (peminjaman.getStatus()) {
                     case MENUNGGU -> Peminjaman.Status.DITOLAK;
-                    case BERHASIL -> Peminjaman.Status.SELESAI;
+                    case DIIZINKAN -> Peminjaman.Status.DIIZINKAN;
                     default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status peminjaman tidak valid untuk update");
                 };
 

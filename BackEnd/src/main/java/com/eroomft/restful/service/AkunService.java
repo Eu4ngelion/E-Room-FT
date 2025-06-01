@@ -3,15 +3,20 @@ package com.eroomft.restful.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.eroomft.restful.dto.ResponseWrapper;
 import com.eroomft.restful.dto.data.akun.CreateAkunRequest;
 import com.eroomft.restful.model.Admin;
 import com.eroomft.restful.model.Akun;
+import com.eroomft.restful.model.LogPeminjaman;
+import com.eroomft.restful.model.Peminjaman;
 import com.eroomft.restful.model.User;
 import com.eroomft.restful.repository.AdminRepository;
 import com.eroomft.restful.repository.AkunRepository;
+import com.eroomft.restful.repository.LogPeminjamanRepository;
+import com.eroomft.restful.repository.PeminjamanRepository;
 import com.eroomft.restful.repository.UserRepository;
 
 @Service
@@ -25,6 +30,12 @@ public class AkunService {
 
     @Autowired
     private AkunRepository akunRepository;
+
+    @Autowired
+    private PeminjamanRepository peminjamanRepo;
+
+    @Autowired
+    private LogPeminjamanRepository logPeminjamanRepo;
     
 
     // Buat Akun (Dev Only)
@@ -82,7 +93,7 @@ public class AkunService {
         }
 
         // Gabungkan Hasil
-        return new ResponseWrapper("success", "Daftar semua akun", new Object[]{akun});
+        return new ResponseWrapper("success", "Daftar semua akun", akun);
     }
 
     // Update Akun (Dev Only)
@@ -115,17 +126,59 @@ public class AkunService {
     }
 
     // Delete Akun (Dev Only)
+    @Transactional
     public ResponseWrapper deleteAkun(String akunId) {
-        // Cari Akun Berdasarkan ID
-        if (adminRepository.existsById(akunId)) {
-            adminRepository.deleteById(akunId);
-            return new ResponseWrapper("success", "Akun Admin berhasil dihapus", null);
-        } else if (userRepository.existsById(akunId)) {
-            userRepository.deleteById(akunId);
+        try {
+            // Cari Akun Berdasarkan ID
+            if (akunId == null || akunId.trim().isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Akun ID tidak boleh kosong");
+            } 
+            // Validasi Akun ID
+            Akun akun = akunRepository.findById(akunId)
+            .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan"));
+            
+            // Hapus peminjaman aktif terkait dahulu
+            Iterable<Peminjaman> peminjamans = peminjamanRepo.findByAkun(akun);
+
+            // Proses Semua Peminjaman Terkait
+            for (Peminjaman peminjaman : peminjamans) {
+                // Jika menunggu, hapus
+                if (peminjaman.getStatus() == Peminjaman.Status.MENUNGGU) {
+                    peminjamanRepo.delete(peminjaman);
+                    continue;
+                }
+
+                //jika status diizinkan, simpan ke log
+                if (peminjaman.getStatus() != Peminjaman.Status.SELESAI) {
+                    // buat logpeminjaman baru
+                    LogPeminjaman logPeminjaman = new LogPeminjaman(
+                        akunId,
+                        akun.getNama(),
+                        LogPeminjaman.Tipe.valueOf(peminjaman.getRuangan().getTipe().name()),
+                        peminjaman.getRuangan().getGedung(),
+                        peminjaman.getRuangan().getNama(),
+                        peminjaman.getKeperluan(),
+                        peminjaman.getTanggalPeminjaman(),
+                        peminjaman.getWaktuMulai(),
+                        peminjaman.getWaktuSelesai(),
+                        LogPeminjaman.Status.DIBATALKAN,
+                        false
+                    );
+                    // simpan log
+                    logPeminjamanRepo.save(logPeminjaman);
+
+                    // hapus peminjaman lama
+                    peminjamanRepo.delete(peminjaman);
+                }
+            }
+            akunRepository.deleteById(akunId);
             return new ResponseWrapper("success", "Akun berhasil dihapus", null);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan");
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan saat menghapus akun", e);
         }
     }
-
 }
+
+

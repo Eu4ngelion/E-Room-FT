@@ -1,5 +1,7 @@
 package com.eroomft.restful.service;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -13,6 +15,7 @@ import org.springframework.web.server.ResponseStatusException;
 import com.eroomft.restful.dto.ResponseWrapper;
 import com.eroomft.restful.dto.data.ruangan.CreateRuanganRequest;
 import com.eroomft.restful.dto.data.ruangan.GetAllRuanganResponse;
+import com.eroomft.restful.dto.data.ruangan.GetJadwalRuanganResponse;
 import com.eroomft.restful.model.Peminjaman;
 import com.eroomft.restful.model.Ruangan;
 import com.eroomft.restful.repository.PeminjamanRepository;
@@ -68,7 +71,7 @@ public class RuanganService {
     }
     
     // Get All Ruangan
-    public ResponseWrapper getAllRuangan(String keyword, String tipe, String gedung, int kapasitas) {
+    public ResponseWrapper getAllRuangan(String keyword, String tipe, String gedung, int kapasitas, LocalDate Tanggal, String waktuMulai, String waktuSelesai) {
         try{
             List<Ruangan> ruanganList;
             if (keyword == null || keyword.isEmpty()) {
@@ -103,6 +106,33 @@ public class RuanganService {
             if (kapasitas > 0) {
                 ruanganList.removeIf(ruangan -> ruangan.getKapasitas() < kapasitas);
             }
+
+            // Filter daftar ruangan yang tidak sedang dipinjam sesuai tanggal dan waktu
+            if (Tanggal != null && waktuMulai != null && waktuSelesai != null) {
+                LocalTime waktuMulaiTime = LocalTime.parse(waktuMulai);
+                LocalTime waktuSelesaiTime = LocalTime.parse(waktuSelesai);
+                // Validasi tanggal dan waktu
+                if (Tanggal.isBefore(LocalDate.now())) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Tanggal tidak boleh sebelum hari ini");
+                }
+
+                if (waktuMulaiTime.isAfter(waktuSelesaiTime)) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Waktu mulai tidak boleh setelah waktu selesai");
+                }
+                List<Ruangan> ruanganSedangDipinjam = new ArrayList<>();
+                for (Ruangan ruangan : ruanganList) {
+                    Optional<Peminjaman> peminjamanAktif = peminjamanRepo.findRuanganSedangDipinjam(ruangan, Tanggal, waktuMulaiTime, waktuSelesaiTime,
+                        Peminjaman.Status.DITOLAK, Peminjaman.Status.SELESAI, Peminjaman.Status.MENUNGGU
+                    );
+                    if (peminjamanAktif.isPresent()) {
+                        ruanganSedangDipinjam.add(ruangan);
+                    }
+                }
+                // Kurangi daftar ruangan sesuai dengan ruangan yang sedang dipinjam
+                ruanganList.removeAll(ruanganSedangDipinjam);
+            } else
+
+
 
             // Jika Ruangan kosong setelah difilter
             if (ruanganList.isEmpty()) {
@@ -185,6 +215,44 @@ public class RuanganService {
         }
     }
 
+    // Get Jadwal Ruangan By Tanggal
+    public ResponseWrapper getJadwalRuanganByTanggal(int ruanganId, LocalDate tanggal){
+        try {
+            // Validasi Id ruangan
+            Optional<Ruangan> optionalRuangan = ruanganRepo.findById(ruanganId);
+            if (optionalRuangan.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ruangan dengan ID " + ruanganId + " tidak ditemukan");
+            }
+            Ruangan ruangan = optionalRuangan.get();
+
+            // Ambil semua peminjaman untuk ruangan ini pada tanggal yang diberikan
+            List<Peminjaman> peminjamanList = peminjamanRepo.findByTanggalPeminjamanStatusBerhasil(
+                tanggal, 
+                Peminjaman.Status.DIIZINKAN
+            );
+            List<GetJadwalRuanganResponse> jadwalRuangan = new ArrayList<>();
+            for (Peminjaman peminjaman : peminjamanList) {
+                if (peminjaman.getRuangan().equals(ruangan)) {
+                    GetJadwalRuanganResponse jadwal = new GetJadwalRuanganResponse(
+                        peminjaman.getWaktuMulai().toString(),
+                        peminjaman.getWaktuSelesai().toString(),
+                        peminjaman.getStatus().name()
+                    );
+                    jadwalRuangan.add(jadwal);
+                }
+            }
+            return new ResponseWrapper("success", "Jadwal ruangan berhasil diambil", jadwalRuangan);
+
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Gagal mengambil jadwal ruangan: " + e.getMessage());
+        }
+
+
+    }
+
+
     // Update Ruangan By Id
     public ResponseWrapper updateRuanganById(int ruanganId, CreateRuanganRequest request) {
         try{
@@ -247,7 +315,7 @@ public class RuanganService {
             }
             Ruangan ruangan = optionalRuangan.get();
 
-            // Hapus semua peminjaman yang terkait dengan ruangan ini
+            // Hapus semua peminjaman aktif yang terkait dengan ruangan ini
             List<Peminjaman> peminjamanList = peminjamanRepo.findByRuangan(ruangan);
             for (Peminjaman peminjaman : peminjamanList) {
                 peminjamanRepo.delete(peminjaman);
@@ -263,6 +331,5 @@ public class RuanganService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Gagal menghapus ruangan: " + e.getMessage());
         }
     }
-
 
 }

@@ -45,7 +45,7 @@ public class Peminjaman {
         DITOLAK,
         DIBATALKAN,
         MENUNGGU,
-        BERHASIL,
+        DIIZINKAN,
         SELESAI
     } 
 

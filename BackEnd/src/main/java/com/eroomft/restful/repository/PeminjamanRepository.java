@@ -17,6 +17,10 @@ import com.eroomft.restful.model.Ruangan;
 @Repository
 public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer> {
 
+    // Method find all peminjaman by tanggal dan status DIIZINKAN
+    @Query("SELECT p FROM Peminjaman p WHERE p.tanggalPeminjaman = :tanggal AND p.status = :status")
+    List<Peminjaman> findByTanggalPeminjamanStatusBerhasil(@Param("tanggal") LocalDate tanggal, @Param("status") Peminjaman.Status status);
+
     // Method  find all peminjaman by akun
     List<Peminjaman> findByAkun(Akun akun);
 
