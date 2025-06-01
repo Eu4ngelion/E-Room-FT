@@ -86,45 +86,62 @@ public class AkunService {
 
     // View All Akun (Dev Only)
     public ResponseWrapper getAllAkun() {
-        // Ambil Semua Akun
-        Iterable<Akun> akun = akunRepository.findAll();
-        if (!akun.iterator().hasNext()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tidak ada akun ditemukan");
-        }
+        try{
+            // Ambil Semua Akun
+            Iterable<Akun> akun = akunRepository.findAll();
+            if (!akun.iterator().hasNext()) {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Tidak ada akun ditemukan");
+            }
 
-        // Gabungkan Hasil
-        return new ResponseWrapper("success", "Daftar semua akun", akun);
+            return new ResponseWrapper("success", "Daftar semua akun", akun);
+
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan saat mengambil akun", e);
+        }
+        
     }
 
     // Update Akun (Dev Only)
     public ResponseWrapper updateAkun(String akunId, CreateAkunRequest request) {
-        // Validasi Input
-        if (request.getPassword() == null || request.getEmail() == null || request.getNama() == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request tidak valid: Semua field harus diisi");
-        }
+        try {
+            // Validasi Input
+            if (request.getPassword() == null || request.getEmail() == null || request.getNama() == null) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Request tidak valid: Semua field harus diisi");
+            }
 
-        // Cari Akun Berdasarkan ID
-        if (adminRepository.existsById(akunId)) {
-            Admin admin = adminRepository.findById(akunId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan"));
-            admin.setPassword(request.getPassword());
-            admin.setEmail(request.getEmail());
-            admin.setNama(request.getNama());
-            adminRepository.save(admin);
-            return new ResponseWrapper("success", "Akun berhasil diperbarui", null);
-        } else if (userRepository.existsById(akunId)) {
-            User user = userRepository.findById(akunId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan"));
-            user.setPassword(request.getPassword());
-            user.setEmail(request.getEmail());
-            user.setNama(request.getNama());
-            userRepository.save(user);
-            return new ResponseWrapper("success", "Akun berhasil diperbarui", null);
-        } else {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan");
+            // Cari Akun Berdasarkan ID
+            if (adminRepository.existsById(akunId)) {
+                Admin admin = adminRepository.findById(akunId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan"));
+                admin.setPassword(request.getPassword());
+                admin.setEmail(request.getEmail());
+                admin.setNama(request.getNama());
+                adminRepository.save(admin);
+                return new ResponseWrapper("success", "Akun berhasil diperbarui", null);
+            } else if (userRepository.existsById(akunId)) {
+                User user = userRepository.findById(akunId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan"));
+                user.setPassword(request.getPassword());
+                user.setEmail(request.getEmail());
+                user.setNama(request.getNama());
+                userRepository.save(user);
+
+                return new ResponseWrapper("success", "Akun berhasil diperbarui", null);
+
+            } else {
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan");
+            }
+            
+        } catch (ResponseStatusException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Terjadi kesalahan saat memperbarui akun", e);
         }
     }
 
+    
     // Delete Akun (Dev Only)
     @Transactional
     public ResponseWrapper deleteAkun(String akunId) {

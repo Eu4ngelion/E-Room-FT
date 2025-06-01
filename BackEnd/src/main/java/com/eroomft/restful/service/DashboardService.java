@@ -19,16 +19,20 @@ public class DashboardService {
     private PeminjamanRepository peminjamanRepo;
 
     public ResponseWrapper getDashboardData(){
-        long jumlahRuangan = ruanganRepo.count();
-        int jumlahPeminjamanHariIni = peminjamanRepo.countPeminjamanToday();
-        int jumlahPeminjamanMenunggu = peminjamanRepo.countPeminjamanMenunggu(Peminjaman.Status.MENUNGGU);
+        try {
+            long jumlahRuangan = ruanganRepo.count();
+            int jumlahPeminjamanHariIni = peminjamanRepo.countPeminjamanToday();
+            int jumlahPeminjamanMenunggu = peminjamanRepo.countPeminjamanMenunggu(Peminjaman.Status.MENUNGGU);
 
-        // kembalikan data dalam ResponseWrapper
-        ResponseWrapper response = new ResponseWrapper();
-        response.setStatus("success");
-        response.setMessage("Data Dasbor berhasil diambil");
-        response.setData(new GetDashboardResponse(jumlahRuangan,jumlahPeminjamanHariIni,jumlahPeminjamanMenunggu));
-        return response;
+            // kembalikan data dalam ResponseWrapper
+            ResponseWrapper response = new ResponseWrapper();
+            response.setStatus("success");
+            response.setMessage("Data Dasbor berhasil diambil");
+            response.setData(new GetDashboardResponse(jumlahRuangan,jumlahPeminjamanHariIni,jumlahPeminjamanMenunggu));
+            return response;
+            
+        } catch (Exception e) {
+            return new ResponseWrapper("error", "Gagal mengambil data dasbor: " + e.getMessage(), null);
+        }
     }
-    
 }
