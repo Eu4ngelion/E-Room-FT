@@ -4,6 +4,8 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
@@ -46,7 +48,28 @@ public class Verifikasipeminjaman extends VerticalLayout {
         Label nama = new Label("Ahmad Zuhair Nur Aiman - 2309106025");
         nama.getStyle().set("font-weight", "600").set("font-size", "16px");
 
-        Label detail = new Label("Ruang Kelas C102 | 09/09/2025 | 10.00–12.00");
+        // Detail dengan ikon
+        HorizontalLayout ruang = new HorizontalLayout(
+            new Icon(VaadinIcon.BUILDING),
+            new Label("Ruang Kelas C102")
+        );
+        ruang.setAlignItems(Alignment.CENTER);
+
+        HorizontalLayout tanggal = new HorizontalLayout(
+            new Icon(VaadinIcon.CALENDAR),
+            new Label("09/09/2025")
+        );
+        tanggal.setAlignItems(Alignment.CENTER);
+
+        HorizontalLayout jam = new HorizontalLayout(
+            new Icon(VaadinIcon.CLOCK),
+            new Label("10.00–12.00")
+        );
+        jam.setAlignItems(Alignment.CENTER);
+
+        HorizontalLayout detail = new HorizontalLayout(ruang, tanggal, jam);
+        detail.setSpacing(true);
+        detail.setAlignItems(Alignment.CENTER);
 
         info.add(nama, detail);
 
@@ -84,14 +107,13 @@ public class Verifikasipeminjaman extends VerticalLayout {
         dialogLayout.setSpacing(false);
         dialogLayout.setWidthFull();
 
-        // Judul - Ditengah
         Label header = new Label("Detail Peminjaman Ruangan");
         header.getStyle()
             .set("font-size", "24px")
             .set("font-weight", "800")
             .set("margin-bottom", "20px");
 
-        dialogLayout.setAlignSelf(Alignment.CENTER, header); // Ini kunci tengahnya
+        dialogLayout.setAlignSelf(Alignment.CENTER, header);
         dialogLayout.add(header);
 
         dialogLayout.add(createLabeledField("Nama Peminjam", "Ahmad Zuhair Nur Aiman"));
@@ -99,7 +121,6 @@ public class Verifikasipeminjaman extends VerticalLayout {
         dialogLayout.add(createLabeledField("Keperluan", "Matkul pengganti"));
         dialogLayout.add(createLabeledField("Ruangan yang ingin dipinjam", "Ruang Kelas C102"));
 
-        // Dua kolom: Tanggal dan Jam
         HorizontalLayout tanggalJam = new HorizontalLayout();
         tanggalJam.setWidthFull();
         tanggalJam.setSpacing(true);
@@ -109,10 +130,9 @@ public class Verifikasipeminjaman extends VerticalLayout {
         );
         dialogLayout.add(tanggalJam);
 
-        // Tombol Aksi - Ditengah
         HorizontalLayout actions = new HorizontalLayout();
         actions.setSpacing(true);
-        actions.setWidthFull(); // Tambahkan ini
+        actions.setWidthFull();
         actions.setJustifyContentMode(JustifyContentMode.CENTER);
 
         Button tolak = new Button("Tolak", e -> dialog.close());
@@ -137,7 +157,6 @@ public class Verifikasipeminjaman extends VerticalLayout {
         dialog.add(dialogLayout);
         return dialog;
     }
-
 
     private VerticalLayout createLabeledField(String labelText, String value) {
         Label label = new Label(labelText);
