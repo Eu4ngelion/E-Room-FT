@@ -1,158 +1,161 @@
 package com.eroomft;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Paragraph;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.H1;
+import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@Route("verifikasipeminjaman")
+@Route("Verifikasi")
 @PageTitle("Verifikasi Peminjaman")
-public class Verifikasipeminjaman extends HorizontalLayout {
+public class Verifikasipeminjaman extends VerticalLayout {
 
     public Verifikasipeminjaman() {
-        setSizeFull();
-        getStyle().set("background-color", "#fdebd0");
+        setWidthFull();
+        setJustifyContentMode(JustifyContentMode.CENTER);
+        setAlignItems(Alignment.CENTER);
+        getStyle().set("background-color", "#f7f7f7");
 
-        VerticalLayout sidebar = createSidebar();
-        VerticalLayout content = createContent();
+        H1 title = new H1("Verifikasi Peminjaman");
+        title.getStyle().set("margin", "2rem 0");
+        add(title);
 
-        add(sidebar, content);
-    }
-
-    private VerticalLayout createSidebar() {
-        VerticalLayout sidebar = new VerticalLayout();
-        sidebar.setWidth("70px");
-        sidebar.setPadding(false);
-        sidebar.setSpacing(false);
-        sidebar.setAlignItems(Alignment.CENTER);
-        sidebar.getStyle().set("background-color", "#ffffff");
-
-        sidebar.add(createSidebarButton(VaadinIcon.MENU, false));
-        sidebar.add(createSidebarButton(VaadinIcon.DASHBOARD, false));
-        sidebar.add(createSidebarButton(VaadinIcon.CLIPBOARD_TEXT, false));
-        sidebar.add(createSidebarButton(VaadinIcon.FILE_TEXT, true)); // Active
-        sidebar.add(createSidebarButton(VaadinIcon.REFRESH, false));
-
-        return sidebar;
-    }
-
-    private Button createSidebarButton(VaadinIcon icon, boolean isActive) {
-        Icon ic = icon.create();
-        ic.setSize("24px");
-        ic.getStyle().set("color", "#000000");
-
-        Button button = new Button(ic);
-        button.getStyle()
-            .set("background-color", isActive ? "#f58220" : "transparent")
-            .set("border", "none")
-            .set("border-radius", "8px")
-            .set("padding", "12px")
-            .set("cursor", "pointer")
-            .set("box-shadow", isActive ? "0 0 0 2px #f58220" : "none");
-
-        button.setWidth("48px");
-        button.setHeight("48px");
-
-        return button;
-    }
-
-
-    private VerticalLayout createContent() {
-        VerticalLayout content = new VerticalLayout();
-        content.setWidthFull();
-        content.setPadding(true);
-        content.setSpacing(true);
-        content.getStyle().set("padding", "1em");
-
-        Div header = new Div();
-        header.getStyle()
-            .set("background-color", "#ffffff")
-            .set("padding", "1.5em")
-            .set("border-radius", "10px")
-            .setWidth("1750px");
-
-        H2 title = new H2("Verifikasi Peminjaman");
-        title.getStyle().set("color", "#e65c00").set("margin", "0");
-
-        Paragraph desc = new Paragraph("Tinjau dan validasi setiap peminjaman yang diajukan.");
-        desc.getStyle().set("margin", "0");
-
-        header.add(title, desc);
-        content.add(header);
-
-        for (int i = 0; i < 5; i++) {
-            content.add(createRequestCard(
-                "MUHAMMAD AGILL FIRMANSYAH",
-                "2309106000",
-                "Ruang Kelas C202",
-                "2025-09-09",
-                "12.00–15.00"
-            ));
-        }
-
-        return content;
-    }
-
-    private Component createRequestCard(String nama, String nim, String ruang, String tanggal, String waktu) {
-        VerticalLayout card = new VerticalLayout();
+        // Kartu utama
+        HorizontalLayout card = new HorizontalLayout();
+        card.setWidth("90%");
+        card.setPadding(true);
+        card.setSpacing(true);
         card.getStyle()
-            .set("background-color", "#ffffff")
-            .set("border", "10px solid #f58220")
+            .set("background", "#fff")
             .set("border-radius", "10px")
-            .set("padding", "1em")
-            .set("margin", "0.5em 0");
-        card.setPadding(false);
-        card.setSpacing(false);
+            .set("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
+            .set("padding", "1.5rem")
+            .set("display", "flex")
+            .set("justify-content", "space-between")
+            .set("align-items", "center");
 
-        H4 name = new H4(nama + " – " + nim);
-        name.getStyle().set("margin", "0").set("font-weight", "bold");
+        // Info peminjam
+        VerticalLayout info = new VerticalLayout();
+        info.setPadding(false);
+        info.setSpacing(true);
 
-        HorizontalLayout infoRow = new HorizontalLayout(
-            createIconText(VaadinIcon.BUILDING, ruang),
-            createIconText(VaadinIcon.CALENDAR, tanggal),
-            createIconText(VaadinIcon.CLOCK, waktu)
-        );
-        infoRow.setAlignItems(Alignment.CENTER);
-        infoRow.setSpacing(true);
+        Label nama = new Label("Ahmad Zuhair Nur Aiman - 2309106025");
+        nama.getStyle().set("font-weight", "600").set("font-size", "16px");
 
-        Button detailBtn = new Button("Detail Permohonan");
+        Label detail = new Label("Ruang Kelas C102 | 09/09/2025 | 10.00–12.00");
+
+        info.add(nama, detail);
+
+        // Tombol aksi
+        HorizontalLayout tombol = new HorizontalLayout();
+        tombol.setSpacing(true);
+
+        Button status = new Button("Menunggu");
+        status.getStyle()
+            .set("background-color", "#fff933")
+            .set("color", "#000")
+            .set("font-weight", "600");
+
+        Button detailBtn = new Button("Detail Peminjaman");
         detailBtn.getStyle()
-            .set("background-color", "#f58220")
-            .set("color", "#ffffff")
-            .set("border-radius", "5px");
+            .set("background-color", "#f97316")
+            .set("color", "#fff")
+            .set("font-weight", "600");
 
-        detailBtn.getElement().addEventListener("mouseenter", e -> {
-            detailBtn.getStyle().set("background-color", "#cc5200");
-        });
+        Dialog detailDialog = createStyledDialog();
+        detailBtn.addClickListener(e -> detailDialog.open());
 
-        detailBtn.getElement().addEventListener("mouseleave", e -> {
-            detailBtn.getStyle().set("background-color", "#FF7700");
-        });
+        tombol.add(status, detailBtn);
+        card.add(info, tombol);
 
-        HorizontalLayout bottomRow = new HorizontalLayout(infoRow, detailBtn);
-        bottomRow.setWidthFull();
-        bottomRow.setAlignItems(Alignment.CENTER);
-        bottomRow.expand(infoRow);
-
-        card.add(name, bottomRow);
-        return card;
+        add(card, detailDialog);
     }
 
-    private Component createIconText(VaadinIcon icon, String text) {
-        Icon ic = icon.create();
-        ic.setSize("18px");
-        Span label = new Span(text);
-        HorizontalLayout wrapper = new HorizontalLayout(ic, label);
-        wrapper.setAlignItems(Alignment.CENTER);
-        return wrapper;
+    private Dialog createStyledDialog() {
+        Dialog dialog = new Dialog();
+        dialog.setWidth("500px");
+
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.setPadding(true);
+        dialogLayout.setSpacing(false);
+        dialogLayout.setWidthFull();
+
+        // Judul - Ditengah
+        Label header = new Label("Detail Peminjaman Ruangan");
+        header.getStyle()
+            .set("font-size", "24px")
+            .set("font-weight", "800")
+            .set("margin-bottom", "20px");
+
+        dialogLayout.setAlignSelf(Alignment.CENTER, header); // Ini kunci tengahnya
+        dialogLayout.add(header);
+
+        dialogLayout.add(createLabeledField("Nama Peminjam", "Ahmad Zuhair Nur Aiman"));
+        dialogLayout.add(createLabeledField("NIM", "2309106025"));
+        dialogLayout.add(createLabeledField("Keperluan", "Matkul pengganti"));
+        dialogLayout.add(createLabeledField("Ruangan yang ingin dipinjam", "Ruang Kelas C102"));
+
+        // Dua kolom: Tanggal dan Jam
+        HorizontalLayout tanggalJam = new HorizontalLayout();
+        tanggalJam.setWidthFull();
+        tanggalJam.setSpacing(true);
+        tanggalJam.add(
+            createLabeledField("Tanggal", "09/09/2025"),
+            createLabeledField("Jam", "10.00–12.00")
+        );
+        dialogLayout.add(tanggalJam);
+
+        // Tombol Aksi - Ditengah
+        HorizontalLayout actions = new HorizontalLayout();
+        actions.setSpacing(true);
+        actions.setWidthFull(); // Tambahkan ini
+        actions.setJustifyContentMode(JustifyContentMode.CENTER);
+
+        Button tolak = new Button("Tolak", e -> dialog.close());
+        tolak.getStyle()
+            .set("background-color", "#ef4444")
+            .set("color", "white")
+            .set("font-weight", "600")
+            .set("border-radius", "8px")
+            .set("width", "120px");
+
+        Button izinkan = new Button("Izinkan", e -> dialog.close());
+        izinkan.getStyle()
+            .set("background-color", "#22c55e")
+            .set("color", "white")
+            .set("font-weight", "600")
+            .set("border-radius", "8px")
+            .set("width", "120px");
+
+        actions.add(tolak, izinkan);
+        dialogLayout.add(actions);
+
+        dialog.add(dialogLayout);
+        return dialog;
+    }
+
+
+    private VerticalLayout createLabeledField(String labelText, String value) {
+        Label label = new Label(labelText);
+        label.getStyle().set("font-weight", "700").set("margin-bottom", "4px");
+
+        TextField field = new TextField();
+        field.setValue(value);
+        field.setReadOnly(true);
+        field.setWidthFull();
+        field.getStyle()
+            .set("background-color", "#f3f4f6")
+            .set("border-radius", "8px");
+
+        VerticalLayout layout = new VerticalLayout(label, field);
+        layout.setPadding(false);
+        layout.setSpacing(false);
+        layout.setWidthFull();
+
+        return layout;
     }
 }

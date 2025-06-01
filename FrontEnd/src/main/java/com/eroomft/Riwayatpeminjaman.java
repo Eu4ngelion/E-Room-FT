@@ -2,10 +2,7 @@ package com.eroomft;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.H4;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -14,132 +11,91 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@Route("riwayatpeminjaman")
+@Route("Riwayat")
 @PageTitle("Riwayat Peminjaman")
-public class Riwayatpeminjaman extends HorizontalLayout {
+public class Riwayatpeminjaman extends VerticalLayout {
 
     public Riwayatpeminjaman() {
+        setSpacing(true);
+        setPadding(true);
         setSizeFull();
-        getStyle().set("background-color", "#fdebd0");
-
-        // Sidebar
-        VerticalLayout sidebar = createSidebar();
-        // Main Content
-        VerticalLayout content = createContent();
-
-        add(sidebar, content);
-    }
-
-    private VerticalLayout createSidebar() {
-        VerticalLayout sidebar = new VerticalLayout();
-        sidebar.setWidth("70px");
-        sidebar.setPadding(false);
-        sidebar.setSpacing(false);
-        sidebar.setAlignItems(Alignment.CENTER);
-        sidebar.getStyle().set("background-color", "#ffffff");
-
-        sidebar.add(createSidebarButton(VaadinIcon.MENU, false));
-        sidebar.add(createSidebarButton(VaadinIcon.DASHBOARD, false));
-        sidebar.add(createSidebarButton(VaadinIcon.CLIPBOARD_TEXT, false));
-        sidebar.add(createSidebarButton(VaadinIcon.FILE_TEXT, false));
-        sidebar.add(createSidebarButton(VaadinIcon.REFRESH, true)); // Active
-
-        return sidebar;
-    }
-
-    private Button createSidebarButton(VaadinIcon icon, boolean isActive) {
-        Icon ic = icon.create();
-        ic.setSize("24px");
-        ic.getStyle().set("color", "#000000");
-
-        Button button = new Button(ic);
-        button.getStyle()
-            .set("background-color", isActive ? "#f58220" : "transparent")
-            .set("border", "none")
-            .set("border-radius", "8px")
-            .set("padding", "12px")
-            .set("cursor", "pointer");
-
-        button.setWidth("48px");
-        button.setHeight("48px");
-
-        return button;
-    }
-
-    private VerticalLayout createContent() {
-        VerticalLayout content = new VerticalLayout();
-        content.setWidthFull();
-        content.setPadding(true);
-        content.setSpacing(true);
-        content.getStyle().set("padding", "1em");
-
-        // Header
-        Div header = new Div();
-        header.getStyle().set("background-color", "#ffffff").set("padding", "1.5em").set("border-radius", "10px").setWidth("1750px");
+        setAlignItems(Alignment.CENTER);
+        getStyle().set("background-color", "#f6f6f6");
 
         H2 title = new H2("Riwayat Peminjaman");
-        title.getStyle().set("color", "#e65c00").set("margin", "0");
+        title.getStyle()
+            .set("font-weight", "bold")
+            .set("font-size", "32px")
+            .set("margin-top", "30px")
+            .set("margin-bottom", "40px");
 
-        Paragraph desc = new Paragraph("Pantau seluruh riwayat peminjaman ruangan secara menyeluruh.");
-        desc.getStyle().set("margin", "0");
+        add(title);
 
-        header.add(title, desc);
-        content.add(header);
+        add(createCard("Ahmad Zuhair Nur Aiman - 2309106025", "Ruang Kelas C102", 
+            "09/09/2025", "10.00–12.00", "Diizinkan", "#66e36f"));
 
-        // Cards (contoh dengan status campuran)
-        content.add(createHistoryCard("MUHAMMAD AGILL FIRMANSYAH", "2309106000", "Ruang Kelas C202", "2025-09-09", "12.00–15.00", "disetujui"));
-        content.add(createHistoryCard("MUHAMMAD AGILL FIRMANSYAH", "2309106000", "Ruang Kelas C202", "2025-09-09", "12.00–15.00", "disetujui"));
-        content.add(createHistoryCard("MUHAMMAD AGILL FIRMANSYAH", "2309106000", "Ruang Kelas C202", "2025-09-09", "12.00–15.00", "ditolak"));
-        content.add(createHistoryCard("MUHAMMAD AGILL FIRMANSYAH", "2309106000", "Ruang Kelas C202", "2025-09-09", "12.00–15.00", "ditolak"));
-        content.add(createHistoryCard("MUHAMMAD AGILL FIRMANSYAH", "2309106000", "Ruang Kelas C202", "2025-09-09", "12.00–15.00", "ditolak"));
+        add(createCard("Celio Arga Rumahorbo - 2309106039", "Ruang Kelas C304", 
+            "10/06/2025", "09.00–12.00", "Ditolak", "#f25567"));
 
-        return content;
+        add(createCard("Celio Arga Rumahorbo - 2309106039", "Ruang Kelas C306", 
+            "10/05/2025", "11.00–14.00", "Dibatalkan", "#f57c1f"));
+
+        add(createCard("Celio Arga Rumahorbo - 2309106039", "Ruang Kelas C306", 
+            "10/05/2025", "11.00–14.00", "Selesai", "#c5c5c5"));
     }
 
-    private Component createHistoryCard(String nama, String nim, String ruang, String tanggal, String waktu, String status) {
+    private Component createCard(String nama, String ruangan, String tanggal, String waktu, String status, String color) {
         VerticalLayout card = new VerticalLayout();
-        card.getStyle()
-            .set("background-color", "#ffffff")
-            .set("border", "10px solid #f58220")
-            .set("border-radius", "10px")
-            .set("padding", "1em")
-            .set("margin", "0.5em 0");
-        card.setPadding(false);
+        card.setWidth("85%");
+        card.setPadding(true);
         card.setSpacing(false);
+        card.getStyle()
+            .set("background", "white")
+            .set("border-radius", "10px")
+            .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)")
+            .set("padding", "15px")
+            .set("margin-bottom", "10px");
 
-        H4 name = new H4(nama + " – " + nim);
-        name.getStyle().set("margin", "0").set("font-weight", "bold");
+        Span namaLabel = new Span(nama);
+        namaLabel.getStyle()
+            .set("font-weight", "bold")
+            .set("font-size", "16px");
 
-        HorizontalLayout infoRow = new HorizontalLayout(
-            createIconText(VaadinIcon.BUILDING, ruang),
-            createIconText(VaadinIcon.CALENDAR, tanggal),
-            createIconText(VaadinIcon.CLOCK, waktu)
-        );
-        infoRow.setAlignItems(Alignment.CENTER);
-        infoRow.setSpacing(true);
+        HorizontalLayout infoLayout = new HorizontalLayout();
+        infoLayout.setSpacing(true);
+        infoLayout.setAlignItems(Alignment.CENTER);
 
-        Button statusBtn = new Button();
-        statusBtn.setText(status.equals("disetujui") ? "Setujui" : "Tolak");
-        statusBtn.getStyle()
-            .set("background-color", status.equals("disetujui") ? "#28a745" : "#f44336")
-            .set("color", "#ffffff")
-            .set("border-radius", "5px");
+        infoLayout.add(createIconWithText(VaadinIcon.BUILDING, ruangan));
+        infoLayout.add(createIconWithText(VaadinIcon.CALENDAR, tanggal));
+        infoLayout.add(createIconWithText(VaadinIcon.CLOCK, waktu));
 
-        HorizontalLayout bottomRow = new HorizontalLayout(infoRow, statusBtn);
-        bottomRow.setWidthFull();
-        bottomRow.setAlignItems(Alignment.CENTER);
-        bottomRow.expand(infoRow);
+        Button statusButton = new Button(status);
+        statusButton.getStyle()
+            .set("background-color", color)
+            .set("color", "black")
+            .set("font-weight", "bold")
+            .set("border-radius", "8px")
+            .set("height", "40px")
+            .set("min-width", "105px");
+        statusButton.setEnabled(false); // biar tidak bisa diklik
 
-        card.add(name, bottomRow);
+        HorizontalLayout bottomLayout = new HorizontalLayout();
+        bottomLayout.setWidthFull();
+        bottomLayout.setJustifyContentMode(JustifyContentMode.BETWEEN);
+        bottomLayout.setAlignItems(Alignment.CENTER);
+        bottomLayout.add(infoLayout, statusButton);
+
+        card.add(namaLabel, bottomLayout);
         return card;
     }
 
-    private Component createIconText(VaadinIcon icon, String text) {
-        Icon ic = icon.create();
-        ic.setSize("18px");
-        Span label = new Span(text);
-        HorizontalLayout wrapper = new HorizontalLayout(ic, label);
-        wrapper.setAlignItems(Alignment.CENTER);
-        return wrapper;
+    private HorizontalLayout createIconWithText(VaadinIcon icon, String text) {
+        Icon vaadinIcon = icon.create();
+        vaadinIcon.getStyle().set("margin-right", "5px");
+
+        Span span = new Span(text);
+        HorizontalLayout layout = new HorizontalLayout(vaadinIcon, span);
+        layout.setAlignItems(Alignment.CENTER);
+        return layout;
     }
 }
