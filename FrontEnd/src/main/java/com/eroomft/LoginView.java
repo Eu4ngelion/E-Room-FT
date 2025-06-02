@@ -46,10 +46,10 @@ public class LoginView extends VerticalLayout {
         H2 login = new H2("Login");
         login.setWidth("350px");
         login.getStyle()
-                .set("font-weight", "600")
-                .set("text-align", "center")
                 .set("font-family", " 'poppins', sans-serif")
+                .set("font-weight", "550")
                 .set("font-size", "36px")
+                .set("text-align", "center")
                 .set("margin-bottom", "10px")
                 .setWidth("400px");
     
@@ -57,9 +57,9 @@ public class LoginView extends VerticalLayout {
         text.setWidth("400px");
         text.getStyle()
                 .set("text-align", "center")
-                .set("font-size", "16px")
                 .set("font-family", " 'Plus Jakarta Sans', sans-serif")
-                .set("font-weight", "bold")
+                .set("font-weight", "550")
+                .set("font-size", "16px")
                 .set("margin-bottom", "10px");
     
         TextField txtBox = new TextField("NIM/NIP");
@@ -69,8 +69,9 @@ public class LoginView extends VerticalLayout {
                 .set("margin-bottom", "10px")
                 .set("font-size", "16px")
                 .set("font-color", "black")
-                .set("font-weight", "600")
-                .set("font-family", " 'poppins', sans-serif");
+                .set("font-family", "'Poppins', sans-serif")
+                .set("font-weight", "500")
+                .set("font-size", "16px");
         
         PasswordField txtPass = new PasswordField("Kata Sandi");
         txtPass.setWidth("400px");
@@ -79,15 +80,18 @@ public class LoginView extends VerticalLayout {
                 .set("margin-bottom", "20px")
                 .set("font-size", "16px")
                 .set("font-color", "black")
-                .set("font-weight", "600")
-                .set("font-family", " 'poppins', sans-serif"); 
+                .set("font-family", "'Poppins', sans-serif")
+                .set("font-weight", "500")
+                .set("font-size", "16px");
     
         Button btnLogin = new Button("Login");
         btnLogin.setWidth("400px");
         btnLogin.getStyle()
                 .set("background-color", "#FF9F4C")
                 .set("color", "white")
-                .set("font-weight", "bold")
+                .set("font-family", "'Poppins', sans-serif")
+                .set("font-weight", "500")
+                .set("font-size", "16px")
                 .set("border", "none")
                 .set("border-radius", "5px")
                 .set("cursor", "pointer")
@@ -106,6 +110,9 @@ public class LoginView extends VerticalLayout {
         Kembali.setText("Kembali Ke Beranda");
         Kembali.getStyle()
                 .set("color", "black")
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-weight", "550")
+                .set("font-size", "12px")
                 .set("margin-top", "10px");
     
         btnLogin.addClickListener(e -> {
@@ -151,6 +158,7 @@ public class LoginView extends VerticalLayout {
             .set("font-weight", "600")
             .set("text-align", "center")
             .set("font-family", " 'Plus Jakarta Sans', sans-serif")
+            .set("color", "Black")
             .set("display", "block")
             .set("margin-bottom", "10px")
             .set("white-space", "pre-line");
@@ -223,13 +231,13 @@ public class LoginView extends VerticalLayout {
             String targetRoute = "beranda";
             // Hanya atur ke dasbor jika role adalah ADMIN
             if ("ADMIN".equalsIgnoreCase(role)) {
-            targetRoute = "dasbor";
+            targetRoute = "adminDashboard";
             }
 
             String finalTargetRoute = targetRoute;
             getUI().ifPresent(ui -> ui.navigate(finalTargetRoute));
         } else { // Jika login gagal
-            errorPopup("NIM atau Kata Sandi salah, Silahkan masukkan \nkembali kredensial yang benar");
+            errorPopup("NIM/NIP atau Kata Sandi salah");
         }
     } 
     // Tambahkan Exception untuk jenis-jenis error lainnya kalau perlu

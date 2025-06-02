@@ -67,7 +67,7 @@ public class Landing extends VerticalLayout {
         subText.getStyle()
                 .set("margin", "0")
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-size", "24px")
+                .set("font-size", "20px")
                 .set("font-weight", "600");
 
         blokNamaWeb.add(namaWeb, subText);
@@ -97,6 +97,7 @@ public class Landing extends VerticalLayout {
                 .set("color", "#FF7700")
                 .set("font-weight", "600")
                 .set("font-family", " 'poppins', sans-serif")
+                .set("text-shadow", "2px 2px 4px rgba(0, 0, 0, 0.3)")
                 .set("font-size", "50px")
                 .set("text-align", "center");
 
@@ -113,9 +114,9 @@ public class Landing extends VerticalLayout {
         kotak.setSpacing(true);
 
         kotak.add(
-                kotakLogin("Mahasiswa", "/frontend/mahasiswa.png", "login"),
-                kotakLogin("Dosen", "/frontend/dosen.png", "login"),
-                kotakLogin("Staff Akademik", "/frontend/staff.png", "login")
+                kotakLogin("Mahasiswa", "/frontend/mahasiswa.png", "login?role=mahasiswa"),
+                kotakLogin("Dosen", "/frontend/dosen.png", "login?role=dosen"),
+                kotakLogin("Staff Akademik", "/frontend/staff.png", "login?role=staff")
         );
 
         content.add(judul, deskripsi, kotak);
@@ -146,7 +147,7 @@ public class Landing extends VerticalLayout {
                 .set("color", "black")
                 .set("font-family", " 'poppins', sans-serif ")
                 .set("font-size", "16px")
-                .set("font-weight", "550")
+                .set("font-weight", "500")
                 .set("border", "none")
                 .set("border-radius", "0")
                 .set("cursor", "pointer");
@@ -195,7 +196,8 @@ public class Landing extends VerticalLayout {
     
         Paragraph roleText = new Paragraph(role);
         roleText.getStyle()
-                .set("font-weight", "bold")
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-weight", "600")
                 .set("margin", "10px 0 0 0");
     
         Button btnLogin = new Button("Login", event ->
@@ -203,9 +205,13 @@ public class Landing extends VerticalLayout {
         );
         btnLogin.getStyle()
                 .set("background-color", "#FF7700")
+                .set("font-family", " 'poppins', sans-serif ")
+                .set("font-size", "16px")
+                .set("font-weight", "500")
                 .set("color", "white")
                 .set("cursor", "pointer")
-                .set("border-radius", "10px");
+                .set("border-radius", "10px")
+                .set("box-shadow", "0px 6px 8px rgba(0,0,0,0.3)");
 
         btnLogin.getElement().addEventListener("mouseenter", e -> {
             btnLogin.getStyle().set("background-color", "#cc5200");
