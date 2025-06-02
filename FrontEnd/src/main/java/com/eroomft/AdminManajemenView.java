@@ -1,20 +1,22 @@
 package com.eroomft;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
-import com.github.javaparser.printer.lexicalpreservation.Added;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -36,14 +38,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
-import com.vaadin.flow.component.upload.Receiver;
-
-import java.io.File;
-import java.net.URLEncoder;
-import java.util.HashSet;
-import java.util.UUID;
-
-import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
@@ -52,6 +46,13 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 public class AdminManajemenView extends AppLayout {
 
     public AdminManajemenView() {
+        // Cek Role
+        String role = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (role == null || !role.equalsIgnoreCase("admin")) {
+            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
+            UI.getCurrent().navigate("");
+            return;
+        }
         createDrawer();
         setContent(createContent());
     }
@@ -72,12 +73,6 @@ public class AdminManajemenView extends AppLayout {
         title.getStyle()
             .set("font-weight", "bold")
             .set("font-size", "1.2rem");
-
-        // Icon caretIcon = VaadinIcon.ANGLE_LEFT.create();
-        // caretIcon.getStyle()
-        //     .set("cursor", "pointer")
-        //     .set("margin-left", "auto")
-        //     .set("font-size", "1.2rem");
 
         HorizontalLayout logoSection = new HorizontalLayout(logo, title);
         logoSection.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -203,8 +198,8 @@ public class AdminManajemenView extends AppLayout {
         button.addClickListener(event -> {
             // Logika untuk keluar dari aplikasi
             Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.MIDDLE);
-            // Tambahkan logika untuk mengarahkan ke halaman login atau melakukan logout
-            UI.getCurrent().navigate("login");
+            UI.getCurrent().getSession().setAttribute("role", null); // Clear session role
+            UI.getCurrent().navigate(""); 
         });
         return button;
 
@@ -219,11 +214,6 @@ public class AdminManajemenView extends AppLayout {
 
     // Isi Konten
     private Component createContent() {
-        //INI UNTUK PERULANGAN, MISAL RUANGAN BARU DITAMBAHKAN
-
-        // for (RoomData room : rooms) {
-        //     roomCardsLayout.add(createRoomCard(room));
-        // }
 
         VerticalLayout content = new VerticalLayout();
         content.setPadding(true);
