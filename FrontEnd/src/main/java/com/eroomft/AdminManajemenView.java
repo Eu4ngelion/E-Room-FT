@@ -4,14 +4,16 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 
+import com.github.javaparser.printer.lexicalpreservation.Added;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
@@ -38,12 +40,13 @@ import com.vaadin.flow.component.upload.Receiver;
 
 import java.io.File;
 import java.net.URLEncoder;
+import java.util.HashSet;
+import java.util.UUID;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+
 
 @Route("admin/manajemen")
 public class AdminManajemenView extends AppLayout {
@@ -211,6 +214,8 @@ public class AdminManajemenView extends AppLayout {
     // Variabel Global room
     List<RoomData> rooms = new ArrayList<>();
     Div roomGrid;
+    Set<String> distinctGedung;
+    // variabel global menyimpan distinct gedung
 
     // Isi Konten
     private Component createContent() {
@@ -254,15 +259,14 @@ public class AdminManajemenView extends AppLayout {
         // Fetch data ruangan
         fetchRoomData(null, null, null);
 
+        // Fetch Distinct Gedung
+        fetchDistinctGedung();
+
         // Search Section
         HorizontalLayout searchSection = createSearchSection();
 
         // Membuat grid untuk menampilkan ruangan
         roomGrid = createRoomGrid();
-
-        // INI UNTUK NAMPILKAN YANG BARU DITAMBAHKAN
-        // Div roomGrid = new Div(roomCardsLayout);
-        // roomGrid.getStyle().set("display", "grid").set("grid-template-columns", "repeat(auto-fill, minmax(300px, 1fr))").set("gap", "1rem");
 
         content.add(headerBox, searchSection, roomGrid);
         return content;
@@ -311,7 +315,19 @@ public class AdminManajemenView extends AppLayout {
         ComboBox<String> gedungFilter = new ComboBox<>();
         gedungFilter.setPlaceholder("Gedung");
         gedungFilter.addClassNames("no-gray-background");
-        gedungFilter.setItems("Semua", "Gedung A", "Gedung B", "Gedung C");
+        // set items pada gedungFilter dengan distinct gedung
+        if (distinctGedung == null || distinctGedung.isEmpty()) {
+            distinctGedung = new HashSet<>();
+            for (RoomData room : rooms) {
+                if (room != null && room.getGedung() != null) {
+                    distinctGedung.add(room.getGedung());
+                }
+            }
+        }
+        // Convert Set to List and add "Semua" option
+        List<String> gedungList = new ArrayList<>(distinctGedung);
+        gedungList.add(0, "Semua"); // Add "Semua" as the first item
+        gedungFilter.setItems(gedungList.toArray(String[]::new));
         gedungFilter.getStyle()
             .set("background-color", "white")
             .set("--lumo-contrast-5pct", "white")
@@ -384,7 +400,7 @@ public class AdminManajemenView extends AppLayout {
 
             // Tipe Ruangan
             ComboBox<String> tipeRuanganCombo = new ComboBox<>("Tipe Ruangan");
-            tipeRuanganCombo.setItems("Ruang Kelas", "Ruang Seminar", "Ruang Rapat", "Lab");
+            tipeRuanganCombo.setItems("Kelas", "Seminar", "Rapat", "Lab");
             tipeRuanganCombo.setPlaceholder("Pilih Tipe Ruangan");
             tipeRuanganCombo.setWidthFull();
             tipeRuanganCombo.getStyle()
@@ -420,12 +436,31 @@ public class AdminManajemenView extends AppLayout {
 
             // Gedung
             ComboBox<String> gedungCombo = new ComboBox<>("Gedung");
-            gedungCombo.setItems("Gedung A", "Gedung B", "Gedung C", "Gedung D");
+            // Set items pada gedungCombo dengan distinct gedung
+            if (distinctGedung == null || distinctGedung.isEmpty()) {
+                distinctGedung = new HashSet<>();
+                for (RoomData room : rooms) {
+                    if (room != null && room.getGedung() != null) {
+                        distinctGedung.add(room.getGedung());
+                    }
+                }
+            }
+            // Convert Set to List and add "Semua" option
+            List<String> listGedung = new ArrayList<>(distinctGedung);
+            gedungList.add(0, "Semua"); // Add "Semua" as the first item
+            gedungCombo.setItems(listGedung.toArray(String[]::new));
             gedungCombo.setPlaceholder("Contoh : Gedung A");
             gedungCombo.setWidth("50%");
             gedungCombo.getStyle()
                 .set("--lumo-border-radius", "8px")
                 .setHeight("57px");
+            gedungCombo.setAllowCustomValue(true);
+            gedungCombo.addCustomValueSetListener(event -> {
+            String customGedung = event.getDetail();
+            if (customGedung != null && !customGedung.trim().isEmpty()) {
+                gedungCombo.setValue(customGedung);
+            }
+});
 
             // Lokasi
             TextField lokasiField = new TextField("Lokasi");
@@ -449,22 +484,21 @@ public class AdminManajemenView extends AppLayout {
                 .set("font-size", "14px");
 
             Upload upload = new Upload();
+            File uploadDir = new File("FrontEnd/src/main/resources/static/uploads");
+            if (!uploadDir.exists()) {
+                uploadDir.mkdir();
+            }
 
-            upload.setReceiver(new Receiver() {
-            @Override
-                public OutputStream receiveUpload(String filename, String mimeType) {
-                    try {
-                        File uploadDir = new File("uploads");
-                        if (!uploadDir.exists()) {
-                            uploadDir.mkdir();
-                        }
-                        File file = new File(uploadDir, filename);
-                        uploadedFileName = filename;
-                        return new FileOutputStream(file);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
+            upload.setReceiver((filename, mimeType) -> {
+                try {
+                    String uniqueId = UUID.randomUUID().toString();
+                    filename = uniqueId + "_" + filename; 
+                    File file = new File(uploadDir, filename);
+                    uploadedFileName = filename;
+                    return new FileOutputStream(file);
+                } catch (IOException e) {
+                    Notification.show("Error uploading file: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+                    return null;
                 }
             });
 
@@ -541,6 +575,9 @@ public class AdminManajemenView extends AppLayout {
                 if (kapasitasField.getValue() == null || kapasitasField.getValue().trim().isEmpty()) {
                     Notification.show("Kapasitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
                     return;
+                } else if (!kapasitasField.getValue().matches("\\d+")) {
+                    Notification.show("Kapasitas harus berupa angka!", 3000, Notification.Position.MIDDLE);
+                    return;
                 }
 
                 // Validasi Fasilitas
@@ -550,8 +587,9 @@ public class AdminManajemenView extends AppLayout {
                 }
 
                 // Validasi Gedung
-                if (gedungCombo.getValue() == null || gedungCombo.getValue().trim().isEmpty()) {
-                    Notification.show("Pilih gedung terlebih dahulu!", 3000, Notification.Position.MIDDLE);
+                String selectedGedung = gedungCombo.getValue();
+                if (selectedGedung == null || selectedGedung.trim().isEmpty() || selectedGedung.equalsIgnoreCase("Lainnya")) {
+                    Notification.show("Pilih gedung terlebih dahulu, atau masukkan nama gedung custom!", 3000, Notification.Position.MIDDLE);
                     return;
                 }
 
@@ -587,7 +625,29 @@ public class AdminManajemenView extends AppLayout {
 
                 // roomCardsLayout.add(createRoomCard(newRoom));
 
-                Notification.show("Ruangan berhasil ditambahkan!", 3000, Notification.Position.MIDDLE);
+                // gunakan API POST /api/v1/ruangan untuk membuat ruangan baru
+                postNewRoom(
+                    tipeRuanganCombo.getValue(),
+                    namaRuanganField.getValue(),
+                    kapasitasField.getValue(),
+                    fasilitasField.getValue(),
+                    gedungCombo.getValue(),
+                    lokasiField.getValue(),
+                    uploadedFileName
+                );
+                // Setelah berhasil, bisa menampilkan notifikasi atau melakukan tindakan lain
+                roomGrid.removeAll();
+
+                fetchRoomData(null, null, null);
+                // Tambahkan semua ruangan ke grid
+                for (RoomData room : rooms) {
+                    if (room == null) {
+                        continue; // Skip null room data
+                    }
+                    roomGrid.add(createRoomCard(room));
+                }
+
+                // Notification.show("Ruangan berhasil ditambahkan!", 3000, Notification.Position.MIDDLE);
                 tambahRuanganDialog.close();
             });
 
@@ -667,7 +727,7 @@ public class AdminManajemenView extends AppLayout {
             .set("margin-bottom", "1rem")
             .set("width", "100%");
 
-        // Sample room data, untuk coba tampilan aja, ntar backend yang lanjutkan
+        // Sample room data, untuk coba tampilan aja
         // List<RoomData> rooms = new ArrayList<>(Arrays.asList(
         //     new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg"),
         //     new RoomData("Ruang Seminar", " D202", "50", "AC, Proyektor, Meja, Kursi", "Gedung D", "Lantai 2", "seminar_d202.jpg"),
@@ -680,12 +740,6 @@ public class AdminManajemenView extends AppLayout {
         // ));
 
         // cek apakah ada data = null
-        /*
-        * {
-        "status": "success",
-        "message": "Tidak ada ruangan yang ditemukan",
-        "data": null
-         */
         if (rooms == null || rooms.isEmpty()) {
             Notification.show("Tidak ada ruangan yang ditemukan", 3000, Notification.Position.MIDDLE);
             grid.getElement().removeAllChildren();
@@ -713,7 +767,7 @@ public class AdminManajemenView extends AppLayout {
             .set("box-shadow", "var(--lumo-box-shadow-xs)")
             .set("overflow", "hidden");
 
-        // Room image placeholder
+        // Room image 
         Div imageDiv = new Div();
         imageDiv.getStyle()
             .set("height", "150px")
@@ -725,19 +779,26 @@ public class AdminManajemenView extends AppLayout {
             .set("font-size", "2rem")
             .set("border-radius", "8px 8px 0 0")
             .set("overflow", "hidden");
-        imageDiv.add(new Icon(VaadinIcon.BUILDING));
         
-        // INI KALO MAU NGAMBIL DARI FILE UPLOADS NYA, CUMA MASIH ERROR
+        // Use the image from uploads if available
+        if (room.getImage() != null && !room.getImage().isEmpty()) {
 
-        // if (room.getImage() != null && !room.getImage().isEmpty()) {
-        //     Image roomImage = new Image("/uploads/" + room.getImage(), room.getName());
-        //     roomImage.setHeight("150px");
-        //     roomImage.setWidth("100%");
-        //     roomImage.getStyle().set("object-fit", "cover");
-        //     imageDiv.add(roomImage);
-        // } else {
-        //     imageDiv.add(new Icon(VaadinIcon.BUILDING));
-        // }
+            // Corrected path for serving static resources in Vaadin
+            Image localImage = new Image("/uploads/" + room.getImage(), room.getImage());
+            imageDiv.add(localImage);
+            localImage.getStyle()
+                .set("width", "100%")
+                .set("height", "100%")
+                .set("object-fit", "cover")
+                .set("border-radius", "8px 8px 0 0");
+        } else {
+            // Placeholder icon if no image is available
+            imageDiv.add(new Icon(VaadinIcon.BUILDING));
+        }
+
+        // Add the image to the card
+        
+        card.add(imageDiv);
 
         // Card content
         Div content = new Div();
@@ -787,7 +848,7 @@ public class AdminManajemenView extends AppLayout {
 
             // Fields (sama kayak tambah form)
             ComboBox<String> tipeRuanganCombo = new ComboBox<>("Tipe Ruangan");
-            tipeRuanganCombo.setItems("Ruang Kelas", "Ruang Seminar", "Ruang Rapat", "Lab");
+            tipeRuanganCombo.setItems("Kelas", "Seminar", "Rapat", "Lab");
             tipeRuanganCombo.setPlaceholder("Pilih Tipe Ruangan");
             tipeRuanganCombo.setWidthFull();
             tipeRuanganCombo.getStyle().set("--lumo-border-radius", "8px");
@@ -814,7 +875,17 @@ public class AdminManajemenView extends AppLayout {
             gedungLokasiLayout.setSpacing(true);
 
             ComboBox<String> gedungCombo = new ComboBox<>("Gedung");
-            gedungCombo.setItems("Gedung A", "Gedung B", "Gedung C", "Gedung D");
+            // Set items pada gedungCombo dengan distinct gedung
+            if (distinctGedung == null || distinctGedung.isEmpty()) {
+                distinctGedung = new HashSet<>();
+                for (RoomData r : rooms) {
+                    if (r != null && r.getGedung() != null) {
+                        distinctGedung.add(r.getGedung());
+                    }
+                }
+            }
+            List<String> gedungList = new ArrayList<>(distinctGedung);
+            gedungCombo.setItems(gedungList.toArray(String[]::new));
             gedungCombo.setPlaceholder("Contoh : Gedung A");
             gedungCombo.setWidth("50%");
             gedungCombo.getStyle()
@@ -839,21 +910,22 @@ public class AdminManajemenView extends AppLayout {
                 .set("font-size", "14px");
 
             Upload upload = new Upload();
-            upload.setReceiver(new Receiver() {
-            @Override
-                public OutputStream receiveUpload(String filename, String mimeType) {
-                    try {
-                        File uploadDir = new File("src/java/com/eroomft/uploads");
-                        if (!uploadDir.exists()) {
-                            uploadDir.mkdir();
-                        }
-                        File file = new File(uploadDir, filename);
-                        uploadedFileName = filename;
-                        return new FileOutputStream(file);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                        return null;
+            upload.setReceiver((filename, mimeType) -> {
+                try {
+                    // Create the uploads directory if it doesn't exist
+                    File uploadDir = new File("FrontEnd/src/main/resources/static/uploads");
+                    if (!uploadDir.exists()) {
+                        uploadDir.mkdirs();
                     }
+
+                    String uniqueId = UUID.randomUUID().toString();
+                    filename = uniqueId + "_" + filename; 
+                    File file = new File(uploadDir, filename);
+                    uploadedFileName = filename;
+                    return new FileOutputStream(file);
+                } catch (IOException e) {
+                    Notification.show("Error uploading file: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+                    return null;
                 }
             });
 
@@ -869,6 +941,25 @@ public class AdminManajemenView extends AppLayout {
             upload.getElement().executeJs(
                 "this.querySelector('[part=\"drop-label\"]').textContent = 'Choose File';"
             );
+
+            upload.addFileRejectedListener(event -> {
+                File file = new File("FrontEnd/src/main/resources/static/uploads/" + uploadedFileName);
+                if (file.exists()) {
+                    file.delete();
+                }
+            });
+
+            upload.addFailedListener(event -> {
+                File file = new File("FrontEnd/src/main/resources/static/uploads/" + uploadedFileName);
+                if (file.exists()) {
+                    file.delete();
+                }
+            });
+
+            upload.addSucceededListener(event -> {
+                // WIP
+            });
+
 
             uploadSection.add(uploadgambar, upload);
 
@@ -890,6 +981,13 @@ public class AdminManajemenView extends AppLayout {
 
             batalBtn.addClickListener(e -> {
                 editRuanganDialog.close();
+                // hapus gambar dari upload
+                if (uploadedFileName != null && !uploadedFileName.isEmpty()) {
+                    File file = new File("FrontEnd/src/main/resources/static/uploads/" + uploadedFileName);
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
             });
 
             Button simpanBtn = new Button("Simpan");
@@ -934,7 +1032,42 @@ public class AdminManajemenView extends AppLayout {
                 }
 
                 // Simpan update ke database atau service
-                Notification.show("Ruangan berhasil diperbarui!", 3000, Notification.Position.MIDDLE);
+                // request body untuk update ruangan
+                //
+                //   'http://localhost:8081/api/v1/ruangan/1' \
+                //   -H 'accept: application/json' \
+                //   -H 'Content-Type: application/json' \
+                //   -d '{
+                //   "tipe": "KELAS",
+                //   "nama": "C103",
+                //   "kapasitas": 30,
+                //   "fasilitas": "AC, Proyektor, Papan Tulis",
+                //   "gedung": "Gedung C",
+                //   "lokasi": "Lantai 3",
+                //   "pathGambar": "/uploads/B101.jpg"
+                putUpdateRoom(
+                    room.getRuanganId(),
+                    tipeRuanganCombo.getValue(),
+                    namaRuanganField.getValue(),
+                    kapasitasField.getValue(),
+                    fasilitasField.getValue(),
+                    gedungCombo.getValue(),
+                    lokasiField.getValue(),
+                    uploadedFileName
+                );
+
+
+                // Notification.show("Ruangan berhasil diperbarui!", 3000, Notification.Position.MIDDLE);
+                // refresh the page
+
+                roomGrid.removeAll();
+                fetchRoomData("", "", "");
+                for (RoomData r : rooms) {
+                    if (r == null) {
+                        continue; // Skip null room data
+                    }
+                    roomGrid.add(createRoomCard(r));
+                }
                 editRuanganDialog.close();
             });
 
@@ -1045,7 +1178,26 @@ public class AdminManajemenView extends AppLayout {
 
             // Tombol Hapus
             Button hapusBtn = new Button("Hapus", e -> {
-                Notification.show("Data berhasil dihapus.", 3000, Notification.Position.MIDDLE);
+                // Hapus data ruangan dari database
+                deleteRoomById(Integer.parseInt(room.getRuanganId()));
+
+                // Hapus gambar dari uploads
+                if (room.getImage() != null && !room.getImage().isEmpty()) {
+                    File file = new File("FrontEnd/src/main/resources/static/uploads/" + room.getImage());
+                    if (file.exists()) {
+                        file.delete();
+                    }
+                }
+
+                // fetch ulang data grid
+                roomGrid.removeAll();
+                fetchRoomData("", "", "");
+                for (RoomData r : rooms) {
+                    if (r == null) {
+                        continue; // Skip null 
+                    }
+                    roomGrid.add(createRoomCard(r));
+                }
                 confirmDialog.close();
             });
             hapusBtn.getStyle()
@@ -1140,7 +1292,6 @@ public class AdminManajemenView extends AppLayout {
     }
 
 
-
     // GET All data ruangan
     private void fetchRoomData(String searchQuery, String typeFilter, String gedungFilter) {
         try {
@@ -1159,11 +1310,7 @@ public class AdminManajemenView extends AppLayout {
             
             // Check if the response is valid
             if (response.statusCode() == 200) {
-                // if response.data is null or empty, show notification
-                //                 {
-                //   "status": "success",
-                //   "message": "Tidak ada ruangan yang ditemukan",
-                //   "data": null
+
                 // Check if the response is valid
                 parseRoomData(response.body());
             } else {
@@ -1178,6 +1325,39 @@ public class AdminManajemenView extends AppLayout {
         }
     }
     
+    // GET Distinct Gedung
+    private void fetchDistinctGedung() {
+        try {
+            // Create HTTP CLIENT
+            HttpClient client = HttpClient.newHttpClient();
+            
+            // Create URI Request
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8081/api/v1/ruangan/gedung"))
+                .GET()
+                .header("Accept", "application/json")
+                .build();
+            
+            // Send the request and get the response
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            // Check if the response is valid
+            if (response.statusCode() == 200) {
+                // Parse the JSON response to get distinct gedung
+                String jsonData = response.body();
+                parseDistinctGedung(jsonData);
+            } else {
+                // Show an error notification if the response is invalid
+                Notification.show("Failed to fetch gedung data: " + response.statusCode(), 
+                                 3000, Notification.Position.MIDDLE);
+            }
+        } catch (IOException | InterruptedException e) {
+            // Show an error notification if there is an error connecting to the server
+            Notification.show("Error connecting to server: " + e.getMessage(), 
+                     3000, Notification.Position.MIDDLE);
+        }
+    }
+
     private URI createUri(String searchQuery, String typeFilter, String gedungFilter) {
         
         String uri = "http://localhost:8081/api/v1/ruangan";
@@ -1211,6 +1391,125 @@ public class AdminManajemenView extends AppLayout {
         return URI.create(uri);
     }
     
+    // POST Ruangan Baru
+    private void postNewRoom(String tipe, String nama, String kapasitas, String fasilitas, String gedung, String lokasi, String image) {
+        try {
+            // Create HTTP CLIENT
+            HttpClient client = HttpClient.newHttpClient();
+            
+            // Create JSON body
+            String jsonBody = String.format(
+                "{\"tipe\":\"%s\",\"nama\":\"%s\",\"kapasitas\":%s,\"fasilitas\":\"%s\",\"gedung\":\"%s\",\"lokasi\":\"%s\",\"pathGambar\":\"%s\"}",
+                tipe.toUpperCase(), nama, kapasitas, fasilitas, gedung, lokasi, image
+            );
+
+            // Create URI Request
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8081/api/v1/ruangan"))
+                .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .build();
+            
+            // Send the request and get the response
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            // Check if the response is valid
+            if (response.statusCode() == 200) {
+                Notification.show("Ruangan berhasil dibuat", 3000, Notification.Position.MIDDLE);
+            } else if (response.statusCode() == 500) {
+                Notification.show("Gagal Membuat Ruangan Baru: Kesalahan Server", 
+                                 3000, Notification.Position.MIDDLE);
+                Notification.show(jsonBody, 3000, Notification.Position.MIDDLE);
+            } else {
+                Notification.show("Gagal Membuat Ruangan Baru: " + response.statusCode(), 
+                                 3000, Notification.Position.MIDDLE);
+            }
+        } catch (IOException | InterruptedException e) {
+            Notification.show("Error connecting to server: " + e.getMessage(), 
+                     3000, Notification.Position.MIDDLE);
+        }
+    }
+
+    // PUT Update Ruangan
+    private void putUpdateRoom(String ruanganId, String tipe, String nama, String kapasitas, String fasilitas, String gedung, String lokasi, String image) {
+        try {
+            // Create HTTP CLIENT
+            HttpClient client = HttpClient.newHttpClient();
+
+
+            
+            // Create JSON body
+            String jsonBody = String.format(
+                "{\"tipe\":\"%s\",\"nama\":\"%s\",\"kapasitas\":%s,\"fasilitas\":\"%s\",\"gedung\":\"%s\",\"lokasi\":\"%s\",\"pathGambar\":\"%s\"}",
+                tipe, nama, kapasitas, fasilitas, gedung, lokasi, image
+            );
+
+            // Create URI Request
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId))
+                .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
+                .header("Content-Type", "application/json")
+                .header("Accept", "application/json")
+                .build();
+
+            
+            // Send the request and get the response
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            // Check if the response is valid
+            if (response.statusCode() == 200) {
+                Notification.show("Ruangan berhasil diperbarui", 3000, Notification.Position.MIDDLE);
+                fetchRoomData(null, null, null); // Refresh room data
+            } else {
+                Notification.show("Gagal memperbarui ruangan: " + response.statusCode(), 
+                                 3000, Notification.Position.MIDDLE);
+            }
+        } catch (IOException | InterruptedException e) {
+            Notification.show("Error connecting to server: " + e.getMessage(), 
+                     3000, Notification.Position.MIDDLE);
+        }
+        
+    }
+
+    // DELETE Ruangan
+    // request example:
+    //     curl -X 'DELETE' \
+    //   'http://localhost:8081/api/v1/ruangan/99' \
+    //   -H 'accept: application/json'
+    private void deleteRoomById(int ruanganId) {
+        try {
+            // Create HTTP CLIENT
+            HttpClient client = HttpClient.newHttpClient();
+            
+            // Create URI Request
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId))
+                .DELETE()
+                .header("Accept", "application/json")
+                .build();
+            
+            // Send the request and get the response
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            // Check if the response is valid
+            if (response.statusCode() == 200) {
+                Notification.show("Ruangan berhasil dihapus", 3000, Notification.Position.MIDDLE);
+                // Refresh room data 
+                roomGrid.removeAll();
+                fetchRoomData(null, null, null); 
+            } else {
+                Notification.show("Gagal menghapus ruangan: " + response.statusCode(), 
+                                 3000, Notification.Position.MIDDLE);
+            }
+        } catch (IOException | InterruptedException e) {
+            Notification.show("Error connecting to server: " + e.getMessage(), 
+                     3000, Notification.Position.MIDDLE);
+        }
+        
+    }
+
+    // Parser
     private void parseRoomData(String jsonData) {
         try {
             // Simple JSON parsing - assuming response is a JSON array
@@ -1239,7 +1538,7 @@ public class AdminManajemenView extends AppLayout {
                 String fasilitas = extractJsonValue(roomObj, "fasilitas");
                 String gedung = extractJsonValue(roomObj, "gedung");
                 String lokasi = extractJsonValue(roomObj, "lokasi");
-                String pathGambar = extractJsonValue(roomObj, "gambar");
+                String pathGambar = extractJsonValue(roomObj, "pathGambar");
                 
                 rooms.add(new RoomData(ruanganId, tipe, nama, kapasitas, fasilitas, gedung, lokasi, pathGambar));
             }
@@ -1249,7 +1548,26 @@ public class AdminManajemenView extends AppLayout {
         }
     }
     
-    // Extract JSON value using simple string parsing
+    private void parseDistinctGedung(String jsonData) {
+        try {
+            // Parse JSON response to a list of distinct gedung using org.json library
+            org.json.JSONObject jsonObject = new org.json.JSONObject(jsonData);
+            org.json.JSONArray gedungArray = jsonObject.getJSONArray("data");
+
+            // Simpan ke distinct gedung
+            if (distinctGedung != null) {
+                distinctGedung.clear();
+            } 
+            distinctGedung = new HashSet<>();
+            for (int i = 0; i < gedungArray.length(); i++) {
+                distinctGedung.add(gedungArray.getString(i));
+            }
+        } catch (Exception e) {
+            Notification.show("Error parsing gedung data: " + e.getMessage(),
+                3000, Notification.Position.MIDDLE);
+        }
+    }
+
     
     private String extractJsonValue(String json, String key) {
         try {
@@ -1296,8 +1614,6 @@ public class AdminManajemenView extends AppLayout {
 
 
 
-
-    // Method to parse JSON response to List<RoomData>
 
     // Data class for room information
     private static class RoomData {
