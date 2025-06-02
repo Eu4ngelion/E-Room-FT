@@ -114,9 +114,9 @@ public class Landing extends VerticalLayout {
         kotak.setSpacing(true);
 
         kotak.add(
-                kotakLogin("Mahasiswa", "/frontend/mahasiswa.png", "login?role=mahasiswa"),
-                kotakLogin("Dosen", "/frontend/dosen.png", "login?role=dosen"),
-                kotakLogin("Staff Akademik", "/frontend/staff.png", "login?role=staff")
+                kotakLogin("Mahasiswa", "/frontend/mahasiswa.png", "login?role=MAHASISWA"),
+                kotakLogin("Dosen", "/frontend/dosen.png", "login?role=DOSEN"),
+                kotakLogin("Staff Akademik", "/frontend/staff.png", "login?role=ADMIN")
         );
 
         content.add(judul, deskripsi, kotak);

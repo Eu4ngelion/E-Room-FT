@@ -32,6 +32,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
     // variable Global
     String pickedRole;
+    private TextField txtBox;
+    private String idLabel = "NIM/NIP";
+
 
     public LoginView() {
         setSizeFull();
@@ -69,7 +72,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 .set("font-size", "16px")
                 .set("margin-bottom", "10px");
     
-        TextField txtBox = new TextField("NIM/NIP");
+        txtBox = new TextField("NIM/NIP");
         txtBox.setWidth("400px");
         txtBox.setPlaceholder("Masukkan NIM/NIP");
         txtBox.getStyle()
@@ -127,7 +130,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
             String password = txtPass.getValue();
     
             if (username.isEmpty() || password.isEmpty()) {
-                Notification.show("NIM/NIP dan password harus diisi!", 3500, Notification.Position.MIDDLE);
+                errorPopup(idLabel + " dan password harus diisi!");
             }
             else{
                 login(username, password);
@@ -204,13 +207,19 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     if (queryParameters.getParameters().containsKey("role")) {
         // Get the value of the "role" parameter
         String role = queryParameters.getParameters().get("role").get(0);
-        
 
-        // dev debugging
-        Notification.show("Role: " + role, 3500, Notification.Position.MIDDLE);
 
         // You can now use the role value as needed
         pickedRole = role;
+        if ("MAHASISWA".equalsIgnoreCase(role)) {
+            idLabel = "NIM";
+        } else if ("DOSEN".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role)) {
+            idLabel = "NIP";
+        } else {
+            idLabel = "NIM/NIP";
+        }
+        txtBox.setLabel(idLabel);
+        txtBox.setPlaceholder("Masukkan " + idLabel);        
     } else
         //   kembalikan ke route index
         getUI().ifPresent(ui -> ui.navigate(""));
@@ -219,9 +228,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     // Method untuk request api POST login
     private void login(String akunId, String password) {
         try {
-
-            // DEbugging
-            Notification.show("Picked Role =" + pickedRole);
 
             // Membuat JSON payload
             ObjectMapper mapper = new ObjectMapper();
@@ -258,11 +264,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 }
             }
 
-            Notification.show("Response Role = " + role);
-
             // jika role tidak sesai getROle
             if (!role.equals(pickedRole)){
-                Notification.show("Login Gagal (DEV: Role tidak sesuai) " + role + " != " + pickedRole);
+               errorPopup("Akun anda tidak ditemukan");
                 return;
             }
 
@@ -276,7 +280,8 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
             String finalTargetRoute = targetRoute;
             getUI().ifPresent(ui -> ui.navigate(finalTargetRoute));
         } else { // Jika login gagal
-            errorPopup("NIM/NIP atau Kata Sandi salah");
+            errorPopup(idLabel + " atau Kata Sandi salah");
+
         }
     } 
     // Tambahkan Exception untuk jenis-jenis error lainnya kalau perlu
