@@ -17,7 +17,6 @@ public class Application implements AppShellConfigurator {
     public Clock clock() {
         return Clock.systemDefaultZone(); 
     }
-
     public static void main(String[] args) {
         SpringApplication.run(Application.class, args);
     }

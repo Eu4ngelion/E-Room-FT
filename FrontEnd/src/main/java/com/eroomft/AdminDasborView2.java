@@ -35,9 +35,10 @@ public class AdminDasborView2 extends AppLayout {
     public AdminDasborView2() {
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || !role.equalsIgnoreCase("admin")) {
-            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
-            UI.getCurrent().navigate("");
-            return;
+            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.BOTTOM_END);
+            UI.getCurrent().access(() -> {
+                UI.getCurrent().navigate("");
+            });
         }
 
         createDrawer();
@@ -341,11 +342,16 @@ public class AdminDasborView2 extends AppLayout {
     private Component createStatusCell(String statusText, String width) {
         Span status = new Span(statusText);
         status.getStyle()
-            .set("background", "#F7B733")
             .set("color", "black")
             .set("border-radius", "20px")
             .set("padding", "4px 12px")
             .set("font-weight", "bold");
+
+        if (statusText.equalsIgnoreCase("diizinkan")) {
+            status.getStyle().set("background", "#34C759");
+        } else {
+            status.getStyle().set("background", "#F7B733");
+        }
 
         Div wrapper = new Div(status);
         wrapper.setWidth(width);

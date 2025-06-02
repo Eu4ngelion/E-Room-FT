@@ -187,8 +187,8 @@ public class SidebarComponent extends VerticalLayout {
         return switch (route) {
             case "landing" -> Landing.class;
             case "Manajemen" -> ManajemenView.class;
-            case "Verifikasi" -> Verifikasipeminjaman.class;
-            case "Riwayat" -> Riwayatpeminjaman.class;
+            case "Verifikasi" -> AdminVerifikasiView.class;
+            case "Riwayat" -> AdminRiwayatView.class;
             case "login" -> LoginView.class;
             default -> null;
         };

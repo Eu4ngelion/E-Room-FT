@@ -1,11 +1,13 @@
 package com.eroomft;
 
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
@@ -15,6 +17,30 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 public class Landing extends VerticalLayout {
 
     public Landing() {
+        // jika masih ada session,
+        String sessionRole = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (sessionRole != null) {
+                Notification.show("Log Out Terlebih Dahulu", 3000, Notification.Position.BOTTOM_END);
+                UI.getCurrent().access(() -> {
+                switch (sessionRole.toLowerCase()) {
+                        case "mahasiswa":
+                        case "dosen":
+                        UI.getCurrent().navigate("user/beranda");
+                        break;
+                        case "admin":
+                        UI.getCurrent().navigate("admin/dashboard");
+                        break;
+                        default:
+                        Notification.show("Role tidak dikenali: " + sessionRole, 3000, Notification.Position.MIDDLE);
+                        UI.getCurrent().navigate("");
+                        break;
+                }
+                });
+                return;
+        }
+
+
+
         setSizeFull();
         setPadding(false);
         setSpacing(false);

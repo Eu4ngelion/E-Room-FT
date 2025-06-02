@@ -201,7 +201,6 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-    // Get query parameters from the URL
     QueryParameters queryParameters = event.getLocation().getQueryParameters();
 
     // Check if the "role" parameter exists
@@ -216,7 +215,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
             idLabel = "NIM";
         } else if ("DOSEN".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role)) {
             idLabel = "NIP";
-        } else {
+        } else if ("ADMIN".equalsIgnoreCase(role)) {
             idLabel = "NIM/NIP";
         }
         txtBox.setLabel(idLabel);
@@ -275,7 +274,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
             String targetRoute = "user/beranda";
             // Hanya atur ke dasbor jika role adalah ADMIN
             if ("ADMIN".equalsIgnoreCase(role)) {
-                targetRoute = "admin/Dashboard";
+                targetRoute = "admin/dashboard";
             }
             
             // simpan role di session

@@ -395,11 +395,14 @@ public class PeminjamanService {
 
 
     // interval 15 Menit WITA
-    @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
+    // @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
 
     // Testing interval 1 menit WITA
     // @Scheduled(cron = "0 0/1 * * * *", zone = "Asia/Makassar") 
 
+    // Testing interver 10 detik WITA
+    @Scheduled(cron = "0/10 * * * * *", zone = "Asia/Makassar")
+    
     // Testing fixed rate = 5 detik
     // @Scheduled(fixedRate = 5000)
     // Update Peminjaman -> LogPeminjaman Realtime
@@ -413,7 +416,7 @@ public class PeminjamanService {
                 // Pilih Status Baru
                 Peminjaman.Status newStatus = switch (peminjaman.getStatus()) {
                     case MENUNGGU -> Peminjaman.Status.DITOLAK;
-                    case DIIZINKAN -> Peminjaman.Status.DIIZINKAN;
+                    case DIIZINKAN -> Peminjaman.Status.SELESAI;
                     default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status peminjaman tidak valid untuk update");
                 };
 

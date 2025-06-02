@@ -47,20 +47,18 @@ public class AdminManajemenView extends AppLayout {
 
     public AdminManajemenView() {
         // Cek Role
-        // String role = (String) UI.getCurrent().getSession().getAttribute("role");
-        // if (role == null || !role.equalsIgnoreCase("admin")) {
-        //     Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
-        //     UI.getCurrent().navigate("");
-        //     return;
-        // }
+        String role = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (role == null || !role.equalsIgnoreCase("admin")) {
+            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
+            UI.getCurrent().navigate("");
+            return;
+        }
         createDrawer();
         setContent(createContent());
     }
 
     private Image roomImage = new Image();
     private String uploadedFileName = null;
-
-
 
     // sidebar
     private void createDrawer() {
@@ -197,8 +195,9 @@ public class AdminManajemenView extends AppLayout {
 
         button.addClickListener(event -> {
             // Logika untuk keluar dari aplikasi
-            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.MIDDLE);
-            UI.getCurrent().getSession().setAttribute("role", null); // Clear session role
+            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END)
+                .setPosition(Notification.Position.BOTTOM_END);
+            UI.getCurrent().getSession().close(); // Hapus session
             UI.getCurrent().navigate(""); 
         });
         return button;
