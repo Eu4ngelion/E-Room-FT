@@ -12,21 +12,24 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@Route("Verifikasi")
+@Route(value = "Verifikasi", layout = MainLayout.class)
 @PageTitle("Verifikasi Peminjaman")
 public class Verifikasipeminjaman extends VerticalLayout {
 
     public Verifikasipeminjaman() {
-        setWidthFull();
-        setJustifyContentMode(JustifyContentMode.CENTER);
+        setSizeFull();
+        setPadding(true);
+        setSpacing(true);
+        setJustifyContentMode(JustifyContentMode.START);
         setAlignItems(Alignment.CENTER);
         getStyle().set("background-color", "#f7f7f7");
 
+        // Judul halaman
         H1 title = new H1("Verifikasi Peminjaman");
         title.getStyle().set("margin", "2rem 0");
         add(title);
 
-        // Kartu utama
+        // Kartu peminjam
         HorizontalLayout card = new HorizontalLayout();
         card.setWidth("90%");
         card.setPadding(true);
@@ -40,7 +43,7 @@ public class Verifikasipeminjaman extends VerticalLayout {
             .set("justify-content", "space-between")
             .set("align-items", "center");
 
-        // Info peminjam
+        // Informasi peminjam
         VerticalLayout info = new VerticalLayout();
         info.setPadding(false);
         info.setSpacing(true);
@@ -48,23 +51,13 @@ public class Verifikasipeminjaman extends VerticalLayout {
         Label nama = new Label("Ahmad Zuhair Nur Aiman - 2309106025");
         nama.getStyle().set("font-weight", "600").set("font-size", "16px");
 
-        // Detail dengan ikon
-        HorizontalLayout ruang = new HorizontalLayout(
-            new Icon(VaadinIcon.BUILDING),
-            new Label("Ruang Kelas C102")
-        );
+        HorizontalLayout ruang = new HorizontalLayout(new Icon(VaadinIcon.BUILDING), new Label("Ruang Kelas C102"));
         ruang.setAlignItems(Alignment.CENTER);
 
-        HorizontalLayout tanggal = new HorizontalLayout(
-            new Icon(VaadinIcon.CALENDAR),
-            new Label("09/09/2025")
-        );
+        HorizontalLayout tanggal = new HorizontalLayout(new Icon(VaadinIcon.CALENDAR), new Label("09/09/2025"));
         tanggal.setAlignItems(Alignment.CENTER);
 
-        HorizontalLayout jam = new HorizontalLayout(
-            new Icon(VaadinIcon.CLOCK),
-            new Label("10.00–12.00")
-        );
+        HorizontalLayout jam = new HorizontalLayout(new Icon(VaadinIcon.CLOCK), new Label("10.00–12.00"));
         jam.setAlignItems(Alignment.CENTER);
 
         HorizontalLayout detail = new HorizontalLayout(ruang, tanggal, jam);
@@ -113,9 +106,7 @@ public class Verifikasipeminjaman extends VerticalLayout {
             .set("font-weight", "800")
             .set("margin-bottom", "20px");
 
-        dialogLayout.setAlignSelf(Alignment.CENTER, header);
         dialogLayout.add(header);
-
         dialogLayout.add(createLabeledField("Nama Peminjam", "Ahmad Zuhair Nur Aiman"));
         dialogLayout.add(createLabeledField("NIM", "2309106025"));
         dialogLayout.add(createLabeledField("Keperluan", "Matkul pengganti"));

@@ -11,7 +11,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 
-@Route("Riwayat")
+@Route(value = "Riwayat", layout = MainLayout.class)
 @PageTitle("Riwayat Peminjaman")
 public class Riwayatpeminjaman extends VerticalLayout {
 
@@ -19,6 +19,7 @@ public class Riwayatpeminjaman extends VerticalLayout {
         setSpacing(true);
         setPadding(true);
         setSizeFull();
+        setJustifyContentMode(JustifyContentMode.START);
         setAlignItems(Alignment.CENTER);
         getStyle().set("background-color", "#f6f6f6");
 
