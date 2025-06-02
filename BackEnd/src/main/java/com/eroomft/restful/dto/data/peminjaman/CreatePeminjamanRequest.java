@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CreatePeminjamanRequest {
 
-    @Schema(description = "ID akun yang melakukan peminjaman", example = "23091060001")
+    @Schema(description = "ID akun yang melakukan peminjaman", example = "2309106001")
     private String akunId;
 
     @Schema(description = "ID ruangan yang dipinjam", example = "A101")
@@ -13,7 +13,7 @@ public class CreatePeminjamanRequest {
     @Schema(description = "Keperluan peminjaman", example = "Kelas Pengganti Matkul OOP")
     private String keperluan;
 
-    @Schema(description = "Tanggal peminjaman (format: YYYY-MM-DD)", example = "2025-05-30")
+    @Schema(description = "Tanggal peminjaman (format: YYYY-MM-DD)", example = "2025-05-31")
     private String tanggalPeminjaman;
 
     @Schema(description = "Waktu mulai peminjaman (format: HH:mm)", example = "08:00")

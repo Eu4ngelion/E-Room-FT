@@ -10,12 +10,22 @@ public class GetAllRuanganResponse {
     @Schema(example = "KELAS")
     private String tipe;
 
-    @Schema(example = "2309106001")
+    @Schema(example = "B101")
     private String nama;
+
+    @Schema(example = "30")
     private int kapasitas;
+
+    @Schema(example = "AC, Proyektor, Papan Tulis")
     private String fasilitas;
+
+    @Schema(example = "Gedung B")
     private String gedung;
+
+    @Schema(example = "Lantai 3")
     private String lokasi;
+
+    @Schema(example = "/uploads/B101.jpg")
     private String pathGambar;
 
     public GetAllRuanganResponse() {

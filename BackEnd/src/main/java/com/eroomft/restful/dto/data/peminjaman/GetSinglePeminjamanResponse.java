@@ -4,13 +4,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 
 public class GetSinglePeminjamanResponse {
 
-    @Schema(description = "ID peminjaman", example = "1")
+    @Schema(description = "ID peminjaman", example = "999")
     private int peminjamanId;
 
-    @Schema(description = "Nama peminjam", example = "John Doe")
+    @Schema(description = "Nama peminjam", example = "Contoh Contohan")
     private String namaPeminjam;
 
-    @Schema(description = "Email peminjam", example = "john@gmail.com")
+    @Schema(description = "Email peminjam", example = "contoh@gmail.com")
     private String emailPeminjam;
 
     @Schema(description = "Keperluan peminjaman", example = "Kelas Pengganti Matkul OOP")
@@ -19,13 +19,13 @@ public class GetSinglePeminjamanResponse {
     @Schema(description = "Tipe ruangan yang dipinjam", example = "KELAS")
     private String tipeRuangan;
 
-    @Schema(description = "Nama ruangan yang dipinjam", example = "")
+    @Schema(description = "Nama ruangan yang dipinjam", example = "A999")
     private String namaRuangan;
 
     @Schema(description = "Kapasitas Maksimal Ruangan", example = "30")
     private int kapasitas;
 
-    @Schema(description = "Tanggal peminjaman (format: YYYY-MM-DD)", example = "2023-10-01")
+    @Schema(description = "Tanggal peminjaman (format: YYYY-MM-DD)", example = "2025-06-30")
     private String tanggalPeminjaman;
 
     @Schema(description = "Waktu mulai peminjaman (format: HH:mm)", example = "10:00")

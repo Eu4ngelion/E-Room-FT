@@ -105,12 +105,7 @@ public class AkunController {
 
     // Hapus Akun By Id
     @DeleteMapping("/{akunId}")
-    @Operation(
-        summary = "Delete Akun",
-        description = "Menghapus akun berdasarkan ID. Hanya untuk development.",
-        parameters = {
-            @Parameter(name = "akunId", description = "ID akun yang akan dihapus", required = true, example = "123")
-        }
+    @Operation(summary = "Delete Akun",description = "Menghapus akun berdasarkan ID. Hanya untuk development.",parameters = {@Parameter(name = "akunId", description = "ID akun yang akan dihapus", required = true, example = "123")}
     )
     @ApiResponse(
         responseCode = "200",

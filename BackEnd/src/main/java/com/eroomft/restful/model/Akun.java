@@ -2,6 +2,8 @@ package com.eroomft.restful.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
@@ -21,6 +23,7 @@ public abstract class Akun {
     @Column(nullable = false)
     private String nama;
     @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
     private Role role;
 
     public enum Role {

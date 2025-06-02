@@ -1,5 +1,8 @@
 package com.eroomft.restful.controller;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -70,11 +73,15 @@ public class RuanganController {
         @RequestParam(name = "keyword", required = false) String keyword,
         @RequestParam(name = "tipe", required = false) String tipe,
         @RequestParam(name = "gedung", required = false) String gedung,
-        @RequestParam(name = "minKapasitas", required = false) Integer kapasitas
+        @RequestParam(name = "minKapasitas", required = false) Integer kapasitas,
+        @RequestParam(name = "tanggal", required = false) LocalDate tanggal,
+        @RequestParam(name = "waktuMulai", required = false) String waktuMulai,
+        @RequestParam(name = "waktuSelesai", required = false) String waktuSelesai
+
     ) {
         try {
             Integer minKapasitas = kapasitas != null ? kapasitas : 0;
-            return ResponseEntity.ok(ruanganService.getAllRuangan(keyword, tipe, gedung, minKapasitas));
+            return ResponseEntity.ok(ruanganService.getAllRuangan(keyword, tipe, gedung, minKapasitas, tanggal, waktuMulai, waktuSelesai));
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode())
                 .body(new ResponseWrapper("error", e.getReason(), null));
@@ -104,6 +111,27 @@ public class RuanganController {
         }
     }
 
+    // Get Jadwal Ruangan By Tanggal
+    @GetMapping("/{ruanganId}/jadwal")
+    @Operation(summary = "Get Jadwal Ruangan By Tanggal",description = "Endpoint untuk mendapatkan jadwal peminjaman ruangan pada tanggal tertentu.")
+    @ApiResponse(responseCode = "200", description = "Jadwal ruangan berhasil diambil")
+    public ResponseEntity<ResponseWrapper> getJadwalRuanganByTanggal(
+        @Parameter(description = "ID ruangan", example = "1")
+        @PathVariable("ruanganId") int ruanganId,
+        @Parameter(description = "Tanggal peminjaman (format: yyyy-MM-dd)", example = "2025-06-01")
+        @RequestParam("tanggal") LocalDate tanggal
+    ) {
+        try {
+            return ResponseEntity.ok(ruanganService.getJadwalRuanganByTanggal(ruanganId, tanggal));
+        } catch (ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                .body(new ResponseWrapper("error", e.getReason(), null));
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseWrapper("error", e.getMessage(), null));
+        }
+    }
+    
+
 
     // Get Distinct Gedung
     @GetMapping("/gedung")
@@ -123,6 +151,8 @@ public class RuanganController {
             return ResponseEntity.status(500).body(new ResponseWrapper("error", e.getMessage(), null));
         }
     }
+
+
 
 
     // Update Ruangan by ID
