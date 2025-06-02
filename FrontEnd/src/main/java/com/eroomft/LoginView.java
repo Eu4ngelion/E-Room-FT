@@ -4,6 +4,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.button.Button;
@@ -279,7 +280,12 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
             
             // simpan role di session
             final String finalRole = role;
-            getUI().ifPresent(ui -> ui.getSession().setAttribute("role", finalRole));
+            getUI().ifPresent(ui -> {
+                ui.getSession().setAttribute("role", finalRole);
+                ui.getSession().setAttribute("akunId", akunId);
+                ui.getSession().setAttribute("email", ((Map<String, Object>) loginResponse.getData()).get("email"));
+                ui.getSession().setAttribute("nama", ((Map<String, Object>) loginResponse.getData()).get("nama"));
+            });
             String finalTargetRoute = targetRoute;
             getUI().ifPresent(ui -> ui.navigate(finalTargetRoute));
         } else { // Jika login gagal

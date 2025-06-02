@@ -166,10 +166,10 @@
 
 //     }
 
-//     private Component createContent() {
+//     // private Component createContent() {
 
-//         VerticalLayout content = new VerticalLayout();
-//     }
+//     //     VerticalLayout content = new VerticalLayout();
+//     // }
 
 
 //     private Component createHeaderBar() {

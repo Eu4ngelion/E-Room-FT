@@ -47,12 +47,12 @@ public class AdminManajemenView extends AppLayout {
 
     public AdminManajemenView() {
         // Cek Role
-        String role = (String) UI.getCurrent().getSession().getAttribute("role");
-        if (role == null || !role.equalsIgnoreCase("admin")) {
-            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
-            UI.getCurrent().navigate("");
-            return;
-        }
+        // String role = (String) UI.getCurrent().getSession().getAttribute("role");
+        // if (role == null || !role.equalsIgnoreCase("admin")) {
+        //     Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
+        //     UI.getCurrent().navigate("");
+        //     return;
+        // }
         createDrawer();
         setContent(createContent());
     }
@@ -709,7 +709,7 @@ public class AdminManajemenView extends AppLayout {
         grid.getStyle()
             .set("display", "grid")
             .set("justify-content", "center")
-            .set("grid-template-columns", "repeat(auto-fill, minmax(min(250px, 100vw / 4), 350px))")
+            .set("grid-template-columns", "repeat(auto-fill, minmax(min(250px, 100vw / 4), 1fr))")
             .set("gap", "1.5rem")
             .set("margin-top", "0rem")
             .set("padding", "0.5rem")
@@ -1281,7 +1281,6 @@ public class AdminManajemenView extends AppLayout {
         return item;
     }
 
-
     // GET All data ruangan
     private void fetchRoomData(String searchQuery, String typeFilter, String gedungFilter) {
         try {
@@ -1463,10 +1462,6 @@ public class AdminManajemenView extends AppLayout {
     }
 
     // DELETE Ruangan
-    // request example:
-    //     curl -X 'DELETE' \
-    //   'http://localhost:8081/api/v1/ruangan/99' \
-    //   -H 'accept: application/json'
     private void deleteRoomById(int ruanganId) {
         try {
             // Create HTTP CLIENT
