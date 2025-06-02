@@ -18,10 +18,23 @@ import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import com.vaadin.flow.component.dialog.Dialog;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
+import com.vaadin.flow.router.BeforeEnterEvent;
+import com.vaadin.flow.router.BeforeEnterObserver;
+import com.vaadin.flow.router.QueryParameters;
 
 @Route("login")
 @AnonymousAllowed
-public class LoginView extends VerticalLayout {
+public class LoginView extends VerticalLayout implements BeforeEnterObserver {
+
+    // variable Global
+    String pickedRole;
+    private TextField txtBox;
+    private String idLabel = "NIM/NIP";
+
 
     public LoginView() {
         setSizeFull();
@@ -39,40 +52,56 @@ public class LoginView extends VerticalLayout {
             .set("margin-bottom", "20px")
             .set("display", "flex")
             .set("justify-self", "center");
-            
        
         H2 login = new H2("Login");
         login.setWidth("350px");
         login.getStyle()
-                .set("font-weight", "bold")
-                .set("text-align", "center")
                 .set("font-family", " 'poppins', sans-serif")
-                .set("margin-bottom", "10px");
+                .set("font-weight", "550")
+                .set("font-size", "36px")
+                .set("text-align", "center")
+                .set("margin-bottom", "10px")
+                .setWidth("400px");
     
         Paragraph text = new Paragraph("Silahkan gunakan akun portal AIS anda untuk login");
-        text.setWidth("350px");
+        text.setWidth("400px");
         text.getStyle()
                 .set("text-align", "center")
-                .set("font-size", "14px")
-                .set("font-weight", "bold")
+                .set("font-family", " 'Plus Jakarta Sans', sans-serif")
+                .set("font-weight", "550")
+                .set("font-size", "16px")
                 .set("margin-bottom", "10px");
     
-        TextField txtBox = new TextField("NIM/NIP");
-        txtBox.setWidth("350px");
+        txtBox = new TextField("NIM/NIP");
+        txtBox.setWidth("400px");
         txtBox.setPlaceholder("Masukkan NIM/NIP");
-        txtBox.getStyle().set("margin-bottom", "10px");
+        txtBox.getStyle()
+                .set("margin-bottom", "10px")
+                .set("font-size", "16px")
+                .set("font-color", "black")
+                .set("font-family", "'Poppins', sans-serif")
+                .set("font-weight", "500")
+                .set("font-size", "16px");
         
         PasswordField txtPass = new PasswordField("Kata Sandi");
-        txtPass.setWidth("350px");
+        txtPass.setWidth("400px");
         txtPass.setPlaceholder("Masukkan Kata Sandi");
-        txtPass.getStyle().set("margin-bottom", "20px");      
+        txtPass.getStyle()
+                .set("margin-bottom", "20px")
+                .set("font-size", "16px")
+                .set("font-color", "black")
+                .set("font-family", "'Poppins', sans-serif")
+                .set("font-weight", "500")
+                .set("font-size", "16px");
     
         Button btnLogin = new Button("Login");
-        btnLogin.setWidth("350px");
+        btnLogin.setWidth("400px");
         btnLogin.getStyle()
-                .set("background-color", "#FA812F")
+                .set("background-color", "#FF9F4C")
                 .set("color", "white")
-                .set("font-weight", "bold")
+                .set("font-family", "'Poppins', sans-serif")
+                .set("font-weight", "500")
+                .set("font-size", "16px")
                 .set("border", "none")
                 .set("border-radius", "5px")
                 .set("cursor", "pointer")
@@ -83,7 +112,7 @@ public class LoginView extends VerticalLayout {
         });
         
         btnLogin.getElement().addEventListener("mouseleave", e -> {
-            btnLogin.getStyle().set("background-color", "#FF7700");
+            btnLogin.getStyle().set("background-color", "#FF9F4C");
         });
 
         Anchor Kembali = new Anchor();
@@ -91,6 +120,9 @@ public class LoginView extends VerticalLayout {
         Kembali.setText("Kembali Ke Beranda");
         Kembali.getStyle()
                 .set("color", "black")
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-weight", "550")
+                .set("font-size", "12px")
                 .set("margin-top", "10px");
     
         btnLogin.addClickListener(e -> {
@@ -98,7 +130,7 @@ public class LoginView extends VerticalLayout {
             String password = txtPass.getValue();
     
             if (username.isEmpty() || password.isEmpty()) {
-                Notification.show("NIM/NIP dan password harus diisi!", 3500, Notification.Position.MIDDLE);
+                errorPopup(idLabel + " dan password harus diisi!");
             }
             else{
                 login(username, password);
@@ -107,7 +139,7 @@ public class LoginView extends VerticalLayout {
         });
     
         Div formLogin = new Div();
-        formLogin.setWidth("350px");
+        formLogin.setWidth("400px");
         formLogin.getStyle()
             .set("background-color", "white")
             .set("padding", "20px")
@@ -119,9 +151,84 @@ public class LoginView extends VerticalLayout {
         add(formLogin);
     }
 
+    private void errorPopup(String message) {
+        Dialog dialog = new Dialog();
+        dialog.setCloseOnEsc(true);
+        dialog.setCloseOnOutsideClick(true);
+    
+        Icon errorIcon = VaadinIcon.CLOSE_CIRCLE.create();
+        errorIcon.setSize("63px");
+        errorIcon.getStyle()
+            .set("color", "#FF7700")
+            .set("margin-bottom", "10px");
+    
+        Span text = new Span(message);
+        text.getStyle()
+            .set("font-size", "24px")
+            .set("font-weight", "600")
+            .set("text-align", "center")
+            .set("font-family", " 'Plus Jakarta Sans', sans-serif")
+            .set("color", "Black")
+            .set("display", "block")
+            .set("margin-bottom", "10px")
+            .set("white-space", "pre-line");
+            
+    
+        Button btnTutup = new Button("Tutup", event -> dialog.close());
+        btnTutup.getStyle()
+            .set("background-color", "#FF7700")
+            .set("color", "white")
+            .set("font-size", "16px")
+            .set("font-family", " 'Plus Jakarta Sans', sans-serif")
+            .set("font-weight", "600")
+            .set("border", "none")
+            .set("border-radius", "5px")
+            .set("cursor", "pointer");
+    
+        VerticalLayout lapisan = new VerticalLayout(errorIcon, text, btnTutup);
+        lapisan.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        lapisan.setPadding(true);
+        lapisan.setSpacing(false);
+        lapisan.getStyle()
+            .set("background", "#ffffff")
+            .set("border-radius", "10px")
+            .set("text-align", "center");
+    
+        dialog.add(lapisan);
+        dialog.open();
+    }
+
+    @Override
+    public void beforeEnter(BeforeEnterEvent event) {
+    // Get query parameters from the URL
+    QueryParameters queryParameters = event.getLocation().getQueryParameters();
+
+    // Check if the "role" parameter exists
+    if (queryParameters.getParameters().containsKey("role")) {
+        // Get the value of the "role" parameter
+        String role = queryParameters.getParameters().get("role").get(0);
+
+
+        // You can now use the role value as needed
+        pickedRole = role;
+        if ("MAHASISWA".equalsIgnoreCase(role)) {
+            idLabel = "NIM";
+        } else if ("DOSEN".equalsIgnoreCase(role) || "ADMIN".equalsIgnoreCase(role)) {
+            idLabel = "NIP";
+        } else {
+            idLabel = "NIM/NIP";
+        }
+        txtBox.setLabel(idLabel);
+        txtBox.setPlaceholder("Masukkan " + idLabel);        
+    } else
+        //   kembalikan ke route index
+        getUI().ifPresent(ui -> ui.navigate(""));
+    }
+
     // Method untuk request api POST login
     private void login(String akunId, String password) {
         try {
+
             // Membuat JSON payload
             ObjectMapper mapper = new ObjectMapper();
             String jsonPayload = mapper.writeValueAsString(
@@ -147,28 +254,34 @@ public class LoginView extends VerticalLayout {
 
         // Cek apakah login berhasil
         if ("success".equalsIgnoreCase(loginResponse.getStatus())) {
-            Notification.show("Login berhasil!", 3500, Notification.Position.MIDDLE);
-
+            // cek apakah role sesuai
             // Ambil role dari response Data 
             String role = "";
-            if (loginResponse.getData() instanceof java.util.Map) {
-            Object roleObj = ((java.util.Map<?, ?>) loginResponse.getData()).get("role");
-            if (roleObj != null) {
-                role = roleObj.toString();
+                if (loginResponse.getData() instanceof java.util.Map) {
+                Object roleObj = ((java.util.Map<?, ?>) loginResponse.getData()).get("role");
+                if (roleObj != null) {
+                    role = roleObj.toString();
+                }
             }
+
+            // jika role tidak sesai getROle
+            if (!role.equals(pickedRole)){
+               errorPopup("Akun anda tidak ditemukan");
+                return;
             }
 
             // Route default = beranda
             String targetRoute = "beranda";
             // Hanya atur ke dasbor jika role adalah ADMIN
             if ("ADMIN".equalsIgnoreCase(role)) {
-            targetRoute = "dasbor";
+            targetRoute = "adminDashboard";
             }
 
             String finalTargetRoute = targetRoute;
             getUI().ifPresent(ui -> ui.navigate(finalTargetRoute));
         } else { // Jika login gagal
-            Notification.show("Login gagal: " + loginResponse.getMessage(), 3500, Notification.Position.MIDDLE);
+            errorPopup(idLabel + " atau Kata Sandi salah");
+
         }
     } 
     // Tambahkan Exception untuk jenis-jenis error lainnya kalau perlu

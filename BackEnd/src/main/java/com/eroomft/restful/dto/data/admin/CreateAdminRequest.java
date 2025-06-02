@@ -1,11 +1,18 @@
 package com.eroomft.restful.dto.data.admin;
 
-
+import io.swagger.v3.oas.annotations.media.Schema;
 
 public class CreateAdminRequest {
+    @Schema(description = "Id akun yang akan dibuat (NIP)", example = "11111")
     private String akunId;
+
+    @Schema(description = "Password untuk akun admin", example = "Admin123")
     private String password;
+
+    @Schema(description = "Nama lengkap admin", example = "Admin Adminan")
     private String nama;
+
+    @Schema(description = "Email admin", example = "admin@gmail.com")
     private String email;
 
     public CreateAdminRequest() {

@@ -43,14 +43,14 @@ public class Landing extends VerticalLayout {
 
         Image logo = new Image("/frontend/unmul.png", "Logo Unmul");
         logo.getStyle()
-                .set("width", "50px")
-                .set("height", "50px");
+                .set("width", "55px")
+                .set("height", "55px")
+                .set("margin-top", "10px");
                 
 
         Span garis = new Span("|");
         garis.getStyle()
-                .set("font-size", "32px")
-                .set("margin", "0 10px");
+                .set("font-size", "50px");
 
         Div blokNamaWeb = new Div();
         blokNamaWeb.getStyle()
@@ -61,11 +61,19 @@ public class Landing extends VerticalLayout {
 
         Paragraph namaWeb = new Paragraph("E-ROOM FT");
         namaWeb.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
-        namaWeb.getStyle().set("margin", "0");
+        namaWeb.getStyle()
+                .set("margin", "0")
+                .set("font-family", "'poppins', sans-serif")
+                .set("font-size", "30px")
+                .set("font-weight", "600");
 
         Paragraph subText = new Paragraph("Sistem Peminjaman Ruangan");
         subText.addClassNames(LumoUtility.FontSize.SMALL);
-        subText.getStyle().set("margin", "0");
+        subText.getStyle()
+                .set("margin", "0")
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-size", "20px")
+                .set("font-weight", "600");
 
         blokNamaWeb.add(namaWeb, subText);
         headerKiri.add(logo, garis, blokNamaWeb);
@@ -74,7 +82,7 @@ public class Landing extends VerticalLayout {
         headerKanan.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
         headerKanan.getStyle().set("gap", "20px");
 
-        headerKanan.add(btnNavbar("Beranda"),
+        headerKanan.add(btnNavbar("Halaman Utama"),
                         btnNavbar("Tentang Kami"),
                         btnNavbar("Peminjaman"),
                         btnNavbar("Kontak"));
@@ -91,15 +99,19 @@ public class Landing extends VerticalLayout {
 
         H1 judul = new H1("E-ROOM FT");
         judul.getStyle()
-                .set("color", "#FF6600")
-                .set("font-weight", "bold")
+                .set("color", "#FF7700")
+                .set("font-weight", "600")
                 .set("font-family", " 'poppins', sans-serif")
+                .set("text-shadow", "2px 2px 4px rgba(0, 0, 0, 0.3)")
+                .set("font-size", "50px")
                 .set("text-align", "center");
 
         Paragraph deskripsi = new Paragraph("Aplikasi E-ROOM ini hadir untuk mendukung efisiensi pemanfaatan ruang di Gedung Teknik Baru Fakultas Teknik Universitas Mulawarman. Klik tombol di bawah untuk mulai meminjam ruangan.");
         deskripsi.getStyle()
                 .set("text-align", "center")
-                .set("font-weight", "bold")
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-size", "17.5px")
+                .set("font-weight", "600")
                 .set("max-width", "600px");
 
         HorizontalLayout kotak = new HorizontalLayout();
@@ -107,9 +119,9 @@ public class Landing extends VerticalLayout {
         kotak.setSpacing(true);
 
         kotak.add(
-                kotakLogin("Mahasiswa", "/frontend/mahasiswa.png", "login"),
-                kotakLogin("Dosen", "/frontend/dosen.png", "login"),
-                kotakLogin("Staff Akademik", "/frontend/staff.png", "login")
+                kotakLogin("Mahasiswa", "/frontend/mahasiswa.png", "login?role=MAHASISWA"),
+                kotakLogin("Dosen", "/frontend/dosen.png", "login?role=DOSEN"),
+                kotakLogin("Staff Akademik", "/frontend/staff.png", "login?role=ADMIN")
         );
 
         content.add(judul, deskripsi, kotak);
@@ -122,6 +134,9 @@ public class Landing extends VerticalLayout {
                     .set("align-items", "center")
                     .set("justify-content", "center")
                     .set("height", "80px")
+                    .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                    .set("font-size", "16px")
+                    .set("font-weight", "500")
                     .set("background-color", "#FF7700")
                     .set("color", "black")
                     .set("width", "100%")
@@ -135,8 +150,11 @@ public class Landing extends VerticalLayout {
         button.getStyle()
                 .set("background-color", "transparent")
                 .set("color", "black")
-                .set("font-weight", "bold")
+                .set("font-family", " 'poppins', sans-serif ")
+                .set("font-size", "16px")
+                .set("font-weight", "500")
                 .set("border", "none")
+                .set("border-radius", "0")
                 .set("cursor", "pointer");
 
         button.getElement().addEventListener("mouseenter", e -> {
@@ -183,7 +201,8 @@ public class Landing extends VerticalLayout {
     
         Paragraph roleText = new Paragraph(role);
         roleText.getStyle()
-                .set("font-weight", "bold")
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-weight", "600")
                 .set("margin", "10px 0 0 0");
     
         Button btnLogin = new Button("Login", event ->
@@ -191,9 +210,13 @@ public class Landing extends VerticalLayout {
         );
         btnLogin.getStyle()
                 .set("background-color", "#FF7700")
+                .set("font-family", " 'poppins', sans-serif ")
+                .set("font-size", "16px")
+                .set("font-weight", "500")
                 .set("color", "white")
                 .set("cursor", "pointer")
-                .set("border-radius", "10px");
+                .set("border-radius", "10px")
+                .set("box-shadow", "0px 6px 8px rgba(0,0,0,0.3)");
 
         btnLogin.getElement().addEventListener("mouseenter", e -> {
             btnLogin.getStyle().set("background-color", "#cc5200");

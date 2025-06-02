@@ -25,13 +25,53 @@ public class AuthController {
     @Autowired
     private AuthService authService;
 
-    // Success Schema for Login Response
-    class LoginResponseWrapper {
+    
+    @PostMapping("/login")
+    @Operation(summary = "Login",description = "Endpoint untuk login ke sistem. Kirim username dan password, data user dan rolenya.")
+    @ApiResponse(responseCode = "200",description = "Login berhasil",
+        content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = LoginSuccessWrapper.class)
+        )
+    )
+
+    @ApiResponse(responseCode = "400", description = "Request tidak valid (field kosong)")
+    @ApiResponse(responseCode = "401", description = "Username/password salah")
+    public ResponseEntity<ResponseWrapper> login(@RequestBody LoginRequest request) {
+        try {
+            ResponseWrapper loginResult = authService.login(request);
+            return ResponseEntity.ok(loginResult);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(400).body(new ResponseWrapper("error", e.getMessage(), null));
+
+        } catch (ResponseStatusException e) {
+            if (e.getStatusCode() == org.springframework.http.HttpStatus.UNAUTHORIZED) {
+                return ResponseEntity.status(401).body(new ResponseWrapper("error", e.getReason(), null));
+            } else if (e.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND) {
+                return ResponseEntity.status(404).body(new ResponseWrapper("error", e.getReason(), null));
+            } else {
+                return ResponseEntity.status(500).body(new ResponseWrapper("error", "Terjadi Kesalahan Pada Server", null));
+            }
+            
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body(new ResponseWrapper("error", e.getMessage(), null));
+        }
+    }
+
+
+    @Schema(description = "DTO  LoginResponse jika sukses.")
+    public static class LoginSuccessWrapper {
+        @Schema(description = "Status response", example = "success")
         private final String status;
+
+        @Schema(description = "Pesan hasil operasi", example = "Login Berhasil")
         private final String message;
+
+        @Schema(description = "Data hasil login, berupa objek LoginResponse jika sukses, null jika gagal")
         private final LoginResponse data;
 
-        public LoginResponseWrapper(String status, String message, LoginResponse data) {
+        public LoginSuccessWrapper(String status, String message, LoginResponse data) {
             this.status = status;
             this.message = message;
             this.data = data;
@@ -49,33 +89,4 @@ public class AuthController {
             return data;
         }
     }
-
-    @PostMapping("/login")
-    @Operation(summary = "Login", description = "Endpoint untuk login ke sistem")
-    @ApiResponse(responseCode = "200", description = "Login berhasil", content = @Content(
-            mediaType = "application/json",
-            schema = @Schema(implementation = LoginResponseWrapper.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid Request -Request tidak valid")
-    public ResponseEntity<ResponseWrapper> login(@RequestBody LoginRequest request) {
-        try {
-            ResponseWrapper loginResult = authService.login(request);
-            return ResponseEntity.ok(loginResult);
-
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(400).body(new ResponseWrapper("error", e.getMessage(), null));
-
-        } catch (ResponseStatusException e) {
-            if (e.getStatusCode() == org.springframework.http.HttpStatus.UNAUTHORIZED) {
-                return ResponseEntity.status(401).body(new ResponseWrapper("error", e.getReason(), null));
-            } else if (e.getStatusCode() == org.springframework.http.HttpStatus.NOT_FOUND) {
-                return ResponseEntity.status(404).body(new ResponseWrapper("error", e.getReason(), null));
-            } else {
-                return ResponseEntity.status(500).body(new ResponseWrapper("error", "Internal Server Error", null));
-            }
-            
-        } catch (Exception e) {
-            return ResponseEntity.status(500).body(new ResponseWrapper("error", e.getMessage(), null));
-        }
-    }
-
 }

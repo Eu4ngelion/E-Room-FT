@@ -1,36 +1,53 @@
-package com.eroomft.restful.dto.data.ruangan;
+package com.eroomft.restful.model;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
-public class CreateRuanganRequest {
+@Entity
+@Table(name = "ruangan")
+public class Ruangan {
 
-    @Schema(example = "KELAS")
-    private String tipe;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int ruanganId;
 
-    @Schema(example = "B101")
+    @Column(nullable = false, unique = true)
     private String nama;
 
-    @Schema(example = "30")
+    @Column(nullable = false)
+    private Tipe tipe;
+    public enum Tipe {
+        LAB,
+        KELAS,
+        SEMINAR,
+        RAPAT
+    }
+
+    @Column(nullable = false)
     private int kapasitas;
 
-    @Schema(example = "AC, Proyektor, Papan Tulis")
+    @Column(nullable = false)
     private String fasilitas;
 
-    @Schema(example = "Gedung B")
+    @Column(nullable = false)
     private String gedung;
 
-    @Schema(example = "Lantai 3")
+    @Column(nullable = false)
     private String lokasi;
 
-    @Schema(example = "/uploads/B101.jpg")
+    @Column(nullable = false)
     private String pathGambar;
 
-    public CreateRuanganRequest() {
+    public Ruangan() {
     }
-    
-    public CreateRuanganRequest(String tipe, String nama, int kapasitas, String fasilitas, String gedung, String lokasi, String pathGambar) {
-        this.tipe = tipe;
+
+    public Ruangan(String nama, Tipe tipe, int kapasitas, String fasilitas, String gedung, String lokasi, String pathGambar) {
         this.nama = nama;
+        this.tipe = tipe;
         this.kapasitas = kapasitas;
         this.fasilitas = fasilitas;
         this.gedung = gedung;
@@ -38,17 +55,24 @@ public class CreateRuanganRequest {
         this.pathGambar = pathGambar;
     }
 
-    public String getTipe() {
-        return tipe;
+
+    public int getRuanganId() {
+        return ruanganId;
     }
-    public void setTipe(String tipe) {
-        this.tipe = tipe;
+    public void setRuanganId(int ruanganId) {
+        this.ruanganId = ruanganId;
     }
     public String getNama() {
         return nama;
     }
     public void setNama(String nama) {
         this.nama = nama;
+    }
+    public Tipe getTipe() {
+        return tipe;
+    }
+    public void setTipe(Tipe tipe) {
+        this.tipe = tipe;
     }
     public int getKapasitas() {
         return kapasitas;
