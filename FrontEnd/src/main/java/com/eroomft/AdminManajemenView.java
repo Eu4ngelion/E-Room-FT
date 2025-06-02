@@ -6,6 +6,11 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -30,26 +35,31 @@ import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.Receiver;
+
 import java.io.File;
+import java.net.URLEncoder;
+
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-@Route("admin")
-public class AdminView extends AppLayout {
+@Route("admin/manajemen")
+public class AdminManajemenView extends AppLayout {
 
-    public AdminView() {
+    public AdminManajemenView() {
         createDrawer();
         setContent(createContent());
     }
 
     private Image roomImage = new Image();
     private String uploadedFileName = null;
-    // private List<RoomData> rooms = new ArrayList<>();
-    // private VerticalLayout roomCardsLayout = new VerticalLayout();
+
 
 
     // sidebar
     private void createDrawer() {
+        String currentPage = "admin/manajemen";
+
         Image logo = new Image("https://fahutan.unmul.ac.id/laboratorium/assets/images/LOGO%20UNMUL.png", "Logo");
         logo.setWidth("50px");
 
@@ -58,13 +68,13 @@ public class AdminView extends AppLayout {
             .set("font-weight", "bold")
             .set("font-size", "1.2rem");
 
-        Icon caretIcon = VaadinIcon.ANGLE_LEFT.create();
-        caretIcon.getStyle()
-            .set("cursor", "pointer")
-            .set("margin-left", "auto")
-            .set("font-size", "1.2rem");
+        // Icon caretIcon = VaadinIcon.ANGLE_LEFT.create();
+        // caretIcon.getStyle()
+        //     .set("cursor", "pointer")
+        //     .set("margin-left", "auto")
+        //     .set("font-size", "1.2rem");
 
-        HorizontalLayout logoSection = new HorizontalLayout(logo, title, caretIcon);
+        HorizontalLayout logoSection = new HorizontalLayout(logo, title);
         logoSection.setAlignItems(FlexComponent.Alignment.CENTER);
         logoSection.setWidthFull();
         logoSection.setSpacing(true);
@@ -83,10 +93,9 @@ public class AdminView extends AppLayout {
             .set("font-weight", "bold")
             .set("color", "black");
 
-        String currentPage = "";
 
-        Button dashboardBtn = createStyledButton(VaadinIcon.DASHBOARD, "Dasbor", currentPage.equals("dashboard"));
-        Button manajemenRuanganBtn = createStyledButton(VaadinIcon.BUILDING, "Manajemen Ruangan", currentPage.equals("manajemen-ruangan"));
+        Button dashboardBtn = createStyledButton(VaadinIcon.DASHBOARD, "Dasbor", currentPage.equals("dashboard"), "admin/dashboard");
+        Button manajemenRuanganBtn = createStyledButton(VaadinIcon.BUILDING, "Manajemen Ruangan", currentPage.equals("admin/manajemen"), "admin/manajemen");
 
         Span peminjamanHeader = new Span("PEMINJAMAN RUANGAN");
         peminjamanHeader.getStyle()
@@ -95,16 +104,9 @@ public class AdminView extends AppLayout {
             .set("font-weight", "bold")
             .set("color", "black");
 
-        Button verifikasiBtn = createStyledButton(VaadinIcon.CHECK_SQUARE, "Verifikasi Peminjaman", currentPage.equals("verifikasi"));
-        Button riwayatBtn = createStyledButton(VaadinIcon.CLOCK, "Riwayat Peminjaman", currentPage.equals("riwayat"));
-        Button keluar = createMenuButton(VaadinIcon.SIGN_OUT, "Keluar");
-        keluar.getStyle()
-            .set("background-color", "#FF6666")
-            .set("color", "black")
-            .set("margin-top", "2rem")
-            .set("margin-inline", "1rem")
-            .set("border-radius", "10px")
-            .set("width", "calc(100% - 2rem)");
+        Button verifikasiBtn = createStyledButton(VaadinIcon.CHECK_SQUARE, "Verifikasi Peminjaman", currentPage.equals("verifikasi"), "admin/verifikasi");
+        Button riwayatBtn = createStyledButton(VaadinIcon.CLOCK, "Riwayat Peminjaman", currentPage.equals("riwayat"), "admin/riwayat");
+        Button keluar = createExitButton(VaadinIcon.SIGN_OUT, "Keluar");
         
         navigation.add(
             utamaHeader,
@@ -120,59 +122,96 @@ public class AdminView extends AppLayout {
     }
 
     // button hover
-    private Button createStyledButton(VaadinIcon icon, String text, boolean isActive) {
-        Button btn = createMenuButton(icon, text);
-        btn.getThemeNames().clear();
+    private Button createStyledButton(VaadinIcon icon, String text, boolean isActive, String targetPage) {
+        Button btn = new Button(text, new Icon(icon));
 
         btn.getStyle()
-            .set("border-radius", "5px")
-            .set("margin-inline", "1rem")
-            .set("width", "calc(100% - 2rem)")
-            .set("justify-content", "start")
-            .set("color", "black")
-            .set("background-color", "transparent")
-            .set("border", "none");
+            .set("margin-inline", "1rem") // Horizontal margin
+            .set("padding", "0.5rem") // Optional: Add padding for better spacing
+            .set("gap", "0.5rem"); // Space between icon and text
 
+        // Set initial styles immediately
         if (isActive) {
             btn.getStyle()
-                .set("background-color", "#FB9A59")
+                .set("background-color", "#FF6B35")
+                .set("width", "calc(100% - 2rem)") // Full width minus margins
                 .set("color", "white");
+        } else {
+            btn.getStyle()
+                .set("color", "black")
+                .set("background-color", "transparent");
         }
 
-        // Hover
+        // Hover effects
         btn.getElement().addEventListener("mouseenter", e -> {
-            btn.getStyle().set("background-color", "#FB9A59");
-            btn.getStyle().set("color", "white");
+            btn.getStyle()
+                .set("background-color", "#FB9A59")
+                .set("width", "calc(100% - 2rem)") 
+                .set("color", "white");
         });
 
         btn.getElement().addEventListener("mouseleave", e -> {
             if (!isActive) {
-                btn.getStyle().set("background-color", "transparent");
-                btn.getStyle().set("color", "black");
-            }
+                btn.getStyle()
+                    .set("background-color", "transparent")
+                    .remove("width") 
+                    .set("color", "black");
+            } else {
+                btn.getStyle()
+                    .set("background-color", "#FF6B35")
+                    .set("color", "white");
+            };
         });
 
+        // Click listener
+        btn.addClickListener(event -> {
+            // Logika untuk navigasi ke halaman yang sesuai
+            if (!isActive) {
+                UI.getCurrent().navigate(targetPage);
+            }
+        });
         return btn;
     }
 
-    private Button createMenuButton(VaadinIcon icon, String text) {
+    private Button createExitButton(VaadinIcon icon, String text) {
         Button button = new Button(text, new Icon(icon));
         button.addClassNames(
             LumoUtility.JustifyContent.START,
+            LumoUtility.AlignItems.START,
             LumoUtility.Width.FULL
         );
         button.getStyle()
-            .set("border-radius", "0")
-            .set("border", "none")
-            .set("background", "transparent")
-            .set("padding", "0.75rem 1rem");
+        // .set("border", "none")
+            // vertical margin
+            .set("margin-top", "100px")
+            .set("border-radius", "5px")
+            .set("margin-inline", "1rem")
+            .set("width", "calc(100% - 2rem)")
+            .set("background", "#FF6666")
+            .set("color", "white")
+            .set("padding", "0.75rem 1rem")
+            .set("justify-content", "flex-start")
+            .set("text-align", "left")
+            .set("display", "flex")
+            .set("align-items", "center");
+
+        button.addClickListener(event -> {
+            // Logika untuk keluar dari aplikasi
+            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.MIDDLE);
+            // Tambahkan logika untuk mengarahkan ke halaman login atau melakukan logout
+            UI.getCurrent().navigate("login");
+        });
         return button;
+
     }
 
-    // isi konten
-    private Component createContent() {
 
-        //INI UNTUK PERULANGAN, MISAL RUANGAN BARU DITAMBAHKAN 
+    // Variabel Global room
+    List<RoomData> rooms = new ArrayList<>();
+
+    // Isi Konten
+    private Component createContent() {
+        //INI UNTUK PERULANGAN, MISAL RUANGAN BARU DITAMBAHKAN
 
         // for (RoomData room : rooms) {
         //     roomCardsLayout.add(createRoomCard(room));
@@ -209,8 +248,13 @@ public class AdminView extends AppLayout {
 
         headerBox.add(title, subtitle);
 
+        // Fetch data ruangan
+        fetchRoomData(null, null, null);
+
+        // Search Section
         HorizontalLayout searchSection = createSearchSection();
 
+        // Membuat grid untuk menampilkan ruangan
         Div roomGrid = createRoomGrid();
 
         // INI UNTUK NAMPILKAN YANG BARU DITAMBAHKAN
@@ -272,6 +316,41 @@ public class AdminView extends AppLayout {
             .set("--lumo-primary-color", "#FF6B35")
             .set("border", "2px solid #FF6B35")
             .set("border-radius", "8px");
+
+        // Button Cari
+        Button searchBtn = new Button("Cari");
+        searchBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        searchBtn.getStyle()
+            .set("background-color", "#FF6B35")
+            .set("border-color", "#FF6B35")
+            .set("color", "white")
+            .set("height", "40px")
+            .set("border-radius", "8px");
+        searchBtn.addClickListener(e -> {
+            String searchText = searchField.getValue().trim();
+            String selectedType = typeFilter.getValue();
+            String selectedGedung = gedungFilter.getValue();
+
+            // Logika filter berdasarkan input
+            List<RoomData> filteredRooms = new ArrayList<>();
+            for (RoomData room : rooms) {
+                boolean matchesSearch = room.name.toLowerCase().contains(searchText.toLowerCase());
+                boolean matchesType = selectedType == null || selectedType.equals("Semua") || room.tipe.equalsIgnoreCase(selectedType);
+                boolean matchesGedung = selectedGedung == null || selectedGedung.equals("Semua") || room.gedung.equalsIgnoreCase(selectedGedung);
+
+                if (matchesSearch && matchesType && matchesGedung) {
+                    filteredRooms.add(room);
+                }
+            }
+
+            // Clear existing cards and add filtered ones
+            Div roomGrid = createRoomGrid();
+            roomGrid.removeAll();
+            for (RoomData room : filteredRooms) {
+                roomGrid.add(createRoomCard(room));
+            }
+        });
+
 
         Button addRoomBtn = new Button("+ Tambah Ruangan");
         addRoomBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -554,7 +633,7 @@ public class AdminView extends AppLayout {
     // -------------------------------------------------------------------------------------------
 
         HorizontalLayout searchLayout = new HorizontalLayout(
-            searchField, typeFilter, gedungFilter, addRoomBtn
+            searchField, typeFilter, gedungFilter, searchBtn, addRoomBtn
         );
         searchLayout.setAlignItems(FlexComponent.Alignment.END);
         searchLayout.setWidthFull();
@@ -587,16 +666,16 @@ public class AdminView extends AppLayout {
 
 
         // Sample room data, untuk coba tampilan aja, ntar backend yang lanjutkan
-        List<RoomData> rooms = new ArrayList<>(Arrays.asList(
-            new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg"),
-            new RoomData("Ruang Seminar", " D202", "50", "AC, Proyektor, Meja, Kursi", "Gedung D", "Lantai 2", "seminar_d202.jpg"),
-            new RoomData("Ruang Rapat", "C102", "15", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 1", "rapat_c102.jpg"),
-            new RoomData("Lab", "Multimedia D303", "25", "AC, Proyektor, PC", "Gedung D", "Lantai 3", "lab_d303.jpg"),
-            new RoomData("Ruang Serbaguna", "C103", "50", "AC, Proyektor, Mic, Meja, Kursi", "Gedung C", "Lantai 1", "serbaguna_c103.jpg"),
-            new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg"),
-            new RoomData("Ruang Seminar", " D202", "50", "AC, Proyektor, Meja, Kursi", "Gedung D", "Lantai 2", "seminar_d202.jpg"),
-            new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg")
-        ));
+        // List<RoomData> rooms = new ArrayList<>(Arrays.asList(
+        //     new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg"),
+        //     new RoomData("Ruang Seminar", " D202", "50", "AC, Proyektor, Meja, Kursi", "Gedung D", "Lantai 2", "seminar_d202.jpg"),
+        //     new RoomData("Ruang Rapat", "C102", "15", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 1", "rapat_c102.jpg"),
+        //     new RoomData("Lab", "Multimedia D303", "25", "AC, Proyektor, PC", "Gedung D", "Lantai 3", "lab_d303.jpg"),
+        //     new RoomData("Ruang Serbaguna", "C103", "50", "AC, Proyektor, Mic, Meja, Kursi", "Gedung C", "Lantai 1", "serbaguna_c103.jpg"),
+        //     new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg"),
+        //     new RoomData("Ruang Seminar", " D202", "50", "AC, Proyektor, Meja, Kursi", "Gedung D", "Lantai 2", "seminar_d202.jpg"),
+        //     new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg")
+        // ));
 
         for (RoomData room : rooms) {
             grid.add(createRoomCard(room));
@@ -1041,8 +1120,139 @@ public class AdminView extends AppLayout {
         return item;
     }
 
+    // GET All data ruangan
+    private void fetchRoomData(String searchQuery, String typeFilter, String gedungFilter) {
+        try {
+            // Create HTTP CLIENT
+            HttpClient client = HttpClient.newHttpClient();
+            
+            // Create URI Request
+            HttpRequest request = HttpRequest.newBuilder()
+                .uri(createUri(searchQuery, typeFilter, gedungFilter))
+                .GET()
+                .header("Accept", "application/json")
+                .build();
+            
+            // Send the request and get the response
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            
+            // Check if the response is valid
+            if (response.statusCode() == 200) {
+                // Parse the response body
+                parseRoomData(response.body());
+            } else {
+                // Show an error notification if the response is invalid
+                Notification.show("Failed to fetch room data: " + response.statusCode(), 
+                                 3000, Notification.Position.MIDDLE);
+            }
+        } catch (IOException | InterruptedException e) {
+            // Show an error notification if there is an error connecting to the server
+            Notification.show("Error connecting to server: " + e.getMessage(), 
+                     3000, Notification.Position.MIDDLE);
+        }
+    }
+    
+    private URI createUri(String searchQuery, String typeFilter, String gedungFilter) {
+        String uri = "http://localhost:8081/api/v1/ruangan";
+        if (searchQuery != null && !searchQuery.isEmpty()) {
+            uri += "?keyword=" + URLEncoder.encode(searchQuery, StandardCharsets.UTF_8);
+        }
+        if (typeFilter != null && !typeFilter.isEmpty()) {
+            uri += "&tipe=" + URLEncoder.encode(typeFilter, StandardCharsets.UTF_8);
+        }
+        if (gedungFilter != null && !gedungFilter.isEmpty()) {
+            uri += "&gedung=" + URLEncoder.encode(gedungFilter, StandardCharsets.UTF_8);
+        }
+        return URI.create(uri);
+    }
+    
+    private void parseRoomData(String jsonData) {
+        try {
+            // Simple JSON parsing - assuming response is a JSON array
+            String[] roomObjects = jsonData.trim().split("\\},\\{");
+            
+            rooms.clear();
+            for (String roomObj : roomObjects) {
+                // Clean up the object string
+                roomObj = roomObj.trim();
+                if (!roomObj.startsWith("{")) {
+                    roomObj = "{" + roomObj;
+                }
+                if (!roomObj.endsWith("}")) {
+                    roomObj = roomObj + "}";
+                }
+                
+                // Extract JSON values using simple string parsing
+                String ruanganId = extractJsonValue(roomObj, "ruanganId");
+                String tipe = extractJsonValue(roomObj, "tipe");
+                String nama = extractJsonValue(roomObj, "nama");
+                String kapasitas = extractJsonValue(roomObj, "kapasitas");
+                String fasilitas = extractJsonValue(roomObj, "fasilitas");
+                String gedung = extractJsonValue(roomObj, "gedung");
+                String lokasi = extractJsonValue(roomObj, "lokasi");
+                String pathGambar = extractJsonValue(roomObj, "gambar");
+                
+                rooms.add(new RoomData(ruanganId, tipe, nama, kapasitas, fasilitas, gedung, lokasi, pathGambar));
+            }
+        } catch (Exception e) {
+            Notification.show("Error parsing room data: " + e.getMessage(), 
+                                 3000, Notification.Position.MIDDLE);
+        }
+    }
+    
+    // Extract JSON value using simple string parsing
+    
+    private String extractJsonValue(String json, String key) {
+        try {
+            // Find the key in the JSON string
+            String searchKey = "\"" + key + "\":";
+            int keyIndex = json.indexOf(searchKey);
+            if (keyIndex == -1) {
+                return null;
+            }
+            
+            // Find the start of the value (after the colon)
+            int valueStart = keyIndex + searchKey.length();
+            
+            // Skip whitespace
+            while (valueStart < json.length() && Character.isWhitespace(json.charAt(valueStart))) {
+                valueStart++;
+            }
+            
+            // Check if value is a string (starts with quote)
+            if (valueStart < json.length() && json.charAt(valueStart) == '"') {
+                valueStart++; // Skip opening quote
+                int valueEnd = json.indexOf('"', valueStart);
+                if (valueEnd != -1) {
+                    return json.substring(valueStart, valueEnd);
+                }
+            } else {
+                // Handle non-string values (numbers, booleans)
+                int valueEnd = valueStart;
+                while (valueEnd < json.length() && 
+                       json.charAt(valueEnd) != ',' && 
+                       json.charAt(valueEnd) != '}' && 
+                       json.charAt(valueEnd) != ']') {
+                    valueEnd++;
+                }
+                return json.substring(valueStart, valueEnd).trim();
+            }
+            
+            return null;
+        } catch (Exception e) {
+            System.err.println("Error parsing JSON untul key '" + key + "': " + e.getMessage());
+            return null;
+        }
+    }
+
+
+
+
+    // Method to parse JSON response to List<RoomData>
+
     // Data class for room information
     private static class RoomData {
+        private final String ruanganId;
         private final String tipe;
         private final String name;
         private final String capacity;
@@ -1051,7 +1261,8 @@ public class AdminView extends AppLayout {
         private final String location;
         private final String image;
 
-        public RoomData(String tipe, String name, String capacity, String facilities, String gedung, String location, String image) {
+        public RoomData(String ruanganId, String tipe, String name, String capacity, String facilities, String gedung, String location, String image) {
+            this.ruanganId = ruanganId;
             this.tipe = tipe;
             this.name = name;
             this.capacity = capacity;
@@ -1061,6 +1272,7 @@ public class AdminView extends AppLayout {
             this.image = image;
         }
 
+        public String getRuanganId() { return ruanganId; }
         public String getTipe() { return tipe; }
         public String getName() { return name; }
         public String getCapacity() { return capacity; }
@@ -1069,6 +1281,7 @@ public class AdminView extends AppLayout {
         public String getLocation() { return location; }
         public String getImage() { return image; }
     }
+
 
 
 }
