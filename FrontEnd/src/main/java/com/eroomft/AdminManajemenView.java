@@ -39,6 +39,8 @@ import com.vaadin.flow.component.upload.Receiver;
 import java.io.File;
 import java.net.URLEncoder;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
@@ -208,6 +210,7 @@ public class AdminManajemenView extends AppLayout {
 
     // Variabel Global room
     List<RoomData> rooms = new ArrayList<>();
+    Div roomGrid;
 
     // Isi Konten
     private Component createContent() {
@@ -255,7 +258,7 @@ public class AdminManajemenView extends AppLayout {
         HorizontalLayout searchSection = createSearchSection();
 
         // Membuat grid untuk menampilkan ruangan
-        Div roomGrid = createRoomGrid();
+        roomGrid = createRoomGrid();
 
         // INI UNTUK NAMPILKAN YANG BARU DITAMBAHKAN
         // Div roomGrid = new Div(roomCardsLayout);
@@ -296,7 +299,7 @@ public class AdminManajemenView extends AppLayout {
         ComboBox<String> typeFilter = new ComboBox<>();
         typeFilter.setPlaceholder("Tipe");
         typeFilter.addClassNames("no-gray-background");
-        typeFilter.setItems("Semua", "Kelas", "Laboratorium", "Seminar", "Serbaguna");
+        typeFilter.setItems("Semua", "Kelas", "Laboratorium", "Seminar", "Rapat");
         typeFilter.getStyle()
             .set("background-color", "white")
             .set("--lumo-contrast-5pct", "white")
@@ -332,23 +335,22 @@ public class AdminManajemenView extends AppLayout {
             String selectedGedung = gedungFilter.getValue();
 
             // Logika filter berdasarkan input
-            List<RoomData> filteredRooms = new ArrayList<>();
-            for (RoomData room : rooms) {
-                boolean matchesSearch = room.name.toLowerCase().contains(searchText.toLowerCase());
-                boolean matchesType = selectedType == null || selectedType.equals("Semua") || room.tipe.equalsIgnoreCase(selectedType);
-                boolean matchesGedung = selectedGedung == null || selectedGedung.equals("Semua") || room.gedung.equalsIgnoreCase(selectedGedung);
-
-                if (matchesSearch && matchesType && matchesGedung) {
-                    filteredRooms.add(room);
-                }
-            }
-
-            // Clear existing cards and add filtered ones
-            Div roomGrid = createRoomGrid();
             roomGrid.removeAll();
-            for (RoomData room : filteredRooms) {
+            fetchRoomData(searchText, selectedType, selectedGedung);
+            for (RoomData room : rooms) {
+                if (room == null) {
+                    continue; // Skip null room data
+                }
                 roomGrid.add(createRoomCard(room));
             }
+            roomGrid.setVisible(true);
+
+            // Setelah filter, bisa update grid atau tampilan sesuai dengan data yang difilter
+            Notification.show("Pencarian dilakukan: " + searchText + ", Tipe: " + selectedType + ", Gedung: " + selectedGedung, 3000, Notification.Position.MIDDLE);
+
+            // update grid
+            // roomGrid.removeAll();
+
         });
 
 
@@ -656,7 +658,8 @@ public class AdminManajemenView extends AppLayout {
         Div grid = new Div();
         grid.getStyle()
             .set("display", "grid")
-            .set("grid-template-columns", "repeat(auto-fit, minmax(250px, 1fr))")
+            .set("justify-content", "center")
+            .set("grid-template-columns", "repeat(auto-fill, minmax(min(250px, 100vw / 4), 350px))")
             .set("gap", "1.5rem")
             .set("margin-top", "0rem")
             .set("padding", "0.5rem")
@@ -664,24 +667,40 @@ public class AdminManajemenView extends AppLayout {
             .set("margin-bottom", "1rem")
             .set("width", "100%");
 
-
         // Sample room data, untuk coba tampilan aja, ntar backend yang lanjutkan
         // List<RoomData> rooms = new ArrayList<>(Arrays.asList(
         //     new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg"),
         //     new RoomData("Ruang Seminar", " D202", "50", "AC, Proyektor, Meja, Kursi", "Gedung D", "Lantai 2", "seminar_d202.jpg"),
         //     new RoomData("Ruang Rapat", "C102", "15", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 1", "rapat_c102.jpg"),
         //     new RoomData("Lab", "Multimedia D303", "25", "AC, Proyektor, PC", "Gedung D", "Lantai 3", "lab_d303.jpg"),
-        //     new RoomData("Ruang Serbaguna", "C103", "50", "AC, Proyektor, Mic, Meja, Kursi", "Gedung C", "Lantai 1", "serbaguna_c103.jpg"),
+        //     new RoomData("Ruang Rapat", "C103", "50", "AC, Proyektor, Mic, Meja, Kursi", "Gedung C", "Lantai 1", "rapat_c103.jpg"),
         //     new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg"),
         //     new RoomData("Ruang Seminar", " D202", "50", "AC, Proyektor, Meja, Kursi", "Gedung D", "Lantai 2", "seminar_d202.jpg"),
         //     new RoomData("Ruang Kelas", "C202", "30", "AC, Proyektor, Meja, Kursi", "Gedung C", "Lantai 2", "kelas_c202.jpg")
         // ));
 
+        // cek apakah ada data = null
+        /*
+        * {
+        "status": "success",
+        "message": "Tidak ada ruangan yang ditemukan",
+        "data": null
+         */
+        if (rooms == null || rooms.isEmpty()) {
+            Notification.show("Tidak ada ruangan yang ditemukan", 3000, Notification.Position.MIDDLE);
+            grid.getElement().removeAllChildren();
+            return grid;
+        }
+        // Kosongkan grid, jangan sampai ada kartu tersisa jika room = null
+        grid.getElement().removeAllChildren();
         for (RoomData room : rooms) {
+            if (room == null) {
+                continue;
+            }
             grid.add(createRoomCard(room));
         }
-
         return grid;
+
     }
 
     private Div createRoomCard(RoomData room) {
@@ -1120,6 +1139,8 @@ public class AdminManajemenView extends AppLayout {
         return item;
     }
 
+
+
     // GET All data ruangan
     private void fetchRoomData(String searchQuery, String typeFilter, String gedungFilter) {
         try {
@@ -1138,7 +1159,12 @@ public class AdminManajemenView extends AppLayout {
             
             // Check if the response is valid
             if (response.statusCode() == 200) {
-                // Parse the response body
+                // if response.data is null or empty, show notification
+                //                 {
+                //   "status": "success",
+                //   "message": "Tidak ada ruangan yang ditemukan",
+                //   "data": null
+                // Check if the response is valid
                 parseRoomData(response.body());
             } else {
                 // Show an error notification if the response is invalid
@@ -1153,15 +1179,34 @@ public class AdminManajemenView extends AppLayout {
     }
     
     private URI createUri(String searchQuery, String typeFilter, String gedungFilter) {
+        
         String uri = "http://localhost:8081/api/v1/ruangan";
+        boolean hasQuery = false;
         if (searchQuery != null && !searchQuery.isEmpty()) {
             uri += "?keyword=" + URLEncoder.encode(searchQuery, StandardCharsets.UTF_8);
+            hasQuery = true;
         }
         if (typeFilter != null && !typeFilter.isEmpty()) {
-            uri += "&tipe=" + URLEncoder.encode(typeFilter, StandardCharsets.UTF_8);
+            typeFilter = typeFilter.toUpperCase();
+            if (typeFilter.equals("KELAS") || typeFilter.equals("SEMINAR") || 
+                typeFilter.equals("RAPAT") || typeFilter.equals("LABORATORIUM")) {
+                if (typeFilter.equals("LABORATORIUM")) {
+                    typeFilter = "LAB";
+                }
+                if (hasQuery) {
+                    uri += "&tipe=" + URLEncoder.encode(typeFilter, StandardCharsets.UTF_8);
+                } else {
+                    uri += "?tipe=" + URLEncoder.encode(typeFilter, StandardCharsets.UTF_8);
+                    hasQuery = true;
+                }
+            } 
         }
         if (gedungFilter != null && !gedungFilter.isEmpty()) {
-            uri += "&gedung=" + URLEncoder.encode(gedungFilter, StandardCharsets.UTF_8);
+            if (hasQuery) {
+                uri += "&gedung=" + URLEncoder.encode(gedungFilter, StandardCharsets.UTF_8);
+            } else {
+                uri += "?gedung=" + URLEncoder.encode(gedungFilter, StandardCharsets.UTF_8);
+            }
         }
         return URI.create(uri);
     }
@@ -1172,6 +1217,10 @@ public class AdminManajemenView extends AppLayout {
             String[] roomObjects = jsonData.trim().split("\\},\\{");
             
             rooms.clear();
+            if (roomObjects == null || roomObjects.length == 0 || roomObjects[0].contains("\"data\":null")) {
+                Notification.show("Tidak ada ruangan yang ditemukan", 3000, Notification.Position.MIDDLE);
+                return;
+            }
             for (String roomObj : roomObjects) {
                 // Clean up the object string
                 roomObj = roomObj.trim();
@@ -1196,7 +1245,7 @@ public class AdminManajemenView extends AppLayout {
             }
         } catch (Exception e) {
             Notification.show("Error parsing room data: " + e.getMessage(), 
-                                 3000, Notification.Position.MIDDLE);
+                3000, Notification.Position.MIDDLE);
         }
     }
     
