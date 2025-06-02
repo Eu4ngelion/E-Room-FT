@@ -1,5 +1,9 @@
 package com.eroomft.restful.service;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -19,6 +23,7 @@ import com.eroomft.restful.repository.LogPeminjamanRepository;
 import com.eroomft.restful.repository.PeminjamanRepository;
 import com.eroomft.restful.repository.UserRepository;
 
+
 @Service
 public class AkunService {
 
@@ -36,7 +41,23 @@ public class AkunService {
 
     @Autowired
     private LogPeminjamanRepository logPeminjamanRepo;
-    
+
+
+    private String hashPassword(String password) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(password.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if(hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        }
+    }
 
     // Buat Akun (Dev Only)
     public ResponseWrapper createAkun(CreateAkunRequest request) {
@@ -63,7 +84,7 @@ public class AkunService {
         if (request.getRole().equalsIgnoreCase("Admin")) {
             Admin admin = new Admin();
             admin.setAkunId(request.getAkunId());
-            admin.setPassword(request.getPassword());
+            admin.setPassword(hashPassword(request.getPassword()));
             admin.setEmail(request.getEmail());
             admin.setNama(request.getNama());
             adminRepository.save(admin);
@@ -73,7 +94,7 @@ public class AkunService {
                    request.getRole().equalsIgnoreCase("Dosen")) {
             User user = new User();
             user.setAkunId(request.getAkunId());
-            user.setPassword(request.getPassword());
+            user.setPassword(hashPassword(request.getPassword()));
             user.setEmail(request.getEmail());
             user.setNama(request.getNama());
             user.setRole(Akun.Role.valueOf(request.getRole().toUpperCase()));
@@ -115,7 +136,7 @@ public class AkunService {
             if (adminRepository.existsById(akunId)) {
                 Admin admin = adminRepository.findById(akunId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan"));
-                admin.setPassword(request.getPassword());
+                admin.setPassword(hashPassword(request.getPassword()));
                 admin.setEmail(request.getEmail());
                 admin.setNama(request.getNama());
                 adminRepository.save(admin);
@@ -123,7 +144,7 @@ public class AkunService {
             } else if (userRepository.existsById(akunId)) {
                 User user = userRepository.findById(akunId)
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Akun tidak ditemukan"));
-                user.setPassword(request.getPassword());
+                user.setPassword(hashPassword(request.getPassword()));
                 user.setEmail(request.getEmail());
                 user.setNama(request.getNama());
                 userRepository.save(user);
