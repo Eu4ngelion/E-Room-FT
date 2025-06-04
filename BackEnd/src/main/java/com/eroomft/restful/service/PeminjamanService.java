@@ -400,12 +400,12 @@ public class PeminjamanService {
     // Testing interval 1 menit WITA
     // @Scheduled(cron = "0 0/1 * * * *", zone = "Asia/Makassar") 
 
-    // Testing interver 10 detik WITA
+    // Testing interval 10 detik WITA
     @Scheduled(cron = "0/10 * * * * *", zone = "Asia/Makassar")
     
     // Testing fixed rate = 5 detik
     // @Scheduled(fixedRate = 5000)
-    // Update Peminjaman -> LogPeminjaman Realtime
+    // Update Peminjaman -> LogPeminjaman Realtime2
     public void updatePeminjamanStatusScheduled() {
         try {
             LocalDate today = LocalDate.now();

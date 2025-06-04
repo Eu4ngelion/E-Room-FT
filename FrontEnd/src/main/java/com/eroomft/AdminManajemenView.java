@@ -785,15 +785,14 @@ public class AdminManajemenView extends AppLayout {
             imageDiv.add(new Icon(VaadinIcon.BUILDING));
         }
 
-        // Add the image to the card
-        
+        // gambar
         card.add(imageDiv);
 
         // Card content
         Div content = new Div();
         content.getStyle().set("padding", "1rem");
 
-        H3 roomName = new H3(room.tipe + " " + room.name);
+        H3 roomName = new H3("Ruang " + toTitleCase(room.tipe) + " " + room.getName());
         roomName.getStyle()
             .set("margin", "0 0 0.5rem 0")
             .set("font-size", "1.1rem")
@@ -873,6 +872,15 @@ public class AdminManajemenView extends AppLayout {
                     }
                 }
             }
+
+            gedungCombo.setAllowCustomValue(true);
+            gedungCombo.addCustomValueSetListener(event -> {
+                String customGedung = event.getDetail();
+                if (customGedung != null && !customGedung.trim().isEmpty()) {
+                    gedungCombo.setValue(customGedung);
+                }
+            });
+
             List<String> gedungList = new ArrayList<>(distinctGedung);
             gedungCombo.setItems(gedungList.toArray(String[]::new));
             gedungCombo.setPlaceholder("Contoh : Gedung A");
@@ -901,7 +909,7 @@ public class AdminManajemenView extends AppLayout {
             Upload upload = new Upload();
             upload.setReceiver((filename, mimeType) -> {
                 try {
-                    // Create the uploads directory if it doesn't exist
+                    // Buat direktori
                     File uploadDir = new File("FrontEnd/src/main/resources/static/uploads");
                     if (!uploadDir.exists()) {
                         uploadDir.mkdirs();
@@ -1016,24 +1024,10 @@ public class AdminManajemenView extends AppLayout {
                     return;
                 }
                 if (uploadedFileName == null || uploadedFileName.isEmpty()) {
-                    Notification.show("Silakan unggah gambar ruangan!", 3000, Notification.Position.MIDDLE);
-                    return;
+                    uploadedFileName = room.getImage(); 
                 }
 
-                // Simpan update ke database atau service
-                // request body untuk update ruangan
-                //
-                //   'http://localhost:8081/api/v1/ruangan/1' \
-                //   -H 'accept: application/json' \
-                //   -H 'Content-Type: application/json' \
-                //   -d '{
-                //   "tipe": "KELAS",
-                //   "nama": "C103",
-                //   "kapasitas": 30,
-                //   "fasilitas": "AC, Proyektor, Papan Tulis",
-                //   "gedung": "Gedung C",
-                //   "lokasi": "Lantai 3",
-                //   "pathGambar": "/uploads/B101.jpg"
+                // Simpan update ke database 
                 putUpdateRoom(
                     room.getRuanganId(),
                     tipeRuanganCombo.getValue(),
@@ -1045,10 +1039,7 @@ public class AdminManajemenView extends AppLayout {
                     uploadedFileName
                 );
 
-
-                // Notification.show("Ruangan berhasil diperbarui!", 3000, Notification.Position.MIDDLE);
                 // refresh the page
-
                 roomGrid.removeAll();
                 fetchRoomData("", "", "");
                 for (RoomData r : rooms) {
@@ -1369,7 +1360,7 @@ public class AdminManajemenView extends AppLayout {
                 }
             } 
         }
-        if (gedungFilter != null && !gedungFilter.isEmpty()) {
+        if (gedungFilter != null && !gedungFilter.isEmpty() && !gedungFilter.equalsIgnoreCase("semua")) {
             if (hasQuery) {
                 uri += "&gedung=" + URLEncoder.encode(gedungFilter, StandardCharsets.UTF_8);
             } else {
@@ -1425,8 +1416,6 @@ public class AdminManajemenView extends AppLayout {
             // Create HTTP CLIENT
             HttpClient client = HttpClient.newHttpClient();
 
-
-            
             // Create JSON body
             String jsonBody = String.format(
                 "{\"tipe\":\"%s\",\"nama\":\"%s\",\"kapasitas\":%s,\"fasilitas\":\"%s\",\"gedung\":\"%s\",\"lokasi\":\"%s\",\"pathGambar\":\"%s\"}",
@@ -1596,7 +1585,8 @@ public class AdminManajemenView extends AppLayout {
         }
     }
 
-
+    // function
+    private String toTitleCase(String s) { return (s == null || s.isEmpty()) ? s : s.substring(0, 1).toUpperCase() + s.substring(1).toLowerCase(); }
 
 
     // Data class for room information

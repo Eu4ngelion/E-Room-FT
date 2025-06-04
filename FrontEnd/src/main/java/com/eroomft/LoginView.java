@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 import java.util.Map;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Anchor;
@@ -38,6 +39,24 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
 
     public LoginView() {
+        // jika masih ada session,
+        String sessionRole = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (sessionRole != null) {
+                Notification.show("Log Out Terlebih Dahulu", 3000, Notification.Position.BOTTOM_END);
+                UI.getCurrent().access(() -> {
+                switch (sessionRole.toLowerCase()) {
+                    case "mahasiswa", "dosen" -> UI.getCurrent().navigate("user/beranda");
+                    case "admin" -> UI.getCurrent().navigate("admin/dashboard");
+                    default -> {
+                        Notification.show("Role tidak dikenali: " + sessionRole, 3000, Notification.Position.MIDDLE);
+                        UI.getCurrent().navigate("");
+                    }
+                }
+                });
+                return;
+        }
+
+
         setSizeFull();
         getStyle().set("background", "linear-gradient(to bottom, #FF7213, #FA812F, #FB9A59, #ffffff)");
         setAlignItems(Alignment.CENTER);

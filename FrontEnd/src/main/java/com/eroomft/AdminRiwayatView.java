@@ -277,7 +277,7 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
         card.setWidth("90%");
         card.setPadding(true);
         card.setSpacing(true);
-        card.getStyle()
+        card.getStyle() 
             .set("background", "#fff")
             .set("border-radius", "10px")
             .set("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
