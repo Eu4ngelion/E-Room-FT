@@ -186,7 +186,6 @@ public class SidebarComponent extends VerticalLayout {
     private Class<? extends Component> resolveRoute(String route) {
         return switch (route) {
             case "landing" -> Landing.class;
-            case "Manajemen" -> ManajemenView.class;
             case "Verifikasi" -> AdminVerifikasiView.class;
             case "Riwayat" -> AdminRiwayatView.class;
             case "login" -> LoginView.class;
