@@ -2,26 +2,29 @@ package com.eroomft;
 
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-@Route("")
-public class Landing extends VerticalLayout {
+@Route("/contact-us")
+public class contactUs extends VerticalLayout {
 
-    public Landing() {
-        String sessionRole = (String) UI.getCurrent().getSession().getAttribute("role");
-        if (sessionRole != null) {
+    public contactUs() {
+        String checkSession = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (checkSession != null) {
             Notification.show("Log Out Terlebih Dahulu", 3000, Notification.Position.BOTTOM_END);
             UI.getCurrent().access(() -> {
-                switch (sessionRole.toLowerCase()) {
+                switch (checkSession.toLowerCase()) {
                     case "mahasiswa":
                     case "dosen":
                         UI.getCurrent().navigate("user/beranda");
@@ -30,7 +33,7 @@ public class Landing extends VerticalLayout {
                         UI.getCurrent().navigate("admin/dashboard");
                         break;
                     default:
-                        Notification.show("Role tidak dikenali: " + sessionRole, 3000, Notification.Position.MIDDLE);
+                        Notification.show("Role tidak dikenali: " + checkSession, 3000, Notification.Position.MIDDLE);
                         UI.getCurrent().navigate("");
                         break;
                 }
@@ -42,10 +45,107 @@ public class Landing extends VerticalLayout {
         setPadding(false);
         setSpacing(false);
         getStyle()
-                .set("background", "linear-gradient(rgba(255, 255, 255, 0.9)), url('/frontend/background.png') no-repeat center center / cover")
+                .set("background", "linear-gradient(rgba(245, 238, 232, 0.85), rgba(245, 238, 232, 0.85)), url('/frontend/background.png') no-repeat center center / cover")
+                .set("background-attachment", "fixed")
                 .set("flex-direction", "column")
-                .set("min-height", "120vh");
+                .set("min-height", "100vh");
 
+        Div header = createHeader();
+
+        VerticalLayout content = new VerticalLayout();
+        content.setAlignItems(Alignment.CENTER);
+        content.setJustifyContentMode(JustifyContentMode.CENTER);
+        content.setSpacing(true);
+        content.getStyle().set("padding", "40px 20px");
+
+        H1 judul = new H1("CONTACT");
+        judul.getStyle()
+                .set("color", "#FF7700")
+                .set("font-weight", "600")
+                .set("font-family", "'poppins', sans-serif")
+                .set("text-shadow", "2px 2px 4px rgba(0, 0, 0, 0.3)")
+                .set("font-size", "50px")
+                .set("text-align", "center")
+                .set("margin-bottom", "40px");
+
+        HorizontalLayout contactLayout = new HorizontalLayout();
+        contactLayout.setSpacing(true);
+        contactLayout.getStyle().set("gap", "40px");
+
+        contactLayout.add(
+            contactCard(VaadinIcon.ENVELOPE_O, "Email", "info@ft.unmul.ac.id", "mailto:info@ft.unmul.ac.id", "We are always happy to help!"),
+            contactCard(VaadinIcon.PHONE, "Phone", "(0541) 736834", "tel:+62541736834", "Best way to get answer faster!"),
+            contactCard(VaadinIcon.MAP_MARKER, "Address", "Jalan Sambaliung No.9", "https://maps.google.com/?q=Fakultas+Teknik+Universitas+Mulawarman", "Come visit us anytime!")
+        );
+        
+        content.add(judul, contactLayout);
+
+        Div footer = createFooter();
+
+        add(header, content, footer);
+        expand(content);
+    }
+    
+    private Div contactCard(VaadinIcon icon, String title, String detail, String link, String description) {
+        Div card = new Div();
+        card.getStyle()
+            .set("width", "300px")
+            .set("height", "280px")
+            .set("padding", "30px")
+            .set("box-shadow", "0 4px 15px rgba(0,0,0,0.1)")
+            .set("border-radius", "15px")
+            .set("background-color", "rgba(255, 255, 255, 0.9)")
+            .set("display", "flex")
+            .set("flex-direction", "column")
+            .set("align-items", "center")
+            .set("text-align", "center");
+    
+        Div iconCircle = new Div();
+        iconCircle.getStyle()
+            .set("width", "80px")
+            .set("height", "80px")
+            .set("background-color", "#FCE0A8")
+            .set("border-radius", "50%")
+            .set("display", "flex")
+            .set("align-items", "center")
+            .set("justify-content", "center")
+            .set("margin-bottom", "15px");
+
+        Icon vaadinIcon = new Icon(icon);
+        vaadinIcon.setSize("40px");
+        vaadinIcon.setColor("#FF7700");
+        iconCircle.add(vaadinIcon);
+
+        Paragraph cardTitle = new Paragraph(title);
+        cardTitle.getStyle()
+            .set("font-family", "'poppins', sans-serif")
+            .set("font-weight", "600")
+            .set("font-size", "22px")
+            .set("color", "black")
+            .set("margin", "0");
+
+        Anchor detailLink = new Anchor(link, detail);
+        detailLink.setTarget("_blank"); 
+        detailLink.getStyle()
+            .set("font-family", "'Plus Jakarta Sans', sans-serif")
+            .set("font-size", "16px")
+            .set("font-weight", "600")
+            .set("color", "#FF7700")
+            .set("text-decoration", "underline")
+            .set("margin", "5px 0");
+
+        Paragraph cardDescription = new Paragraph(description);
+        cardDescription.getStyle()
+            .set("font-family", "'Plus Jakarta Sans', sans-serif")
+            .set("font-size", "14px")
+            .set("color", "#666666")
+            .set("margin", "10px 0 0 0");
+
+        card.add(iconCircle, cardTitle, detailLink, cardDescription);
+        return card;
+    }
+
+    private Div createHeader() {
         Div header = new Div();
         header.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
         header.getStyle()
@@ -68,9 +168,10 @@ public class Landing extends VerticalLayout {
         logo.getStyle()
                 .set("width", "55px")
                 .set("height", "55px")
-                .set("margin-top", "10px")
-                .set("cursor", "pointer");
+                .set("margin-top", "10px");
+        
         logo.addClickListener(e -> UI.getCurrent().navigate(""));
+        logo.getStyle().set("cursor", "pointer");
 
         Span garis = new Span("|");
         garis.getStyle()
@@ -105,52 +206,17 @@ public class Landing extends VerticalLayout {
         Div headerKanan = new Div();
         headerKanan.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
         headerKanan.getStyle().set("gap", "20px");
-
         headerKanan.add(
-            btnNavbar("Halaman Utama", ""),
+            btnNavbar("Halaman Utama", ""), 
             btnNavbar("Tentang Kami", "about-us"),
-            btnNavbar("Kontak", "contact-us")
+            btnNavbar("Kontak", "contact-us") 
         );
 
         header.add(headerKiri, headerKanan);
+        return header;
+    }
 
-        VerticalLayout content = new VerticalLayout();
-        content.setAlignItems(Alignment.CENTER);
-        content.setJustifyContentMode(JustifyContentMode.CENTER);
-        content.setSpacing(true);
-        content.getStyle().set("padding-top", "40px");
-
-        H1 judul = new H1("E-ROOM FT");
-        judul.getStyle()
-                .set("color", "#FF7700")
-                .set("font-weight", "600")
-                .set("font-family", " 'poppins', sans-serif")
-                .set("text-shadow", "2px 2px 4px rgba(0, 0, 0, 0.3)")
-                .set("font-size", "50px")
-                .set("text-align", "center");
-
-        Paragraph deskripsi = new Paragraph("Aplikasi E-ROOM ini hadir untuk mendukung efisiensi pemanfaatan ruang di Gedung Teknik Baru Fakultas Teknik Universitas Mulawarman. Klik tombol di bawah untuk mulai meminjam ruangan.");
-        deskripsi.getStyle()
-                .set("text-align", "center")
-                .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-size", "17.5px")
-                .set("font-weight", "600")
-                .set("max-width", "600px");
-
-        HorizontalLayout kotak = new HorizontalLayout();
-        kotak.setJustifyContentMode(JustifyContentMode.CENTER);
-        kotak.setSpacing(true);
-        kotak.getStyle().set("gap", "30px");
-
-
-        kotak.add(
-                kotakLogin("Mahasiswa", "/frontend/mahasiswa.png", "login?role=MAHASISWA"),
-                kotakLogin("Dosen", "/frontend/dosen.png", "login?role=DOSEN"),
-                kotakLogin("Staff Akademik", "/frontend/staff.png", "login?role=ADMIN")
-        );
-
-        content.add(judul, deskripsi, kotak);
-
+    private Div createFooter() {
         Div footer = new Div();
         footer.setText("Copyright © 2025 E–Room FT");
         footer.getStyle()
@@ -165,9 +231,7 @@ public class Landing extends VerticalLayout {
                 .set("color", "black")
                 .set("width", "100%")
                 .set("flex-shrink", "0");
-        
-        add(header, content, footer);
-        expand(content);
+        return footer;
     }
 
     private Button btnNavbar(String text, String route) {
@@ -175,14 +239,16 @@ public class Landing extends VerticalLayout {
         button.getStyle()
                 .set("background-color", "transparent")
                 .set("color", "black")
-                .set("font-family", " 'poppins', sans-serif ")
+                .set("font-family", "'poppins', sans-serif")
                 .set("font-size", "16px")
                 .set("font-weight", "500")
                 .set("border", "none")
                 .set("border-radius", "0")
                 .set("cursor", "pointer");
-        
-        button.addClickListener(e -> UI.getCurrent().navigate(route));
+
+        button.addClickListener(e -> 
+            UI.getCurrent().navigate(route)
+        );
 
         button.getElement().addEventListener("mouseenter", e -> {
             button.getStyle().set("border-bottom", "2px solid #FF7700");
@@ -193,67 +259,5 @@ public class Landing extends VerticalLayout {
         });
 
         return button;
-    }
-
-    private Div kotakLogin(String role, String iconUrl, String route) {
-        Div card = new Div();
-        card.getStyle()
-                .set("width", "200px")
-                .set("height", "220px")
-                .set("padding", "20px")
-                .set("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
-                .set("border-radius", "10px")
-                .set("background-color", "#ffffff")
-                .set("display", "flex")
-                .set("flex-direction", "column")
-                .set("align-items", "center")
-                .set("justify-content", "space-between");
-
-        Div borderLogo = new Div();
-        borderLogo.getStyle()
-                .set("width", "100px")
-                .set("height", "100px")
-                .set("background-color", "#FF8B26")
-                .set("border-radius", "50%")
-                .set("display", "flex")
-                .set("align-items", "center")
-                .set("justify-content", "center")
-                .set("overflow", "hidden");
-
-        Image icon = new Image(iconUrl, role);
-        icon.getStyle()
-                .set("object-fit", "cover");
-
-        borderLogo.add(icon);
-
-        Paragraph roleText = new Paragraph(role);
-        roleText.getStyle()
-                .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-weight", "600")
-                .set("margin", "10px 0 0 0");
-
-        Button btnLogin = new Button("Login", event ->
-                getUI().ifPresent(ui -> ui.navigate(route))
-        );
-        btnLogin.getStyle()
-                .set("background-color", "#FF7700")
-                .set("font-family", " 'poppins', sans-serif ")
-                .set("font-size", "16px")
-                .set("font-weight", "500")
-                .set("color", "white")
-                .set("cursor", "pointer")
-                .set("border-radius", "10px")
-                .set("box-shadow", "0px 6px 8px rgba(0,0,0,0.3)");
-
-        btnLogin.getElement().addEventListener("mouseenter", e -> {
-            btnLogin.getStyle().set("background-color", "#cc5200");
-        });
-
-        btnLogin.getElement().addEventListener("mouseleave", e -> {
-            btnLogin.getStyle().set("background-color", "#FF7700");
-        });
-
-        card.add(borderLogo, roleText, btnLogin);
-        return card;
     }
 }
