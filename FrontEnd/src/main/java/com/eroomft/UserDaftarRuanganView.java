@@ -35,7 +35,6 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @Route("user/ruangan")
 public class UserDaftarRuanganView extends AppLayout {
-
     private List<RoomData> rooms = new ArrayList<>();
     private Div roomGrid;
     private Set<String> distinctGedung = new HashSet<>();

@@ -298,23 +298,15 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
                 .set("border-radius", "4px")
                 .set("font-size", "1rem")
                 .set("width", "20%")
-                // .set("margin-top", "1rem")
                 ;
         pinjamBtn.addClickListener(e -> {
-            String targetUrl = "user/pengajuan?namaRuangan=" + roomData.getName();
             UI.getCurrent().access(() -> {
-                // Store room data in session for the pengajuan page
                 UI.getCurrent().getSession().setAttribute("pengajuan_room_id", roomData.getRuanganId());
-                UI.getCurrent().getSession().setAttribute("pengajuan_room_name", "Ruang " + toTitleCase(roomData.getTipe()) + " " + roomData.getName());
-                UI.getCurrent().navigate(targetUrl);
+                UI.getCurrent().getSession().setAttribute("pengajuan_room_name", roomData.getName());
+                UI.getCurrent().navigate("user/pengajuan");
             });
         });
         roomDetailsLayout.add(pinjamBtn);
-        
-        // Schedule Section
-        // Right : Vertical Layout for Schedule (40% width)
-        // > Title (Jadwal Ruangan) & Date Picker
-        // > Schedule List (displaying time slots and status)
 
         VerticalLayout ScheduleLayout = new VerticalLayout();
         ScheduleLayout.setWidth("40%");
