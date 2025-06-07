@@ -10,22 +10,15 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.List;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -35,10 +28,13 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @Route("user/pengajuan")
-public class UserPengajuanView extends AppLayout {
+public class UserPengajuanView extends HorizontalLayout implements HasUrlParameter<String> {
+
+    private SidebarComponent sidebar;
+    private VerticalLayout mainContent;
+    private String ruanganId;
 
     public UserPengajuanView() {
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
@@ -47,152 +43,44 @@ public class UserPengajuanView extends AppLayout {
             UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
             return;
         }
-        createDrawer();
-        setContent(createContent());
+
+        setSizeFull();
+        setPadding(false);
+        setSpacing(false);
+
+        sidebar = new SidebarComponent();
+
+        mainContent = new VerticalLayout();
+        mainContent.setSizeFull();
+        mainContent.setPadding(false);
+        mainContent.getStyle().set("background-color", "#FEE6D5");
+        mainContent.getStyle().set("overflow", "auto");
+
+        add(sidebar, mainContent);
     }
 
-    private void createDrawer() {
-        String currentPage = "user/pengajuan";
+    @Override
+    public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
+        ruanganId = event.getLocation().getQueryParameters().getParameters()
+                .getOrDefault("ruanganId", List.of())
+                .stream()
+                .findFirst()
+                .orElse(null);
 
-        Image logo = new Image("https://fahutan.unmul.ac.id/laboratorium/assets/images/LOGO%20UNMUL.png", "Logo");
-        logo.setWidth("50px");
+        System.out.println("Extracted ruanganId: " + ruanganId);
 
-        Span title = new Span("E-Room Teknik");
-        title.getStyle()
-                .set("font-weight", "bold")
-                .set("font-size", "1.2rem");
-
-        HorizontalLayout logoSection = new HorizontalLayout(logo, title);
-        logoSection.setAlignItems(FlexComponent.Alignment.CENTER);
-        logoSection.setWidthFull();
-        logoSection.setSpacing(true);
-        logoSection.getStyle()
-                .set("padding", "1rem")
-                .set("border-bottom", "1px solid #e0e0e0");
-
-        VerticalLayout navigation = new VerticalLayout();
-        navigation.setPadding(false);
-        navigation.setSpacing(false);
-
-        Span utamaHeader = new Span("UTAMA");
-        utamaHeader.getStyle()
-                .set("margin", "1rem 0 0.5rem 1rem")
-                .set("font-size", "0.8rem")
-                .set("font-weight", "bold")
-                .set("color", "black");
-
-        Button dashboardBtn = createStyledButton(VaadinIcon.DASHBOARD, "Beranda", currentPage.equals("user/beranda"), "user/beranda");
-        Button manajemenRuanganBtn = createStyledButton(VaadinIcon.BUILDING, "Daftar Ruangan", currentPage.equals("user/ruangan"), "user/ruangan");
-
-        Span peminjamanHeader = new Span("PEMINJAMAN RUANGAN");
-        peminjamanHeader.getStyle()
-                .set("margin", "1rem 0 0.5rem 1rem")
-                .set("font-size", "0.8rem")
-                .set("font-weight", "bold")
-                .set("color", "black");
-
-        Button verifikasiBtn = createStyledButton(VaadinIcon.CHECK_SQUARE, "Ajukan Peminjaman", currentPage.equals("user/pengajuan"), "user/pengajuan");
-        Button daftarPeminjamanBtn = createStyledButton(VaadinIcon.EYE, "Daftar Peminjaman", currentPage.equals("user/daftar-peminjaman"), "user/daftar-peminjaman");
-        Button riwayatBtn = createStyledButton(VaadinIcon.CLOCK, "Riwayat Peminjaman", currentPage.equals("user/riwayat"), "user/riwayat");
-        Button keluar = createExitButton(VaadinIcon.SIGN_OUT, "Keluar");
-
-        navigation.add(
-                utamaHeader,
-                dashboardBtn,
-                manajemenRuanganBtn,
-                peminjamanHeader,
-                verifikasiBtn,
-                daftarPeminjamanBtn,
-                riwayatBtn,
-                keluar
-        );
-
-        addToDrawer(logoSection, navigation);
-    }
-
-    private Button createStyledButton(VaadinIcon icon, String text, boolean isActive, String targetPage) {
-        Button btn = new Button(text, new Icon(icon));
-
-        btn.getStyle()
-                .set("margin-inline", "1rem")
-                .set("padding", "0.5rem")
-                .set("gap", "0.5rem");
-
-        if (isActive) {
-            btn.getStyle()
-                    .set("background-color", "#FF6B35")
-                    .set("width", "calc(100% - 2rem)")
-                    .set("color", "white");
-        } else {
-            btn.getStyle()
-                    .set("color", "black")
-                    .set("background-color", "transparent");
-        }
-
-        btn.getElement().addEventListener("mouseenter", e -> {
-            btn.getStyle()
-                    .set("background-color", "#FB9A59")
-                    .set("width", "calc(100% - 2rem)")
-                    .set("color", "white");
-        });
-
-        btn.getElement().addEventListener("mouseleave", e -> {
-            if (!isActive) {
-                btn.getStyle()
-                        .set("background-color", "transparent")
-                        .remove("width")
-                        .set("color", "black");
-            } else {
-                btn.getStyle()
-                        .set("background-color", "#FF6B35")
-                        .set("color", "white");
-            }
-        });
-
-        btn.addClickListener(event -> {
-            if (!isActive) {
-                UI.getCurrent().navigate(targetPage);
-            }
-        });
-        return btn;
-    }
-
-    private Button createExitButton(VaadinIcon icon, String text) {
-        Button button = new Button(text, new Icon(icon));
-        button.addClassNames(
-                LumoUtility.JustifyContent.START,
-                LumoUtility.AlignItems.START,
-                LumoUtility.Width.FULL
-        );
-        button.getStyle()
-                .set("margin-top", "100px")
-                .set("border-radius", "5px")
-                .set("margin-inline", "1rem")
-                .set("width", "calc(100% - 2rem)")
-                .set("background", "#FF6666")
-                .set("color", "white")
-                .set("padding", "0.75rem 1rem")
-                .set("justify-content", "flex-start")
-                .set("text-align", "left")
-                .set("display", "flex")
-                .set("align-items", "center");
-
-        button.addClickListener(event -> {
-            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END)
-                    .setPosition(Notification.Position.BOTTOM_END);
-            UI.getCurrent().getSession().close();
-            UI.getCurrent().navigate("");
-        });
-        return button;
+        mainContent.add(createContent());
     }
 
     private Component createContent() {
         VerticalLayout content = new VerticalLayout();
-        content.setPadding(false);
-        content.setSpacing(false);
+        content.setPadding(true);
+        content.setSpacing(true);
         content.setHeightFull();
+        content.setWidthFull();
+        content.getStyle()
+                .set("background-color", "#FEE6D5");
 
-        // Title
         Span title = new Span("Ajukan Peminjaman Ruangan");
         title.getStyle()
                 .set("font-size", "1.5rem")
@@ -200,116 +88,94 @@ public class UserPengajuanView extends AppLayout {
                 .set("margin-bottom", "1rem");
         content.add(title);
 
-        // Form layout
         VerticalLayout formLayout = new VerticalLayout();
         formLayout.setPadding(true);
         formLayout.setWidth("70%");
         formLayout.getStyle()
-                .set("border", "1px solid #e0e0e0")
-                .set("border-radius", "5px")
-                .set("padding", "1rem");
+                .set("background-color", "white")
+                .set("border-radius", "8px")
+                .set("padding", "1.5rem")
+                .set("box-shadow", "var(--lumo-box-shadow-xs)");
 
-        // Nama Peminjam
         String namaPeminjam = (String) UI.getCurrent().getSession().getAttribute("nama");
         Div namaPeminjamDiv = new Div();
         namaPeminjamDiv.setText("Nama Peminjam:");
-        namaPeminjamDiv.getStyle()
-                .set("font-weight", "bold");
+        namaPeminjamDiv.getStyle().set("font-weight", "bold");
         TextField namaPeminjamField = new TextField();
         namaPeminjamField.setValue(namaPeminjam != null ? namaPeminjam : "");
         namaPeminjamField.setReadOnly(true);
         namaPeminjamField.setWidthFull();
-        namaPeminjamField.getStyle()
-                .set("margin-bottom", "0.5rem");
+        namaPeminjamField.getStyle().set("margin-bottom", "0.5rem");
         formLayout.add(namaPeminjamDiv, namaPeminjamField);
 
-        // Keperluan
         Div keperluanDiv = new Div();
         keperluanDiv.setText("Keperluan:");
-        keperluanDiv.getStyle()
-                .set("font-weight", "bold");
+        keperluanDiv.getStyle().set("font-weight", "bold");
         TextField keperluanField = new TextField();
         keperluanField.setPlaceholder("Masukkan keperluan peminjaman");
         keperluanField.setWidthFull();
-        keperluanField.getStyle()
-                .set("margin-bottom", "0.5rem");
+        keperluanField.getStyle().set("margin-bottom", "0.5rem");
         formLayout.add(keperluanDiv, keperluanField);
 
-        // Tanggal Peminjaman
         Div tanggalDiv = new Div();
         tanggalDiv.setText("Tanggal Peminjaman:");
-        tanggalDiv.getStyle()
-                .set("font-weight", "bold");
+        tanggalDiv.getStyle().set("font-weight", "bold");
         DatePicker tanggalPicker = new DatePicker();
         tanggalPicker.setPlaceholder("Pilih tanggal peminjaman");
         tanggalPicker.setWidthFull();
-        tanggalPicker.getStyle()
-                .set("margin-bottom", "0.5rem");
+        tanggalPicker.getStyle().set("margin-bottom", "0.5rem");
         tanggalPicker.setValue(LocalDate.now());
         tanggalPicker.setMin(LocalDate.now());
         formLayout.add(tanggalDiv, tanggalPicker);
 
-        // Jam Mulai dan Jam Selesai
         HorizontalLayout jamLayout = new HorizontalLayout();
         jamLayout.setWidthFull();
         jamLayout.setSpacing(true);
         jamLayout.setAlignItems(FlexComponent.Alignment.BASELINE);
 
-        // Jam Mulai Layout
         VerticalLayout jamMulaiLayout = new VerticalLayout();
         jamMulaiLayout.setSpacing(false);
         jamMulaiLayout.setPadding(false);
-
         Div jamMulaiLabel = new Div();
         jamMulaiLabel.setText("Jam Mulai:");
-        jamMulaiLabel.getStyle()
-                .set("font-weight", "bold");
-
+        jamMulaiLabel.getStyle().set("font-weight", "bold");
         TextField jamMulaiField = new TextField();
         jamMulaiField.setPlaceholder("Ex: 08:15");
-        
         jamMulaiField.setWidthFull();
-        jamMulaiField.getStyle()
-                .set("margin-bottom", "1rem");
+        jamMulaiField.getStyle().set("margin-bottom", "1rem");
         jamMulaiLayout.add(jamMulaiLabel, jamMulaiField);
 
-        // Jam Selesai Layout
         VerticalLayout jamSelesaiLayout = new VerticalLayout();
         jamSelesaiLayout.setSpacing(false);
         jamSelesaiLayout.setPadding(false);
-
         Div jamSelesaiLabel = new Div();
         jamSelesaiLabel.setText("Jam Selesai:");
-        jamSelesaiLabel.getStyle()
-                .set("font-weight", "bold");
-
+        jamSelesaiLabel.getStyle().set("font-weight", "bold");
         TextField jamSelesaiField = new TextField();
         jamSelesaiField.setPlaceholder("Ex: 08:45");
         jamSelesaiField.setWidthFull();
-        jamSelesaiField.getStyle()
-                .set("margin-bottom", "1rem");
+        jamSelesaiField.getStyle().set("margin-bottom", "1rem");
         jamSelesaiLayout.add(jamSelesaiLabel, jamSelesaiField);
 
         jamLayout.add(jamMulaiLayout, jamSelesaiLayout);
         formLayout.add(jamLayout);
 
-        // Nama Ruangan
         Div ruanganDiv = new Div();
         ruanganDiv.setText("Nama Ruangan:");
-        ruanganDiv.getStyle()
-                .set("font-weight", "bold");
+        ruanganDiv.getStyle().set("font-weight", "bold");
         TextField ruanganField = new TextField();
         ruanganField.setPlaceholder("Masukkan nama ruangan (misal: A101)");
         ruanganField.setWidthFull();
-        ruanganField.getStyle()
-                .set("margin-bottom", "0.5rem");
+        ruanganField.getStyle().set("margin-bottom", "0.5rem");
         String namaRuangan = (String) UI.getCurrent().getSession().getAttribute("pengajuan_room_name");
         if (namaRuangan != null && !namaRuangan.isEmpty()) {
             ruanganField.setValue(namaRuangan);
         }
+        if (ruanganId != null) {
+            fetchRoomName();
+        }
         formLayout.add(ruanganDiv, ruanganField);
 
-        // Submit button
         Button submitButton = new Button("Ajukan");
         submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         submitButton.getStyle()
@@ -332,7 +198,6 @@ public class UserPengajuanView extends AppLayout {
 
             if (tanggal == null || jamMulai.isEmpty() || jamSelesai.isEmpty() || namaRuanganValue.isEmpty() || akunId == null) {
                 Notification.show("Semua field harus diisi.", 3000, Notification.Position.BOTTOM_END);
-                // debug
                 Notification.show("Debug Info: " +
                         "keperluan='" + keperluan + "', " +
                         "tanggal='" + tanggal + "', " +
@@ -340,23 +205,19 @@ public class UserPengajuanView extends AppLayout {
                         "jamSelesai='" + jamSelesai + "', " +
                         "namaRuanganValue='" + namaRuanganValue + "', " +
                         "akunId='" + akunId + "'", 5000, Notification.Position.BOTTOM_END);
-
                 return;
             }
 
-            // Validate date
             if (tanggal.isBefore(LocalDate.now())) {
                 Notification.show("Tanggal peminjaman hanya boleh hari ini atau setelahnya.", 3000, Notification.Position.BOTTOM_END);
                 return;
             }
 
-            // Validate time format
             if (!jamMulai.matches("\\d{2}:\\d{2}") || !jamSelesai.matches("\\d{2}:\\d{2}")) {
                 Notification.show("Format jam harus HH:MM.", 3000, Notification.Position.BOTTOM_END);
                 return;
             }
 
-            // Validate time against current time if same day
             if (tanggal.equals(LocalDate.now())) {
                 ZoneId zoneId = ZoneId.of("Asia/Makassar");
                 LocalDateTime nowWITA = LocalDateTime.now(zoneId);
@@ -370,7 +231,6 @@ public class UserPengajuanView extends AppLayout {
                 }
             }
 
-            // Validate start time is before end time
             try {
                 LocalTime mulai = LocalTime.parse(jamMulai);
                 LocalTime selesai = LocalTime.parse(jamSelesai);
@@ -383,7 +243,6 @@ public class UserPengajuanView extends AppLayout {
                 return;
             }
 
-            // Validate time interval is 15 minutes
             try {
                 String[] mulaiParts = jamMulai.split(":");
                 String[] selesaiParts = jamSelesai.split(":");
@@ -398,13 +257,11 @@ public class UserPengajuanView extends AppLayout {
                 return;
             }
 
-            // Prepare JSON payload
             String jsonPayload = String.format(
                 "{\"akunId\": \"%s\", \"namaRuangan\": \"%s\", \"keperluan\": \"%s\", \"tanggalPeminjaman\": \"%s\", \"waktuMulai\": \"%s\", \"waktuSelesai\": \"%s\"}",
                 akunId, namaRuanganValue, keperluan, tanggal.format(DateTimeFormatter.ISO_LOCAL_DATE), jamMulai, jamSelesai
             );
 
-            // Send API request
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .uri(URI.create("http://localhost:8081/api/v1/peminjaman"))
@@ -429,12 +286,96 @@ public class UserPengajuanView extends AppLayout {
         formLayout.add(submitButton);
         formLayout.setSpacing(false);
         content.add(formLayout);
-        content.setSizeFull();
         content.setAlignItems(FlexComponent.Alignment.CENTER);
         content.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-        content.getStyle()
-                .set("padding", "2rem")
-                .set("background-color", "#f9f9f9");
         return content;
+    }
+
+    private void fetchRoomName() {
+        try {
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId))
+                    .GET()
+                    .header("Accept", "application/json")
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            if (response.statusCode() == 200) {
+                String dataStr = extractJsonObject(response.body(), "data");
+                if (dataStr != null) {
+                    String nama = extractJsonValue(dataStr, "nama");
+                    if (nama != null) {
+                        UI.getCurrent().getSession().setAttribute("pengajuan_room_name", nama);
+                    }
+                }
+            } else {
+                Notification.show("Failed to fetch room name: " + response.statusCode(), 3000, Notification.Position.MIDDLE);
+            }
+        } catch (IOException | InterruptedException e) {
+            Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+        }
+    }
+
+    private String extractJsonObject(String json, String key) {
+        try {
+            String searchKey = "\"" + key + "\":";
+            int keyIndex = json.indexOf(searchKey);
+            if (keyIndex == -1) return null;
+
+            int valueStart = keyIndex + searchKey.length();
+            while (valueStart < json.length() && Character.isWhitespace(json.charAt(valueStart))) {
+                valueStart++;
+            }
+
+            if (json.charAt(valueStart) == '{') {
+                int braceCount = 1;
+                int valueEnd = valueStart + 1;
+                while (braceCount > 0 && valueEnd < json.length()) {
+                    if (json.charAt(valueEnd) == '{') braceCount++;
+                    if (json.charAt(valueEnd) == '}') braceCount--;
+                    valueEnd++;
+                }
+                if (braceCount == 0) {
+                    return json.substring(valueStart, valueEnd);
+                }
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String extractJsonValue(String json, String key) {
+        try {
+            String searchKey = "\"" + key + "\":";
+            int keyIndex = json.indexOf(searchKey);
+            if (keyIndex == -1) return null;
+
+            int valueStart = keyIndex + searchKey.length();
+            while (valueStart < json.length() && Character.isWhitespace(json.charAt(valueStart))) {
+                valueStart++;
+            }
+
+            if (valueStart < json.length() && json.charAt(valueStart) == '"') {
+                valueStart++;
+                int valueEnd = json.indexOf('"', valueStart);
+                if (valueEnd != -1) {
+                    return json.substring(valueStart, valueEnd);
+                }
+            } else {
+                int valueEnd = valueStart;
+                while (valueEnd < json.length() &&
+                        json.charAt(valueEnd) != ',' &&
+                        json.charAt(valueEnd) != '}' &&
+                        json.charAt(valueEnd) != ']') {
+                    valueEnd++;
+                }
+                return json.substring(valueStart, valueEnd).trim();
+            }
+            return null;
+        } catch (Exception e) {
+            return null;
+        }
     }
 }
