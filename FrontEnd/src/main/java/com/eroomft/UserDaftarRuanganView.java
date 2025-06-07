@@ -12,6 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -29,8 +30,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-
-import com.vaadin.flow.component.Component;
 
 @Route("user/ruangan")
 public class UserDaftarRuanganView extends HorizontalLayout {
@@ -174,8 +173,6 @@ public class UserDaftarRuanganView extends HorizontalLayout {
             roomGrid.removeAll();
             fetchRoomData(searchText, selectedType, selectedGedung);
             roomGrid.setVisible(true);
-
-            Notification.show("Pencarian dilakukan: " + searchText + ", Tipe: " + selectedType + ", Gedung: " + selectedGedung, 3000, Notification.Position.MIDDLE);
         });
 
         HorizontalLayout searchLayout = new HorizontalLayout(
@@ -306,7 +303,6 @@ public class UserDaftarRuanganView extends HorizontalLayout {
 
         card.addClickListener(e -> {
             UI.getCurrent().access(() -> {
-                Notification.show("Anda akan diarahkan ke detail ruangan.", 3000, Notification.Position.MIDDLE);
                 UI.getCurrent().navigate("user/detail-ruangan?ruanganId=" + room.getRuanganId());
             });
         });
@@ -441,7 +437,6 @@ public class UserDaftarRuanganView extends HorizontalLayout {
                     rooms.add(new RoomData(ruanganId, tipe, nama, kapasitas, fasilitas, gedung, lokasi, pathGambar));
                 }
             }
-            Notification.show("Parsed " + rooms.size() + " rooms", 3000, Notification.Position.MIDDLE);
         } catch (Exception e) {
             Notification.show("Error parsing room data: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }

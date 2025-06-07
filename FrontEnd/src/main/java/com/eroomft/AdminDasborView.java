@@ -55,10 +55,10 @@ public class AdminDasborView extends AppLayout {
     private void createDrawer() {
         String currentPage = "admin/dashboard";
 
-        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
+        Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
         logo.setWidth("50px");
 
-        Span title = new Span("RooQue Admin");
+        Span title = new Span("RoomQue Admin");
         title.getStyle()
             .set("font-weight", "bold")
             .set("font-size", "1.2rem");

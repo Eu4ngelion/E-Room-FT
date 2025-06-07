@@ -64,7 +64,7 @@ public class aboutUs extends VerticalLayout {
                 .set("align-items", "center")
                 .set("gap", "10px");
 
-        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
+        Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
         logo.getStyle()
                 .set("width", "55px")
                 .set("height", "55px")
@@ -83,7 +83,7 @@ public class aboutUs extends VerticalLayout {
                 .set("line-height", "1")
                 .set("margin-top", "10px");
 
-        Paragraph namaWeb = new Paragraph("RooQue");
+        Paragraph namaWeb = new Paragraph("RoomQue");
         namaWeb.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
         namaWeb.getStyle()
                 .set("margin", "0")
@@ -164,7 +164,7 @@ public class aboutUs extends VerticalLayout {
         content.add(judul, deskripsi, infoGrid);
 
         Div footer = new Div();
-        footer.setText("Copyright © 2025 RooQue");
+        footer.setText("Copyright © 2025 RoomQue");
         footer.getStyle()
                 .set("display", "flex")
                 .set("align-items", "center")

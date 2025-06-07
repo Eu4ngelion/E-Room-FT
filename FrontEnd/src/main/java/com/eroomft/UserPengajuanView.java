@@ -198,13 +198,6 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
 
             if (tanggal == null || jamMulai.isEmpty() || jamSelesai.isEmpty() || namaRuanganValue.isEmpty() || akunId == null) {
                 Notification.show("Semua field harus diisi.", 3000, Notification.Position.BOTTOM_END);
-                Notification.show("Debug Info: " +
-                        "keperluan='" + keperluan + "', " +
-                        "tanggal='" + tanggal + "', " +
-                        "jamMulai='" + jamMulai + "', " +
-                        "jamSelesai='" + jamSelesai + "', " +
-                        "namaRuanganValue='" + namaRuanganValue + "', " +
-                        "akunId='" + akunId + "'", 5000, Notification.Position.BOTTOM_END);
                 return;
             }
 
@@ -276,7 +269,13 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
                     Notification.show("Peminjaman berhasil diajukan!", 3000, Notification.Position.BOTTOM_END);
                     UI.getCurrent().navigate("user/daftar-peminjaman");
                 } else {
-                    Notification.show("Gagal mengajukan peminjaman: " + response.body(), 3000, Notification.Position.BOTTOM_END);
+                    String responseBody = response.body();
+                    String errorMessage = extractJsonValue(responseBody, "message");
+                    if (errorMessage != null) {
+                        Notification.show(errorMessage, 3000, Notification.Position.BOTTOM_END);
+                    } else {
+                        Notification.show("Gagal mengajukan peminjaman: " + responseBody, 3000, Notification.Position.BOTTOM_END);
+                    }
                 }
             } catch (IOException | InterruptedException e) {
                 Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.BOTTOM_END);

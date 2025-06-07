@@ -53,10 +53,10 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
     private void createDrawer() {
         String currentPage = "admin/riwayat";
 
-        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
+        Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
         logo.setWidth("50px");
 
-        Span title = new Span("RooQue Admin");
+        Span title = new Span("RoomQue Admin");
         title.getStyle()
             .set("font-weight", "bold")
             .set("font-size", "1.2rem");
@@ -250,8 +250,6 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
                 }
             }
         } catch (Exception e) {
-            UI.getCurrent().access(() -> Notification.show("Error parsing data riwayat: " + e.getMessage(),
-                3000, Notification.Position.MIDDLE));
         }
     }
 

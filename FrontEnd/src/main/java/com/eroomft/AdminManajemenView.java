@@ -64,10 +64,10 @@ public class AdminManajemenView extends AppLayout {
     private void createDrawer() {
         String currentPage = "admin/manajemen";
 
-        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
+        Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
         logo.setWidth("50px");
         
-        Span title = new Span("RooQue Admin");
+        Span title = new Span("RoomQue Admin");
         title.getStyle()
             .set("font-weight", "bold")
             .set("font-size", "1.2rem");
@@ -349,13 +349,6 @@ public class AdminManajemenView extends AppLayout {
                 roomGrid.add(createRoomCard(room));
             }
             roomGrid.setVisible(true);
-
-            // Setelah filter, bisa update grid atau tampilan sesuai dengan data yang difilter
-            Notification.show("Pencarian dilakukan: " + searchText + ", Tipe: " + selectedType + ", Gedung: " + selectedGedung, 3000, Notification.Position.MIDDLE);
-
-            // update grid
-            // roomGrid.removeAll();
-
         });
 
 
@@ -909,7 +902,6 @@ public class AdminManajemenView extends AppLayout {
             Upload upload = new Upload();
             upload.setReceiver((filename, mimeType) -> {
                 try {
-                    // Buat direktori
                     File uploadDir = new File("FrontEnd/src/main/resources/static/uploads");
                     if (!uploadDir.exists()) {
                         uploadDir.mkdirs();
@@ -959,6 +951,34 @@ public class AdminManajemenView extends AppLayout {
 
 
             uploadSection.add(uploadgambar, upload);
+
+            // Add current image display
+            if (room.getImage() != null && !room.getImage().isEmpty()) {
+                Div currentImageDiv = new Div();
+                currentImageDiv.getStyle()
+                    .set("margin-bottom", "10px")
+                    .set("text-align", "center");
+                
+                Span currentImageLabel = new Span("Current Image:");
+                currentImageLabel.getStyle()
+                    .set("font-weight", "500")
+                    .set("color", "#8A8A8A")
+                    .set("display", "block")
+                    .set("margin-bottom", "5px");
+                
+                Image currentImage = new Image("/uploads/" + room.getImage(), "Current room image");
+                currentImage.getStyle()
+                    .set("max-width", "200px")
+                    .set("max-height", "150px")
+                    .set("border-radius", "8px")
+                    .set("border", "1px solid #ddd");
+                
+                currentImageDiv.add(currentImageLabel, currentImage);
+                uploadSection.add(currentImageLabel, currentImage);
+                
+                // Set the current filename so it won't be required to upload new image
+                uploadedFileName = room.getImage();
+            }
 
             // Tombol Batal dan Simpan
             HorizontalLayout buttonLayout = new HorizontalLayout();
@@ -1024,13 +1044,17 @@ public class AdminManajemenView extends AppLayout {
                     return;
                 }
                 if (uploadedFileName == null || uploadedFileName.isEmpty()) {
-                    uploadedFileName = room.getImage(); 
+                    uploadedFileName = room.getImage(); // Use current image if no new image uploaded
+                }
+                if (uploadedFileName == null || uploadedFileName.isEmpty()) {
+                    Notification.show("Silakan unggah gambar ruangan!", 3000, Notification.Position.MIDDLE);
+                    return;
                 }
 
                 // Simpan update ke database 
                 putUpdateRoom(
                     room.getRuanganId(),
-                    tipeRuanganCombo.getValue(),
+                    tipeRuanganCombo.getValue().toUpperCase(),
                     namaRuanganField.getValue(),
                     kapasitasField.getValue(),
                     fasilitasField.getValue(),

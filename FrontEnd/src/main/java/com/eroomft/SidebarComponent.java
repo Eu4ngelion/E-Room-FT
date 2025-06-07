@@ -52,11 +52,11 @@ public class SidebarComponent extends VerticalLayout implements AfterNavigationO
 
             toggleButton.setIcon(new Icon(VaadinIcon.ANGLE_LEFT));
 
-            Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
+            Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
             logo.setWidth("40px");
             logo.setHeight("40px");
 
-            Span title = new Span("RooQue");
+            Span title = new Span("RoomQue");
             title.getStyle()
                 .set("font-weight", "bold")
                 .set("font-size", "1.1rem");

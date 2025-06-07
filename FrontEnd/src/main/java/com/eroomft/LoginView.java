@@ -59,7 +59,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         setJustifyContentMode(JustifyContentMode.CENTER);
         setSpacing(true);
 
-        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
+        Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
         logo.setWidth("100px");
         logo.setHeight("100px");
         logo.getStyle()

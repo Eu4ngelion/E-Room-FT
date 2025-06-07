@@ -58,10 +58,10 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
     private void createDrawer() {
         String currentPage = "admin/verifikasi";
 
-        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
+        Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
         logo.setWidth("50px");
 
-        Span title = new Span("RooQue Admin");
+        Span title = new Span("RoomQue Admin");
         title.getStyle()
             .set("font-weight", "bold")
             .set("font-size", "1.2rem");
@@ -262,8 +262,6 @@ private Component createContent() {
                 ));
             }
         } catch (Exception e) {
-            UI.getCurrent().access(() -> Notification.show("Error parsing data peminjaman: " + e.getMessage(),
-                3000, Notification.Position.MIDDLE));
         }
     }
 
