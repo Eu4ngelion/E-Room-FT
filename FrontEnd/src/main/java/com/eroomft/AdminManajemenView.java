@@ -64,10 +64,10 @@ public class AdminManajemenView extends AppLayout {
     private void createDrawer() {
         String currentPage = "admin/manajemen";
 
-        Image logo = new Image("https://fahutan.unmul.ac.id/laboratorium/assets/images/LOGO%20UNMUL.png", "Logo");
+        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
         logo.setWidth("50px");
-
-        Span title = new Span("E-Room Teknik");
+        
+        Span title = new Span("RooQue Admin");
         title.getStyle()
             .set("font-weight", "bold")
             .set("font-size", "1.2rem");

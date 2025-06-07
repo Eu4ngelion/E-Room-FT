@@ -53,6 +53,7 @@ public class contactUs extends VerticalLayout {
         Div header = createHeader();
 
         VerticalLayout content = new VerticalLayout();
+        content.setSizeFull();
         content.setAlignItems(Alignment.CENTER);
         content.setJustifyContentMode(JustifyContentMode.CENTER);
         content.setSpacing(true);
@@ -164,7 +165,7 @@ public class contactUs extends VerticalLayout {
                 .set("align-items", "center")
                 .set("gap", "10px");
 
-        Image logo = new Image("/frontend/unmul.png", "Logo Unmul");
+        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
         logo.getStyle()
                 .set("width", "55px")
                 .set("height", "55px")
@@ -184,7 +185,7 @@ public class contactUs extends VerticalLayout {
                 .set("line-height", "1")
                 .set("margin-top", "10px");
 
-        Paragraph namaWeb = new Paragraph("E-ROOM FT");
+        Paragraph namaWeb = new Paragraph("RooQue");
         namaWeb.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
         namaWeb.getStyle()
                 .set("margin", "0")
@@ -218,7 +219,7 @@ public class contactUs extends VerticalLayout {
 
     private Div createFooter() {
         Div footer = new Div();
-        footer.setText("Copyright © 2025 E–Room FT");
+        footer.setText("Copyright © 2025 RooQue");
         footer.getStyle()
                 .set("display", "flex")
                 .set("align-items", "center")

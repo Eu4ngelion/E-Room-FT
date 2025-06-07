@@ -64,7 +64,7 @@ public class aboutUs extends VerticalLayout {
                 .set("align-items", "center")
                 .set("gap", "10px");
 
-        Image logo = new Image("/frontend/unmul.png", "Logo Unmul");
+        Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
         logo.getStyle()
                 .set("width", "55px")
                 .set("height", "55px")
@@ -83,7 +83,7 @@ public class aboutUs extends VerticalLayout {
                 .set("line-height", "1")
                 .set("margin-top", "10px");
 
-        Paragraph namaWeb = new Paragraph("E-ROOM FT");
+        Paragraph namaWeb = new Paragraph("RooQue");
         namaWeb.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
         namaWeb.getStyle()
                 .set("margin", "0")
@@ -116,7 +116,7 @@ public class aboutUs extends VerticalLayout {
 
         VerticalLayout content = new VerticalLayout();
         content.setAlignItems(Alignment.CENTER);
-        content.setJustifyContentMode(JustifyContentMode.CENTER);
+        content.setJustifyContentMode(JustifyContentMode.START);
         content.setSpacing(true);
         content.getStyle().set("padding", "40px 20px");
 
@@ -164,7 +164,7 @@ public class aboutUs extends VerticalLayout {
         content.add(judul, deskripsi, infoGrid);
 
         Div footer = new Div();
-        footer.setText("Copyright © 2025 E–Room FT");
+        footer.setText("Copyright © 2025 RooQue");
         footer.getStyle()
                 .set("display", "flex")
                 .set("align-items", "center")

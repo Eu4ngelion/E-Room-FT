@@ -52,11 +52,11 @@ public class SidebarComponent extends VerticalLayout implements AfterNavigationO
 
             toggleButton.setIcon(new Icon(VaadinIcon.ANGLE_LEFT));
 
-            Image logo = new Image("/frontend/unmul.png", "Logo Unmul");
+            Image logo = new Image("/frontend/RooQue.png", "Logo RooQue");
             logo.setWidth("40px");
             logo.setHeight("40px");
 
-            Span title = new Span("E-Room Teknik");
+            Span title = new Span("RooQue");
             title.getStyle()
                 .set("font-weight", "bold")
                 .set("font-size", "1.1rem");
@@ -249,7 +249,7 @@ public class SidebarComponent extends VerticalLayout implements AfterNavigationO
         logoutButton.addClickListener(e -> {
             UI.getCurrent().getSession().close();
             UI.getCurrent().access(() -> {
-                UI.getCurrent().navigate("login");
+                UI.getCurrent().navigate("");
             });
         });
         return logoutButton;

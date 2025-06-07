@@ -64,7 +64,7 @@ public class Landing extends VerticalLayout {
                 .set("align-items", "center")
                 .set("gap", "10px");
 
-        Image logo = new Image("/frontend/unmul.png", "Logo Unmul");
+        Image logo = new Image("/frontend/RooQue.png", "Logo Roque");
         logo.getStyle()
                 .set("width", "55px")
                 .set("height", "55px")
@@ -83,7 +83,7 @@ public class Landing extends VerticalLayout {
                 .set("line-height", "1")
                 .set("margin-top", "10px");
 
-        Paragraph namaWeb = new Paragraph("E-ROOM FT");
+        Paragraph namaWeb = new Paragraph("RooQue");
         namaWeb.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
         namaWeb.getStyle()
                 .set("margin", "0")
@@ -129,7 +129,7 @@ public class Landing extends VerticalLayout {
                 .set("font-size", "50px")
                 .set("text-align", "center");
 
-        Paragraph deskripsi = new Paragraph("Aplikasi E-ROOM ini hadir untuk mendukung efisiensi pemanfaatan ruang di Gedung Teknik Baru Fakultas Teknik Universitas Mulawarman. Klik tombol di bawah untuk mulai meminjam ruangan.");
+        Paragraph deskripsi = new Paragraph("Website RooQue ini adalah sistem untuk mendukung efisiensi peminjaman ruang di Gedung Teknik Baru Fakultas Teknik Universitas Mulawarman. Klik tombol di bawah untuk mulai meminjam ruangan.");
         deskripsi.getStyle()
                 .set("text-align", "center")
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
@@ -152,7 +152,7 @@ public class Landing extends VerticalLayout {
         content.add(judul, deskripsi, kotak);
 
         Div footer = new Div();
-        footer.setText("Copyright © 2025 E–Room FT");
+        footer.setText("Copyright © 2025 RooQue FT");
         footer.getStyle()
                 .set("display", "flex")
                 .set("align-items", "center")
