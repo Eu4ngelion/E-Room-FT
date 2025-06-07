@@ -1,24 +1,5 @@
 package com.eroomft;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vaadin.flow.component.Component;
-import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.button.Button;
-import com.vaadin.flow.component.grid.Grid;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Span;
-import com.vaadin.flow.component.icon.Icon;
-import com.vaadin.flow.component.icon.VaadinIcon;
-import com.vaadin.flow.component.notification.Notification;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
-import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility;
-
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -27,165 +8,59 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
+import com.vaadin.flow.component.grid.Grid;
+import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.notification.Notification;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.router.Route;
+
 @Route("user/riwayat")
-public class UserRiwayatPeminjamanView extends AppLayout {
+public class UserRiwayatPeminjamanView extends HorizontalLayout {
+
+    private SidebarComponent sidebar;
+    private VerticalLayout mainContent;
 
     public UserRiwayatPeminjamanView() {
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || (!role.equalsIgnoreCase("mahasiswa") && !role.equalsIgnoreCase("dosen"))) {
-            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.BOTTOM_END);
+            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
             UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
             return;
         }
-        createDrawer();
-        setContent(createContent());
-    }
 
-    private void createDrawer() {
-        String currentPage = "user/riwayat";
+        setSizeFull();
+        setPadding(false);
+        setSpacing(false);
 
-        Image logo = new Image("https://fahutan.unmul.ac.id/laboratorium/assets/images/LOGO%20UNMUL.png", "Logo");
-        logo.setWidth("50px");
+        sidebar = new SidebarComponent();
 
-        Span title = new Span("E-Room Teknik");
-        title.getStyle()
-                .set("font-weight", "bold")
-                .set("font-size", "1.2rem");
+        mainContent = new VerticalLayout();
+        mainContent.setSizeFull();
+        mainContent.setPadding(false);
+        mainContent.getStyle()
+                .set("background-color", "#FEE6D5")
+                .set("overflow", "auto");
 
-        HorizontalLayout logoSection = new HorizontalLayout(logo, title);
-        logoSection.setAlignItems(FlexComponent.Alignment.CENTER);
-        logoSection.setWidthFull();
-        logoSection.setSpacing(true);
-        logoSection.getStyle()
-                .set("padding", "1rem")
-                .set("border-bottom", "1px solid #e0e0e0");
-
-        VerticalLayout navigation = new VerticalLayout();
-        navigation.setPadding(false);
-        navigation.setSpacing(false);
-
-        Span utamaHeader = new Span("UTAMA");
-        utamaHeader.getStyle()
-                .set("margin", "1rem 0 0.5rem 1rem")
-                .set("font-size", "0.8rem")
-                .set("font-weight", "bold")
-                .set("color", "black");
-
-        Button dashboardBtn = createStyledButton(VaadinIcon.DASHBOARD, "Beranda", currentPage.equals("user/beranda"), "user/beranda");
-        Button manajemenRuanganBtn = createStyledButton(VaadinIcon.BUILDING, "Daftar Ruangan", currentPage.equals("user/ruangan"), "user/ruangan");
-
-        Span peminjamanHeader = new Span("PEMINJAMAN RUANGAN");
-        peminjamanHeader.getStyle()
-                .set("margin", "1rem 0 0.5rem 1rem")
-                .set("font-size", "0.8rem")
-                .set("font-weight", "bold")
-                .set("color", "black");
-
-        Button verifikasiBtn = createStyledButton(VaadinIcon.CHECK_SQUARE, "Ajukan Peminjaman", currentPage.equals("user/pengajuan"), "user/pengajuan");
-        Button daftarPeminjamanBtn = createStyledButton(VaadinIcon.EYE, "Daftar Peminjaman", currentPage.equals("user/daftar-peminjaman"), "user/daftar-peminjaman");
-        Button riwayatBtn = createStyledButton(VaadinIcon.CLOCK, "Riwayat Peminjaman", currentPage.equals("user/riwayat"), "user/riwayat");
-        Button keluar = createExitButton(VaadinIcon.SIGN_OUT, "Keluar");
-
-        navigation.add(
-                utamaHeader,
-                dashboardBtn,
-                manajemenRuanganBtn,
-                peminjamanHeader,
-                verifikasiBtn,
-                daftarPeminjamanBtn,
-                riwayatBtn,
-                keluar
-        );
-
-        addToDrawer(logoSection, navigation);
-    }
-
-    private Button createStyledButton(VaadinIcon icon, String text, boolean isActive, String targetPage) {
-        Button btn = new Button(text, new Icon(icon));
-        btn.getStyle()
-                .set("margin-inline", "1rem")
-                .set("padding", "0.5rem")
-                .set("gap", "0.5rem");
-
-        if (isActive) {
-            btn.getStyle()
-                    .set("background-color", "#FF6B35")
-                    .set("width", "calc(100% - 2rem)")
-                    .set("color", "white");
-        } else {
-            btn.getStyle()
-                    .set("color", "black")
-                    .set("background-color", "transparent");
-        }
-
-        btn.getElement().addEventListener("mouseenter", e -> {
-            btn.getStyle()
-                    .set("background-color", "#FB9A59")
-                    .set("width", "calc(100% - 2rem)")
-                    .set("color", "white");
-        });
-
-        btn.getElement().addEventListener("mouseleave", e -> {
-            if (!isActive) {
-                btn.getStyle()
-                        .set("background-color", "transparent")
-                        .remove("width")
-                        .set("color", "black");
-            } else {
-                btn.getStyle()
-                        .set("background-color", "#FF6B35")
-                        .set("color", "white");
-            }
-        });
-
-        btn.addClickListener(event -> {
-            if (!isActive) {
-                UI.getCurrent().navigate(targetPage);
-            }
-        });
-        return btn;
-    }
-
-    private Button createExitButton(VaadinIcon icon, String text) {
-        Button button = new Button(text, new Icon(icon));
-        button.addClassNames(
-                LumoUtility.JustifyContent.START,
-                LumoUtility.AlignItems.START,
-                LumoUtility.Width.FULL
-        );
-        button.getStyle()
-                .set("margin-top", "100px")
-                .set("border-radius", "5px")
-                .set("margin-inline", "1rem")
-                .set("width", "calc(100% - 2rem)")
-                .set("background", "#FF6666")
-                .set("color", "white")
-                .set("padding", "0.75rem 1rem")
-                .set("justify-content", "flex-start")
-                .set("text-align", "left")
-                .set("display", "flex")
-                .set("align-items", "center");
-
-        button.addClickListener(event -> {
-            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END);
-            UI.getCurrent().getSession().close();
-            UI.getCurrent().navigate("");
-        });
-        return button;
+        mainContent.add(createContent());
+        add(sidebar, mainContent);
     }
 
     private Component createContent() {
         VerticalLayout content = new VerticalLayout();
-        content.setPadding(false);
-        content.setSpacing(false);
+        content.setPadding(true);
+        content.setSpacing(true);
         content.setSizeFull();
-        
-        // Align from top and centered
-        content.setAlignItems(FlexComponent.Alignment.CENTER); // Horizontal center
-        content.setJustifyContentMode(FlexComponent.JustifyContentMode.START); // Top alignment
-        content.getStyle().set("padding", "2rem 2rem 0 2rem"); // Padding from top
+        content.getStyle()
+                .set("background-color", "#FEE6D5");
+        content.setAlignItems(FlexComponent.Alignment.CENTER);
+        content.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-        // Title
         Span title = new Span("Riwayat Peminjaman Saya");
         title.getStyle()
                 .set("font-size", "1.5rem")
@@ -193,57 +68,64 @@ public class UserRiwayatPeminjamanView extends AppLayout {
                 .set("margin-bottom", "1rem");
         content.add(title);
 
-        // Fetch data from API
         List<RiwayatPeminjaman> riwayatList = fetchRiwayatPeminjamanData();
 
-        // Table header
-        HorizontalLayout header = new HorizontalLayout();
-        header.setWidth("80%"); // Match the width of the grid
-        header.getStyle()
-            .set("margin", "0 auto")
-            .set("padding", "0.5rem 1rem")
-            .set("background-color", "#FF6B35")
-            .set("color", "white")
-            .set("border-radius", "8px 8px 0 0")
-            .set("display", "grid")
-            .set("grid-template-columns", "7.5% 12% 16% 12% 16% 17% 10%")
-            .set("gap", "0.5rem")
-            .set("font-weight", "bold")
-            .set("font-size", "0.9rem");
-        header.add(new Span("No"), new Span("Gedung"), new Span("Ruangan"), new Span("Jam Mulai"),
-            new Span("Jam Selesai"), new Span("Tanggal"), new Span("Status")); 
-        content.add(header);
+        VerticalLayout tableContainer = new VerticalLayout();
+        tableContainer.setWidth("80%");
+        tableContainer.setHeight("90%");
+        tableContainer.setPadding(false);
+        tableContainer.setSpacing(false);
+        tableContainer.getStyle()
+                .set("background-color", "transparent");
 
-        // Table
+        HorizontalLayout header = new HorizontalLayout();
+        header.setWidthFull();
+        header.getStyle()
+                .set("padding", "0.5rem 1rem")
+                .set("background-color", "#FF6B35")
+                .set("color", "white")
+                .set("border-radius", "8px")
+                .set("display", "grid")
+                .set("grid-template-columns", "7.5% 11% 17% 12% 20% 18.5% 5%")
+                .set("gap", "0.5rem")
+                .set("font-weight", "bold")
+                .set("font-size", "0.9rem");
+
+        header.add(new Span("No"), new Span("Gedung"), new Span("Ruangan"), new Span("Jam Mulai"),
+                new Span("Jam Selesai"), new Span("Tanggal"), new Span("Status"));
+
+        tableContainer.add(header);
+
         Grid<RiwayatPeminjaman> grid = new Grid<>(RiwayatPeminjaman.class, false);
-        grid.setWidth("80%");
+        grid.setWidthFull();
         grid.getStyle()
-                .set("margin", "0 auto")
                 .set("border", "1px solid #e0e0e0")
-                .set("border-radius", "0 0 8px 8px")
+                .set("border-radius", "8px")
                 .set("overflow", "hidden");
 
-        // Remove Grid header
         grid.getElement().getThemeList().add("no-header");
 
-        // Columns
         grid.addColumn(riwayat -> riwayatList.indexOf(riwayat) + 1)
-            .setWidth("5%");
+                .setWidth("5%");
 
-        grid.addColumn(RiwayatPeminjaman::getGedung)
-            .setWidth("10%");
+        grid.addColumn(riwayat -> {
+            String gedung = riwayat.getGedung();
+            return gedung != null && !gedung.isEmpty()
+                    ? gedung.substring(0, 1).toUpperCase() + gedung.substring(1).toLowerCase()
+                    : "";
+        }).setWidth("10%");
 
         grid.addColumn(RiwayatPeminjaman::getNamaRuangan)
-            .setWidth("15%");
+                .setWidth("15%");
 
-        grid.addColumn(riwayat -> riwayat.getWaktuMulai().substring(0, 5)) // Extract HH:MM
-            .setWidth("10%");
+        grid.addColumn(riwayat -> riwayat.getWaktuMulai() != null ? riwayat.getWaktuMulai().substring(0, 5) : "")
+                .setWidth("10%");
 
-        grid.addColumn(riwayat -> riwayat.getWaktuSelesai().substring(0, 5)) // Extract HH:MM
-            .setWidth("10%");
+        grid.addColumn(riwayat -> riwayat.getWaktuSelesai() != null ? riwayat.getWaktuSelesai().substring(0, 5) : "")
+                .setWidth("15%");
 
         grid.addColumn(RiwayatPeminjaman::getTanggalPeminjaman)
-            .setWidth("15%");
+                .setWidth("15%");
 
         grid.addComponentColumn(riwayat -> {
             Span statusSpan = new Span(riwayat.getStatus());
@@ -255,37 +137,29 @@ public class UserRiwayatPeminjamanView extends AppLayout {
                     .set("display", "inline-block")
                     .set("min-width", "6rem")
                     .set("width", "6rem");
-
-            if ("DITOLAK".equals(riwayat.getStatus())) {
+            if ("DITOLAK".equalsIgnoreCase(riwayat.getStatus())) {
                 statusSpan.getStyle().set("background-color", "#DC3545");
-            } else if ("DIBATALKAN".equals(riwayat.getStatus())) {
+            } else if ("DIBATALKAN".equalsIgnoreCase(riwayat.getStatus())) {
                 statusSpan.getStyle().set("background-color", "#FFA500");
-            } else if ("SELESAI".equals(riwayat.getStatus())) {
-                statusSpan.getStyle().set("background-color", "#28A745"); 
+            } else if ("SELESAI".equalsIgnoreCase(riwayat.getStatus())) {
+                statusSpan.getStyle().set("background-color", "#28A745");
             }
             return statusSpan;
-        }).setWidth("15%");
+        }).setWidth("12%");
 
-        // Set data
-        grid.setItems(riwayatList);
-
-        // Display message if table is empty
-        if (riwayatList.isEmpty()) {
+        if (!riwayatList.isEmpty()) {
+            grid.setItems(riwayatList);
+            tableContainer.add(grid);
+        } else {
             Span emptyMessage = new Span("Belum ada riwayat peminjaman yang terdaftar.");
             emptyMessage.getStyle()
                     .set("color", "#666")
                     .set("font-style", "italic")
                     .set("margin-top", "1rem");
-            content.add(emptyMessage);
-        } else {
-            content.add(grid);
+            tableContainer.add(emptyMessage);
         }
 
-        content.setSizeFull();
-        content.setAlignItems(FlexComponent.Alignment.CENTER);
-        content.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-        content.getStyle()
-                .set("background-color", "#f9f9f9");
+        content.add(tableContainer);
         return content;
     }
 
@@ -294,14 +168,14 @@ public class UserRiwayatPeminjamanView extends AppLayout {
         String akunId = (String) UI.getCurrent().getSession().getAttribute("akunId");
 
         if (akunId == null) {
-            Notification.show("Akun ID tidak ditemukan. Silakan login ulang.", 3000, Notification.Position.BOTTOM_END);
+            Notification.show("Akun ID tidak ditemukan. Silakan login ulang.", 3000, Notification.Position.MIDDLE);
             return riwayatList;
         }
 
         HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8081/api/v1/peminjaman/riwayat?akunId=" + akunId))
-                .header("accept", "*/*")
+                .header("accept", "application/json")
                 .GET()
                 .build();
 
@@ -331,16 +205,15 @@ public class UserRiwayatPeminjamanView extends AppLayout {
                     }
                 }
             } else {
-                Notification.show("Gagal mengambil data riwayat peminjaman: " + response.body(), 3000, Notification.Position.BOTTOM_END);
+                Notification.show("Gagal mengambil data riwayat peminjaman: " + response.body(), 3000, Notification.Position.MIDDLE);
             }
         } catch (IOException | InterruptedException e) {
-            Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.BOTTOM_END);
+            Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
 
         return riwayatList;
     }
 
-    // RiwayatPeminjaman class to hold API data
     public static class RiwayatPeminjaman {
         private int logPeminjamanId;
         private String akunId;
@@ -355,7 +228,6 @@ public class UserRiwayatPeminjamanView extends AppLayout {
         private String status;
         private boolean deleted;
 
-        // Getters and setters
         public int getLogPeminjamanId() { return logPeminjamanId; }
         public void setLogPeminjamanId(int logPeminjamanId) { this.logPeminjamanId = logPeminjamanId; }
         public String getAkunId() { return akunId; }

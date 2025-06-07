@@ -248,7 +248,9 @@ public class SidebarComponent extends VerticalLayout implements AfterNavigationO
         
         logoutButton.addClickListener(e -> {
             UI.getCurrent().getSession().close();
-            UI.getCurrent().navigate("");
+            UI.getCurrent().access(() -> {
+                UI.getCurrent().navigate("login");
+            });
         });
         return logoutButton;
     }
@@ -258,9 +260,9 @@ public class SidebarComponent extends VerticalLayout implements AfterNavigationO
             // view tapi extend classnya
             case "user/beranda" -> userBeranda.class;
             case "user/ruangan" -> UserDaftarRuanganView.class;
-            case "user/pengajuan" -> null;
-            case "user/daftar-peminjaman" -> null;
-            case "user/riwayat" -> null;
+            case "user/pengajuan" -> UserPengajuanView.class;
+            case "user/daftar-peminjaman" -> UserPeminjamanView.class;
+            case "user/riwayat" -> UserRiwayatPeminjamanView.class;
             default -> null;
         };
     }
