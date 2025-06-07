@@ -3,3 +3,4 @@
 .tmp
 BackEnd/src/main/resources/application.properties
 
+FrontEnd/src/main/resources/static/uploads
