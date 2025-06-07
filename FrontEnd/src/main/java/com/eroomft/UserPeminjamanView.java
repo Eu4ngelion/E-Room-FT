@@ -160,12 +160,12 @@ public class UserPeminjamanView extends HorizontalLayout {
                     .set("padding", "0.3rem 0.8rem");
 
             // Disable button if not cancelable
-            boolean isCancelable = "MENUNGGU".equalsIgnoreCase(peminjaman.getStatus()) &&
-                    isFutureBooking(peminjaman.getTanggalPeminjaman(), peminjaman.getWaktuSelesai());
-            batalkanBtn.setEnabled(isCancelable);
-            if (!isCancelable) {
-                batalkanBtn.getStyle().set("opacity", "0.5");
-            }
+            // boolean isCancelable = "MENUNGGU".equalsIgnoreCase(peminjaman.getStatus()) &&
+            //         isFutureBooking(peminjaman.getTanggalPeminjaman(), peminjaman.getWaktuSelesai());
+            // batalkanBtn.setEnabled(isCancelable);
+            // if (!isCancelable) {
+            //     batalkanBtn.getStyle().set("opacity", "0.5");
+            // }
 
             batalkanBtn.addClickListener(e -> {
                 Div confirmText = new Div();
@@ -192,7 +192,7 @@ public class UserPeminjamanView extends HorizontalLayout {
 
                 Button cancelButton = new Button("Tidak", event -> {
                     notification.close();
-                    Notification.show("Pembatalan dibatalkan.", 3000, Notification.Position.MIDDLE);
+                    Notification.show("Peminjaman dibatalkan.", 3000, Notification.Position.MIDDLE);
                 });
                 cancelButton.getStyle()
                         .set("background-color", "#DC3545")

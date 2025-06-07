@@ -979,12 +979,12 @@ public class AdminManajemenView extends AppLayout {
             batalBtn.addClickListener(e -> {
                 editRuanganDialog.close();
                 // hapus gambar dari upload
-                if (uploadedFileName != null && !uploadedFileName.isEmpty()) {
-                    File file = new File("FrontEnd/src/main/resources/static/uploads/" + uploadedFileName);
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                }
+                // if (uploadedFileName != null && !uploadedFileName.isEmpty()) {
+                //     File file = new File("FrontEnd/src/main/resources/static/uploads/" + uploadedFileName);
+                //     if (file.exists()) {
+                //         file.delete();
+                //     }
+                // }
             });
 
             Button simpanBtn = new Button("Simpan");
