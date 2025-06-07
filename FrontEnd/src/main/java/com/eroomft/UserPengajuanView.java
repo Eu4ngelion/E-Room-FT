@@ -266,11 +266,11 @@ public class UserPengajuanView extends AppLayout {
                 .set("font-weight", "bold");
 
         TextField jamMulaiField = new TextField();
-        jamMulaiField.setPlaceholder("HH:MM");
+        jamMulaiField.setPlaceholder("Ex: 08:15");
+        
         jamMulaiField.setWidthFull();
         jamMulaiField.getStyle()
                 .set("margin-bottom", "1rem");
-        jamMulaiField.setValue("08:00");
         jamMulaiLayout.add(jamMulaiLabel, jamMulaiField);
 
         // Jam Selesai Layout
@@ -284,11 +284,10 @@ public class UserPengajuanView extends AppLayout {
                 .set("font-weight", "bold");
 
         TextField jamSelesaiField = new TextField();
-        jamSelesaiField.setPlaceholder("HH:MM");
+        jamSelesaiField.setPlaceholder("Ex: 08:45");
         jamSelesaiField.setWidthFull();
         jamSelesaiField.getStyle()
                 .set("margin-bottom", "1rem");
-        jamSelesaiField.setValue("10:00");
         jamSelesaiLayout.add(jamSelesaiLabel, jamSelesaiField);
 
         jamLayout.add(jamMulaiLayout, jamSelesaiLayout);
@@ -359,8 +358,8 @@ public class UserPengajuanView extends AppLayout {
 
             // Validate time against current time if same day
             if (tanggal.equals(LocalDate.now())) {
-                ZoneId witaZone = ZoneId.of("Asia/Makassar");
-                LocalDateTime nowWITA = LocalDateTime.now(witaZone);
+                ZoneId zoneId = ZoneId.of("Asia/Makassar");
+                LocalDateTime nowWITA = LocalDateTime.now(zoneId);
                 int currentHour = nowWITA.getHour();
                 int currentMinute = nowWITA.getMinute();
                 String[] jamMulaiParts = jamMulai.split(":");
@@ -377,6 +376,21 @@ public class UserPengajuanView extends AppLayout {
                 LocalTime selesai = LocalTime.parse(jamSelesai);
                 if (!mulai.isBefore(selesai)) {
                     Notification.show("Jam mulai harus lebih kecil dari jam selesai.", 3000, Notification.Position.BOTTOM_END);
+                    return;
+                }
+            } catch (Exception e) {
+                Notification.show("Format jam tidak valid.", 3000, Notification.Position.BOTTOM_END);
+                return;
+            }
+
+            // Validate time interval is 15 minutes
+            try {
+                String[] mulaiParts = jamMulai.split(":");
+                String[] selesaiParts = jamSelesai.split(":");
+                int mulaiMenit = Integer.parseInt(mulaiParts[1]);
+                int selesaiMenit = Integer.parseInt(selesaiParts[1]);
+                if (!(mulaiMenit % 15 == 0 && selesaiMenit % 15 == 0)) {
+                    Notification.show("Jam hanya boleh diisi pada interval 15 menit (00, 15, 30, 45).", 3000, Notification.Position.BOTTOM_END);
                     return;
                 }
             } catch (Exception e) {
