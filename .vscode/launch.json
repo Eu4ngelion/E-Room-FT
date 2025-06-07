@@ -12,7 +12,7 @@
             "type": "java",
             "name": "Debug using Hotswap Agent",
             "request": "launch",
-            "javaExec": "C:\\Users\\HP\\.vaadin\\jdk\\jbrsdk-21.0.7-windows-x64-b992.24\\bin\\java.exe",
+            "javaExec": "C:\\Users\\Farre\\.vaadin\\jdk\\jbrsdk-21.0.7-windows-x64-b992.24\\bin\\java.exe",
             "mainClass": "com.eroomft.Application",
             "vmArgs": "-XX:+AllowEnhancedClassRedefinition -XX:+ClassUnloading -XX:HotswapAgent=fatjar"
         }

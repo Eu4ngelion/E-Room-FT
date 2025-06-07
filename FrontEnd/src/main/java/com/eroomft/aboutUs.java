@@ -13,15 +13,15 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-@Route("")
-public class Landing extends VerticalLayout {
+@Route("/about-us")
+public class aboutUs extends VerticalLayout {
 
-    public Landing() {
-        String sessionRole = (String) UI.getCurrent().getSession().getAttribute("role");
-        if (sessionRole != null) {
+    public aboutUs() {
+        String checkSession = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (checkSession != null) {
             Notification.show("Log Out Terlebih Dahulu", 3000, Notification.Position.BOTTOM_END);
             UI.getCurrent().access(() -> {
-                switch (sessionRole.toLowerCase()) {
+                switch (checkSession.toLowerCase()) {
                     case "mahasiswa":
                     case "dosen":
                         UI.getCurrent().navigate("user/beranda");
@@ -30,7 +30,7 @@ public class Landing extends VerticalLayout {
                         UI.getCurrent().navigate("admin/dashboard");
                         break;
                     default:
-                        Notification.show("Role tidak dikenali: " + sessionRole, 3000, Notification.Position.MIDDLE);
+                        Notification.show("Role tidak dikenali: " + checkSession, 3000, Notification.Position.MIDDLE);
                         UI.getCurrent().navigate("");
                         break;
                 }
@@ -42,9 +42,9 @@ public class Landing extends VerticalLayout {
         setPadding(false);
         setSpacing(false);
         getStyle()
-                .set("background", "linear-gradient(rgba(255, 255, 255, 0.9)), url('/frontend/background.png') no-repeat center center / cover")
+                .set("background", "linear-gradient(rgba(239, 222, 210, 0.8)), url('/frontend/background.png') no-repeat center center / cover")
                 .set("flex-direction", "column")
-                .set("min-height", "120vh");
+                .set("min-height", "135vh");
 
         Div header = new Div();
         header.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
@@ -118,9 +118,9 @@ public class Landing extends VerticalLayout {
         content.setAlignItems(Alignment.CENTER);
         content.setJustifyContentMode(JustifyContentMode.CENTER);
         content.setSpacing(true);
-        content.getStyle().set("padding-top", "40px");
+        content.getStyle().set("padding", "40px 20px");
 
-        H1 judul = new H1("E-ROOM FT");
+        H1 judul = new H1("ABOUT US");
         judul.getStyle()
                 .set("color", "#FF7700")
                 .set("font-weight", "600")
@@ -129,27 +129,39 @@ public class Landing extends VerticalLayout {
                 .set("font-size", "50px")
                 .set("text-align", "center");
 
-        Paragraph deskripsi = new Paragraph("Aplikasi E-ROOM ini hadir untuk mendukung efisiensi pemanfaatan ruang di Gedung Teknik Baru Fakultas Teknik Universitas Mulawarman. Klik tombol di bawah untuk mulai meminjam ruangan.");
+        Paragraph deskripsi = new Paragraph("Sistem Peminjaman Ruangan ini mendukung efisiensi dan transparansi pemanfaatan ruang di Fakultas Teknik Universitas Mulawarman. Pengguna dapat meminjam ruangan secara daring dengan mudah dan terorganisir untuk keperluan kuliah, laboratorium, maupun kegiatan lainnya.");
         deskripsi.getStyle()
                 .set("text-align", "center")
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
                 .set("font-size", "17.5px")
                 .set("font-weight", "600")
-                .set("max-width", "600px");
+                .set("max-width", "800px");
 
-        HorizontalLayout kotak = new HorizontalLayout();
-        kotak.setJustifyContentMode(JustifyContentMode.CENTER);
-        kotak.setSpacing(true);
-        kotak.getStyle().set("gap", "30px");
+        VerticalLayout infoGrid = new VerticalLayout();
+        infoGrid.setAlignItems(Alignment.CENTER);
+        infoGrid.setSpacing(true);
+        infoGrid.getStyle().set("gap", "25px");
 
-
-        kotak.add(
-                kotakLogin("Mahasiswa", "/frontend/mahasiswa.png", "login?role=MAHASISWA"),
-                kotakLogin("Dosen", "/frontend/dosen.png", "login?role=DOSEN"),
-                kotakLogin("Staff Akademik", "/frontend/staff.png", "login?role=ADMIN")
+        HorizontalLayout row1 = new HorizontalLayout();
+        row1.setJustifyContentMode(JustifyContentMode.CENTER);
+        row1.setSpacing(true);
+        row1.getStyle().set("gap", "25px");
+        row1.add(
+            infoCard("Pencarian dan Filter Ruangan", "Pesan ruangan secara mudah tanpa harus datang langsung."),
+            infoCard("Cek Ketersediaan Ruangan", "Lihat jadwal penggunaan ruangan secara real-time.")
         );
 
-        content.add(judul, deskripsi, kotak);
+        HorizontalLayout row2 = new HorizontalLayout();
+        row2.setJustifyContentMode(JustifyContentMode.CENTER);
+        row2.setSpacing(true);
+        row2.getStyle().set("gap", "25px");
+        row2.add(
+            infoCard("Login Mahasiswa & Dosen", "Akses sistem dengan NIM/NIP yang sudah terdaftar."),
+            infoCard("Riwayat Peminjaman", "Pantau semua peminjaman yang pernah dilakukan.")
+        );
+
+        infoGrid.add(row1, row2);
+        content.add(judul, deskripsi, infoGrid);
 
         Div footer = new Div();
         footer.setText("Copyright © 2025 E–Room FT");
@@ -165,7 +177,7 @@ public class Landing extends VerticalLayout {
                 .set("color", "black")
                 .set("width", "100%")
                 .set("flex-shrink", "0");
-        
+
         add(header, content, footer);
         expand(content);
     }
@@ -181,9 +193,9 @@ public class Landing extends VerticalLayout {
                 .set("border", "none")
                 .set("border-radius", "0")
                 .set("cursor", "pointer");
-        
-        button.addClickListener(e -> UI.getCurrent().navigate(route));
 
+        button.addClickListener(e -> UI.getCurrent().navigate(route));
+        
         button.getElement().addEventListener("mouseenter", e -> {
             button.getStyle().set("border-bottom", "2px solid #FF7700");
         });
@@ -195,65 +207,38 @@ public class Landing extends VerticalLayout {
         return button;
     }
 
-    private Div kotakLogin(String role, String iconUrl, String route) {
+    private Div infoCard(String title, String description) {
         Div card = new Div();
         card.getStyle()
-                .set("width", "200px")
-                .set("height", "220px")
-                .set("padding", "20px")
-                .set("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
-                .set("border-radius", "10px")
-                .set("background-color", "#ffffff")
-                .set("display", "flex")
-                .set("flex-direction", "column")
-                .set("align-items", "center")
-                .set("justify-content", "space-between");
+            .set("width", "380px")
+            .set("min-height", "140px")
+            .set("padding", "20px")
+            .set("box-shadow", "0 4px 8px rgba(0,0,0,0.1)")
+            .set("border-radius", "15px")
+            .set("border", "2px solid rgba(255, 119, 0, 0.3)")
+            .set("background-color", "rgba(255, 255, 255, 0.85)")
+            .set("display", "flex")
+            .set("flex-direction", "column")
+            .set("justify-content", "center");
 
-        Div borderLogo = new Div();
-        borderLogo.getStyle()
-                .set("width", "100px")
-                .set("height", "100px")
-                .set("background-color", "#FF8B26")
-                .set("border-radius", "50%")
-                .set("display", "flex")
-                .set("align-items", "center")
-                .set("justify-content", "center")
-                .set("overflow", "hidden");
+        Paragraph cardTitle = new Paragraph(title);
+        cardTitle.getStyle()
+            .set("font-family", "'poppins', sans-serif")
+            .set("font-weight", "600")
+            .set("font-size", "18px")
+            .set("color", "#D46500")
+            .set("margin", "0 0 8px 0");
 
-        Image icon = new Image(iconUrl, role);
-        icon.getStyle()
-                .set("object-fit", "cover");
+        Paragraph cardDescription = new Paragraph(description);
+        cardDescription.getStyle()
+            .set("font-family", "'Plus Jakarta Sans', sans-serif")
+            .set("font-size", "14px")
+            .set("font-weight", "500")
+            .set("color", "black")
+            .set("margin", "0")
+            .set("line-height", "1.4");
 
-        borderLogo.add(icon);
-
-        Paragraph roleText = new Paragraph(role);
-        roleText.getStyle()
-                .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-weight", "600")
-                .set("margin", "10px 0 0 0");
-
-        Button btnLogin = new Button("Login", event ->
-                getUI().ifPresent(ui -> ui.navigate(route))
-        );
-        btnLogin.getStyle()
-                .set("background-color", "#FF7700")
-                .set("font-family", " 'poppins', sans-serif ")
-                .set("font-size", "16px")
-                .set("font-weight", "500")
-                .set("color", "white")
-                .set("cursor", "pointer")
-                .set("border-radius", "10px")
-                .set("box-shadow", "0px 6px 8px rgba(0,0,0,0.3)");
-
-        btnLogin.getElement().addEventListener("mouseenter", e -> {
-            btnLogin.getStyle().set("background-color", "#cc5200");
-        });
-
-        btnLogin.getElement().addEventListener("mouseleave", e -> {
-            btnLogin.getStyle().set("background-color", "#FF7700");
-        });
-
-        card.add(borderLogo, roleText, btnLogin);
+        card.add(cardTitle, cardDescription);
         return card;
     }
 }
