@@ -60,7 +60,13 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     List<Peminjaman> findAllPeminjamanStatusMenunggu(@Param("statusMenunggu") Peminjaman.Status statusMenunggu);
 
     // Get All Peminjaman by tanggal dan waktu selesai
-    @Query("SELECT p FROM Peminjaman p WHERE p.tanggalPeminjaman = :tanggal AND p.waktuSelesai <= :waktu")
+    @Query("""
+        SELECT p
+        FROM Peminjaman p
+        WHERE 
+            (p.tanggalPeminjaman = :tanggal AND p.waktuSelesai <= :waktu)
+            OR p.tanggalPeminjaman < CURRENT_DATE
+        """)
     List<Peminjaman> findByTanggalPeminjamanAndWaktuSelesai(@Param("tanggal") LocalDate tanggal, @Param("waktu") LocalTime waktu);
 
     // Count Jumlah Peminjaman Hari ini
