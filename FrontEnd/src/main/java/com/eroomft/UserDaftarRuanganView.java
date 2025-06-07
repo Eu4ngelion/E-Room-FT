@@ -29,10 +29,6 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import com.vaadin.flow.component.Component;
 
@@ -451,6 +447,7 @@ public class UserDaftarRuanganView extends HorizontalLayout {
         }
     }
 
+    @SuppressWarnings("UseSpecificCatch")
     private void parseDistinctGedung(String jsonData) {
         try {
             org.json.JSONObject jsonObject = new org.json.JSONObject(jsonData);
@@ -530,12 +527,7 @@ public class UserDaftarRuanganView extends HorizontalLayout {
         }
 
         public String getRuanganId() { return ruanganId; }
-        public String getTipe() { return tipe; }
         public String getName() { return name; }
-        public String getCapacity() { return capacity; }
-        public String getFacilities() { return facilities; }
-        public String getGedung() { return gedung; }
-        public String getLocation() { return location; }
         public String getImage() { return image; }
     }
 }
