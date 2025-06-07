@@ -16,7 +16,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -30,7 +29,6 @@ import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
-import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @Route("user/detail-ruangan")
 public class UserDetailRuanganView extends HorizontalLayout implements HasUrlParameter<String> {
@@ -324,7 +322,6 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
                 return;
             }
 
-            String ruanganId = extractJsonValue(dataStr, "ruanganId");
             String tipe = extractJsonValue(dataStr, "tipe");
             String nama = extractJsonValue(dataStr, "nama");
             String kapasitas = extractJsonValue(dataStr, "kapasitas");
