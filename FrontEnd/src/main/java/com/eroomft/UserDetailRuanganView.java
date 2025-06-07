@@ -12,11 +12,11 @@ import java.util.List;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.datepicker.DatePicker;
 import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.H3;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.Span;
@@ -33,12 +33,14 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 @Route("user/detail-ruangan")
-public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<String> {
+public class UserDetailRuanganView extends HorizontalLayout implements HasUrlParameter<String> {
 
     private String ruanganId;
     private RoomData roomData;
     private List<ScheduleData> schedules = new ArrayList<>();
     private Div scheduleList;
+    private SidebarComponent sidebar;
+    private VerticalLayout mainContent;
 
     public UserDetailRuanganView() {
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
@@ -49,12 +51,24 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
             });
             return;
         }
-        createDrawer();
+
+        setSizeFull();
+        setPadding(false);
+        setSpacing(false);
+
+        sidebar = new SidebarComponent();
+
+        mainContent = new VerticalLayout();
+        mainContent.setSizeFull();
+        mainContent.setPadding(false);
+        mainContent.getStyle().set("background-color", "#FEE6D5");
+        mainContent.getStyle().set("overflow", "auto");
+
+        add(sidebar, mainContent);
     }
 
-@Override
+    @Override
     public void setParameter(BeforeEvent event, @OptionalParameter String parameter) {
-        // Extract ruanganId from query parameters using BeforeEvent
         ruanganId = event.getLocation().getQueryParameters().getParameters()
                 .getOrDefault("ruanganId", List.of())
                 .stream()
@@ -69,144 +83,34 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
             return;
         }
 
-        // Debug log to verify ruanganId
         System.out.println("Extracted ruanganId: " + ruanganId);
 
         fetchRoomData();
-        setContent(createContent());
-    }
-
-    private void createDrawer() {
-        String currentPage = "user/ruangan";
-
-        Image logo = new Image("https://fahutan.unmul.ac.id/laboratorium/assets/images/LOGO%20UNMUL.png", "Logo");
-        logo.setWidth("50px");
-
-        Span title = new Span("E-Room Teknik");
-        title.getStyle()
-                .set("font-weight", "bold")
-                .set("font-size", "1.2rem");
-
-        HorizontalLayout logoSection = new HorizontalLayout(logo, title);
-        logoSection.setAlignItems(FlexComponent.Alignment.CENTER);
-        logoSection.setWidthFull();
-        logoSection.setSpacing(true);
-        logoSection.getStyle()
-                .set("padding", "1rem")
-                .set("border-bottom", "1px solid #e0e0e0");
-
-        VerticalLayout navigation = new VerticalLayout();
-        navigation.setPadding(false);
-        navigation.setSpacing(false);
-
-        Span utamaHeader = new Span("UTAMA");
-        utamaHeader.getStyle()
-                .set("margin", "1rem 0 0.5rem 1rem")
-                .set("font-size", "0.8rem")
-                .set("font-weight", "bold")
-                .set("color", "black");
-
-        Button dashboardBtn = createStyledButton(VaadinIcon.DASHBOARD, "Beranda", currentPage.equals("user/beranda"), "user/beranda");
-        Button manajemenRuanganBtn = createStyledButton(VaadinIcon.BUILDING, "Daftar Ruangan", currentPage.equals("user/ruangan"), "user/ruangan");
-
-        Span peminjamanHeader = new Span("PEMINJAMAN RUANGAN");
-        peminjamanHeader.getStyle()
-                .set("margin", "1rem 0 0.5rem 1rem")
-                .set("font-size", "0.8rem")
-                .set("font-weight", "bold")
-                .set("color", "black");
-
-        Button verifikasiBtn = createStyledButton(VaadinIcon.CHECK_SQUARE, "Ajukan Peminjaman", currentPage.equals("user/pengajuan"), "user/pengajuan");
-        Button daftarPeminjamanBtn = createStyledButton(VaadinIcon.EYE, "Daftar Peminjaman", currentPage.equals("user/daftar-peminjaman"), "user/daftar-peminjaman");
-        Button riwayatBtn = createStyledButton(VaadinIcon.CLOCK, "Riwayat Peminjaman", currentPage.equals("user/riwayat"), "user/riwayat");
-        Button keluar = createExitButton(VaadinIcon.SIGN_OUT, "Keluar");
-
-        navigation.add(
-                utamaHeader,
-                dashboardBtn,
-                manajemenRuanganBtn,
-                peminjamanHeader,
-                verifikasiBtn,
-                daftarPeminjamanBtn,
-                riwayatBtn,
-                keluar
-        );
-
-        addToDrawer(logoSection, navigation);
-    }
-
-    private Button createStyledButton(VaadinIcon icon, String text, boolean isActive, String targetPage) {
-        Button btn = new Button(text, new Icon(icon));
-
-        btn.getStyle()
-                .set("margin-inline", "1rem")
-                .set("padding", "0.5rem")
-                .set("gap", "0.5rem");
-
-        if (isActive) {
-            btn.getStyle()
-                    .set("background-color", "#FF6B35")
-                    .set("width", "calc(100% - 2rem)")
-                    .set("color", "white");
+        if (roomData != null) {
+            mainContent.add(createContent());
         } else {
-            btn.getStyle()
-                    .set("color", "black")
-                    .set("background-color", "transparent");
+            Notification.show("Data ruangan tidak ditemukan.", 3000, Notification.Position.MIDDLE);
+            UI.getCurrent().access(() -> {
+                UI.getCurrent().navigate("user/ruangan");
+            });
         }
-
-        btn.getElement().addEventListener("mouseenter", e -> {
-            btn.getStyle()
-                    .set("background-color", "#FB9A59")
-                    .set("width", "calc(100% - 2rem)")
-                    .set("color", "white");
-        });
-
-        btn.getElement().addEventListener("mouseleave", e -> {
-            if (!isActive) {
-                btn.getStyle()
-                        .set("background-color", "transparent")
-                        .remove("width")
-                        .set("color", "black");
-            } else {
-                btn.getStyle()
-                        .set("background-color", "#FF6B35")
-                        .set("color", "white");
-            }
-        });
-
-        btn.addClickListener(event -> {
-            UI.getCurrent().navigate(targetPage);
-        });
-        return btn;
     }
 
-    private Button createExitButton(VaadinIcon icon, String text) {
-        Button button = new Button(text, new Icon(icon));
-        button.addClassNames(
-                LumoUtility.JustifyContent.START,
-                LumoUtility.AlignItems.START,
-                LumoUtility.Width.FULL
-        );
-        button.getStyle()
-                .set("margin-top", "100px")
-                .set("border-radius", "5px")
-                .set("margin-inline", "1rem")
-                .set("width", "calc(100% - 2rem)")
-                .set("background", "#FF6666")
-                .set("color", "white")
-                .set("padding", "0.75rem 1rem")
-                .set("justify-content", "flex-start")
-                .set("text-align", "left")
-                .set("display", "flex")
-                .set("align-items", "center");
+    // private HorizontalLayout createHeader() {
+    //     H2 title = new H2("Detail Ruangan");
+    //     title.getStyle().set("margin", "0").set("font-size", "1.5rem");
 
-        button.addClickListener(event -> {
-            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END);
-            UI.getCurrent().getSession().close();
-            UI.getCurrent().navigate("");
-        });
-        return button;
-    }
+    //     HorizontalLayout header = new HorizontalLayout(title);
+    //     header.setAlignItems(FlexComponent.Alignment.CENTER);
+    //     header.setPadding(true);
+    //     header.setSpacing(true);
+    //     header.setWidthFull();
+    //     header.getStyle()
+    //         .set("color", "white")
+    //         .set("padding", "1rem 2rem")
+    //         .set("border-radius", "0 0 0.75rem 0.75rem");
+    //     return header;
+    // }
 
     private Component createContent() {
         HorizontalLayout content = new HorizontalLayout();
@@ -217,12 +121,8 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
         content.getStyle()
                 .set("background-color", "#FEE6D5");
 
-
-
         VerticalLayout roomDetailsLayout = new VerticalLayout();
         roomDetailsLayout.setWidth("60%");
-        // roomDetailsLayout.setPadding(true);
-        // roomDetailsLayout.setSpacing(true);
         roomDetailsLayout.setAlignItems(FlexComponent.Alignment.START);
         roomDetailsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
     
@@ -230,14 +130,6 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
                 .set("background-color", "transparent")
                 .set("border-radius", "8px");
 
-        if (roomData == null) {
-            Notification.show("Data ruangan tidak ditemukan.", 3000, Notification.Position.MIDDLE);
-            UI.getCurrent().access(() -> {
-                UI.getCurrent().navigate("user/ruangan");
-            });
-        }
-
-        // room title
         Span roomTitle = new Span("Detail Ruang " + toTitleCase(roomData.getTipe()) + " " + roomData.getName());
         roomTitle.getStyle()
                 .set("font-size", "2rem")
@@ -245,7 +137,6 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
                 .set("color", "black");
         roomDetailsLayout.add(roomTitle);
 
-        // room image
         Div imageDiv = new Div();
         imageDiv.getStyle()
                 .set("width", "100%")
@@ -259,7 +150,7 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
                 .set("border-radius", "8px")
                 .set("overflow", "hidden");
         if (roomData.getImage() != null && !roomData.getImage().isEmpty()) {
-            Image roomImage = new Image("/uploads/" + roomData.getImage(), roomData.getImage());
+            Image roomImage = new Image("/Uploads/" + roomData.getImage(), roomData.getImage());
             roomImage.getStyle()
                     .set("width", "100%")
                     .set("height", "100%")
@@ -271,7 +162,6 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
         }
         roomDetailsLayout.add(imageDiv);
 
-        // detail ruangan
         VerticalLayout roomInfo = new VerticalLayout();
         roomInfo.setWidthFull();
         roomInfo.setSpacing(false);
@@ -287,7 +177,6 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
         roomInfo.add(createDetailItem("Kode", roomData.getName()));
         roomDetailsLayout.add(roomInfo);
 
-        // simpan button
         Button pinjamBtn = new Button("Pinjam");
         pinjamBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         pinjamBtn.getStyle()
@@ -297,8 +186,7 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
                 .set("padding", "0.5rem 2rem")
                 .set("border-radius", "4px")
                 .set("font-size", "1rem")
-                .set("width", "20%")
-                ;
+                .set("width", "20%");
         pinjamBtn.addClickListener(e -> {
             UI.getCurrent().access(() -> {
                 UI.getCurrent().getSession().setAttribute("pengajuan_room_id", roomData.getRuanganId());
@@ -318,10 +206,8 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
                 .set("border-radius", "8px")
                 .set("box-shadow", "var(--lumo-box-shadow-xs)")
                 .set("padding", "1.5rem")
-                .set("margin-top", "2rem")
-                ;
+                .set("margin-top", "2rem");
 
-        // Schedule Ttile + Date Picker
         HorizontalLayout scheduleHeader = new HorizontalLayout();
         scheduleHeader.setWidthFull();
         scheduleHeader.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
@@ -333,8 +219,8 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
         DatePicker datePicker = new DatePicker("Pilih Tanggal");
         datePicker.setValue(LocalDate.now());
         datePicker.getStyle()
-        .set("border", "2px solid #FF6B35")
-        .set("border-radius", "8px");
+                .set("border", "2px solid #FF6B35")
+                .set("border-radius", "8px");
         datePicker.addValueChangeListener(event -> {
             if (event.getValue() != null) {
                 fetchScheduleData(event.getValue());
@@ -344,7 +230,6 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
         scheduleHeader.add(scheduleTitle, datePicker);
         ScheduleLayout.add(scheduleHeader);
 
-        // Schedule List header (jam, status)
         scheduleList = new Div();
         Div scheduleListHeader = new Div();
         scheduleListHeader.getStyle()
@@ -356,8 +241,6 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
         scheduleListHeader.add(new Span("Jam"), new Span("Status"));
         scheduleList.add(scheduleListHeader);
 
-
-        // Schedule List
         scheduleList.getStyle()
                 .set("width", "100%")
                 .set("max-height", "400px")
@@ -365,7 +248,7 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
                 .set("padding", "0.5rem")
                 .set("border-radius", "8px")
                 .set("background-color", "#f9f9f9");
-        fetchScheduleData(LocalDate.now()); // Inisialisasi dengan tanggal hari ini
+        fetchScheduleData(LocalDate.now());
         updateScheduleList();
         ScheduleLayout.add(scheduleList);
         content.add(roomDetailsLayout, ScheduleLayout);
@@ -384,7 +267,6 @@ public class UserDetailRuanganView extends AppLayout implements HasUrlParameter<
                 .set("color", "black");
 
         Span valueSpan = new Span(value);
-        valueSpan.getStyle().set("color", "black");
         valueSpan.getStyle()
                 .set("font-weight", "600")
                 .set("color", "var(--lumo-secondary-text-color)");  

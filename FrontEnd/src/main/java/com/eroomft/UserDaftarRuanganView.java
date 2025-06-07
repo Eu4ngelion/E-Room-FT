@@ -12,9 +12,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -33,156 +31,43 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
+import com.vaadin.flow.component.Component;
+
 @Route("user/ruangan")
-public class UserDaftarRuanganView extends AppLayout {
+public class UserDaftarRuanganView extends HorizontalLayout {
     private List<RoomData> rooms = new ArrayList<>();
     private Div roomGrid;
     private Set<String> distinctGedung = new HashSet<>();
+    private SidebarComponent sidebar;
 
     public UserDaftarRuanganView() {
+        // Validasi Sesi Aktif
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || (!role.equalsIgnoreCase("mahasiswa") && !role.equalsIgnoreCase("dosen"))) {
             Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
             UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
             return;
         }
-        createDrawer();
-        setContent(createContent());
-    }
 
-    private void createDrawer() {
-        String currentPage = "user/ruangan";
+        setSizeFull();
+        setPadding(false);
+        setSpacing(false);
 
-        Image logo = new Image("https://fahutan.unmul.ac.id/laboratorium/assets/images/LOGO%20UNMUL.png", "Logo");
-        logo.setWidth("50px");
+        sidebar = new SidebarComponent();
+        
+        VerticalLayout mainContent = new VerticalLayout();
+        mainContent.setSizeFull();
+        mainContent.setPadding(false);
+        mainContent.getStyle().set("background-color", "#FEE6D5");
+        mainContent.getStyle().set("overflow", "auto");
 
-        Span title = new Span("E-Room Teknik");
-        title.getStyle()
-                .set("font-weight", "bold")
-                .set("font-size", "1.2rem");
+        // Ensure all preceding blocks are properly closed
+        mainContent.add(createContent());
 
-        HorizontalLayout logoSection = new HorizontalLayout(logo, title);
-        logoSection.setAlignItems(FlexComponent.Alignment.CENTER);
-        logoSection.setWidthFull();
-        logoSection.setSpacing(true);
-        logoSection.getStyle()
-                .set("padding", "1rem")
-                .set("border-bottom", "1px solid #e0e0e0");
-
-        VerticalLayout navigation = new VerticalLayout();
-        navigation.setPadding(false);
-        navigation.setSpacing(false);
-
-        Span utamaHeader = new Span("UTAMA");
-        utamaHeader.getStyle()
-                .set("margin", "1rem 0 0.5rem 1rem")
-                .set("font-size", "0.8rem")
-                .set("font-weight", "bold")
-                .set("color", "black");
-
-        Button dashboardBtn = createStyledButton(VaadinIcon.DASHBOARD, "Beranda", currentPage.equals("user/beranda"), "user/beranda");
-        Button manajemenRuanganBtn = createStyledButton(VaadinIcon.BUILDING, "Daftar Ruangan", currentPage.equals("user/ruangan"), "user/ruangan");
-
-        Span peminjamanHeader = new Span("PEMINJAMAN RUANGAN");
-        peminjamanHeader.getStyle()
-                .set("margin", "1rem 0 0.5rem 1rem")
-                .set("font-size", "0.8rem")
-                .set("font-weight", "bold")
-                .set("color", "black");
-
-        Button verifikasiBtn = createStyledButton(VaadinIcon.CHECK_SQUARE, "Ajukan Peminjaman", currentPage.equals("user/pengajuan"), "user/pengajuan");
-        Button daftarPeminjamanBtn = createStyledButton(VaadinIcon.EYE, "Daftar Peminjaman", currentPage.equals("user/daftar-peminjaman"), "user/daftar-peminjaman");
-        Button riwayatBtn = createStyledButton(VaadinIcon.CLOCK, "Riwayat Peminjaman", currentPage.equals("user/riwayat"), "user/riwayat");
-        Button keluar = createExitButton(VaadinIcon.SIGN_OUT, "Keluar");
-
-        navigation.add(
-                utamaHeader,
-                dashboardBtn,
-                manajemenRuanganBtn,
-                peminjamanHeader,
-                verifikasiBtn,
-                daftarPeminjamanBtn,
-                riwayatBtn,
-                keluar
-        );
-
-        addToDrawer(logoSection, navigation);
-    }
-
-    private Button createStyledButton(VaadinIcon icon, String text, boolean isActive, String targetPage) {
-        Button btn = new Button(text, new Icon(icon));
-
-        btn.getStyle()
-                .set("margin-inline", "1rem")
-                .set("padding", "0.5rem")
-                .set("gap", "0.5rem");
-
-        if (isActive) {
-            btn.getStyle()
-                    .set("background-color", "#FF6B35")
-                    .set("width", "calc(100% - 2rem)")
-                    .set("color", "white");
-        } else {
-            btn.getStyle()
-                    .set("color", "black")
-                    .set("background-color", "transparent");
-        }
-
-        btn.getElement().addEventListener("mouseenter", e -> {
-            btn.getStyle()
-                    .set("background-color", "#FB9A59")
-                    .set("width", "calc(100% - 2rem)")
-                    .set("color", "white");
-        });
-
-        btn.getElement().addEventListener("mouseleave", e -> {
-            if (!isActive) {
-                btn.getStyle()
-                        .set("background-color", "transparent")
-                        .remove("width")
-                        .set("color", "black");
-            } else {
-                btn.getStyle()
-                        .set("background-color", "#FF6B35")
-                        .set("color", "white");
-            }
-        });
-
-        btn.addClickListener(event -> {
-            if (!isActive) {
-                UI.getCurrent().navigate(targetPage);
-            }
-        });
-        return btn;
-    }
-
-    private Button createExitButton(VaadinIcon icon, String text) {
-        Button button = new Button(text, new Icon(icon));
-        button.addClassNames(
-                LumoUtility.JustifyContent.START,
-                LumoUtility.AlignItems.START,
-                LumoUtility.Width.FULL
-        );
-        button.getStyle()
-                .set("margin-top", "100px")
-                .set("border-radius", "5px")
-                .set("margin-inline", "1rem")
-                .set("width", "calc(100% - 2rem)")
-                .set("background", "#FF6666")
-                .set("color", "white")
-                .set("padding", "0.75rem 1rem")
-                .set("justify-content", "flex-start")
-                .set("text-align", "left")
-                .set("display", "flex")
-                .set("align-items", "center");
-
-        button.addClickListener(event -> {
-            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END)
-                    .setPosition(Notification.Position.BOTTOM_END);
-            UI.getCurrent().getSession().close();
-            UI.getCurrent().navigate("");
-        });
-        return button;
+        add(sidebar, mainContent);
     }
 
     private Component createContent() {
@@ -370,7 +255,7 @@ public class UserDaftarRuanganView extends AppLayout {
                 .set("overflow", "hidden");
 
         if (room.getImage() != null && !room.getImage().isEmpty()) {
-            Image localImage = new Image("/uploads/" + room.getImage(), room.getImage());
+            Image localImage = new Image("/Uploads/" + room.getImage(), room.getImage());
             imageDiv.add(localImage);
             localImage.getStyle()
                     .set("width", "100%")
@@ -409,7 +294,6 @@ public class UserDaftarRuanganView extends AppLayout {
 
         pinjamBtn.addClickListener(e -> {
             UI.getCurrent().access(() -> {
-                // Notification.show("Anda akan diarahkan ke halaman pengajuan peminjaman ruangan.", 3000, Notification.Position.MIDDLE);
                 UI.getCurrent().navigate("user/pengajuan?ruanganId=" + room.getRuanganId());
             });
         });
@@ -462,7 +346,6 @@ public class UserDaftarRuanganView extends AppLayout {
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            Notification.show("API Response: " + response.body().substring(0, Math.min(response.body().length(), 100)) + "...", 5000, Notification.Position.MIDDLE);
 
             if (response.statusCode() == 200) {
                 parseRoomData(response.body());

@@ -1,6 +1,23 @@
 package com.eroomft;
 
-import com.vaadin.flow.component.Component;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.combobox.ComboBox;
@@ -19,24 +36,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.Route;
 
-import org.json.JSONArray;
-import org.json.JSONObject;
-
-import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 @Route("user/beranda")
 public class userBeranda extends HorizontalLayout {
     private List<RoomData> rooms = new ArrayList<>();
@@ -44,13 +43,14 @@ public class userBeranda extends HorizontalLayout {
     private SidebarComponent sidebar;
 
     public userBeranda() {
-        // // Validasi Sesi Aktif
-        // String role = (String) UI.getCurrent().getSession().getAttribute("role");
-        // if (role == null || (!role.equalsIgnoreCase("mahasiswa") && !role.equalsIgnoreCase("dosen"))) {
-        //     Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
-        //     UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
-        //     return;
-        // }
+
+        // Validasi Sesi Aktif
+        String role = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (role == null || (!role.equalsIgnoreCase("mahasiswa") && !role.equalsIgnoreCase("dosen"))) {
+            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
+            UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
+            return;
+        }
 
         setSizeFull();
         setPadding(false);
@@ -73,7 +73,7 @@ public class userBeranda extends HorizontalLayout {
     private HorizontalLayout createHeader() {
 
         H2 title = new H2("Beranda");
-        title.getStyle().set("margin", "0").set("font-size", "1.5rem");
+        title.getStyle().set("margin-top", "1rem").set("font-size", "1.5rem").set("margin-bottom", "0.5rem");
 
         HorizontalLayout header = new HorizontalLayout(title);
         header.setAlignItems(FlexComponent.Alignment.CENTER);
@@ -82,7 +82,7 @@ public class userBeranda extends HorizontalLayout {
         header.setWidthFull();
         header.getStyle()
             .set("color", "white")
-            .set("padding", "1rem 2rem")
+            .set("padding", "1rem 2rem 0.5rem 2rem") // Reduced bottom padding
             .set("border-radius", "0 0 0.75rem 0.75rem");
         return header;
     }
@@ -90,7 +90,7 @@ public class userBeranda extends HorizontalLayout {
     private VerticalLayout createContent() {
         VerticalLayout contentLayout = new VerticalLayout();
         contentLayout.setPadding(true);
-        contentLayout.getStyle().set("padding", "2rem");
+        contentLayout.getStyle().set("padding", "1rem 2rem"); // Reduced top padding
         contentLayout.setSpacing(true);
         
         roomGridContainer = new Div();
