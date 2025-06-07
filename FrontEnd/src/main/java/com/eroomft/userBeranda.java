@@ -328,6 +328,7 @@ public class userBeranda extends HorizontalLayout {
         return uriBuilder.toString();
     }
     
+    @SuppressWarnings("UseSpecificCatch")
     private void parseAndSetRoomData(String json) {
         rooms.clear();
         try {
@@ -353,6 +354,7 @@ public class userBeranda extends HorizontalLayout {
         }
     }
 
+    @SuppressWarnings("UseSpecificCatch")
     private Set<String> parseGedungData(String json) {
         Set<String> gedungSet = new HashSet<>();
         try {
