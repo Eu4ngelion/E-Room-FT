@@ -46,18 +46,27 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import com.vaadin.flow.router.PageTitle;
+
+import jakarta.annotation.PostConstruct;
+
 @Route("admin/manajemen")
+@PageTitle("Manajemen Ruangan")
 public class AdminManajemenView extends AppLayout {
 
     @Autowired
     private final UploadConfig uploadConfig;
+    
+    @Value("${api.base.url}")
+    private String apiBaseUrl;
+    
     private String uploadedFileName = null;
-
     
     public AdminManajemenView(UploadConfig uploadConfig) {
-        // Cek Role
         this.uploadConfig = uploadConfig;
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || !role.equalsIgnoreCase("admin")) {
@@ -67,8 +76,13 @@ public class AdminManajemenView extends AppLayout {
         }
         cleanUpInvalidFiles();
         createDrawer();
-        setContent(createContent());
+        // Do not call setContent(createContent()) here
         getElement().getStyle().set("background-color", "#FEE6D5");
+    }
+
+    @PostConstruct
+    private void init() {
+        setContent(createContent());
     }
 
     private void cleanUpInvalidFiles() {
@@ -233,8 +247,10 @@ public class AdminManajemenView extends AppLayout {
             // Logika untuk keluar dari aplikasi
             Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END)
                 .setPosition(Notification.Position.BOTTOM_END);
-            UI.getCurrent().getSession().close(); // Hapus session
-            UI.getCurrent().navigate(""); 
+            UI.getCurrent().getSession().setAttribute("role", null);
+            UI.getCurrent().getSession().setAttribute("nama", null);
+            UI.getCurrent().getSession().setAttribute("email", null);
+            UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
         });
         return button;
 
@@ -1364,39 +1380,42 @@ public class AdminManajemenView extends AppLayout {
     // GET Distinct Gedung
     private void fetchDistinctGedung() {
         try {
-            // Create HTTP CLIENT
             HttpClient client = HttpClient.newHttpClient();
-            
-            // Create URI Request
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8081/api/v1/ruangan/gedung"))
+                .uri(URI.create(apiBaseUrl + "/api/v1/ruangan/gedung")) // Use injected base URL
                 .GET()
                 .header("Accept", "application/json")
                 .build();
-            
-            // Send the request and get the response
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            // Check if the response is valid
             if (response.statusCode() == 200) {
-                // Parse the JSON response to get distinct gedung
-                String jsonData = response.body();
-                parseDistinctGedung(jsonData);
+                parseDistinctGedung(response.body());
             } else {
-                // Show an error notification if the response is invalid
                 Notification.show("Failed to fetch gedung data: " + response.statusCode(), 
                                  3000, Notification.Position.MIDDLE);
             }
         } catch (IOException | InterruptedException e) {
-            // Show an error notification if there is an error connecting to the server
             Notification.show("Error connecting to server: " + e.getMessage(), 
                      3000, Notification.Position.MIDDLE);
         }
     }
 
     private URI createUri(String searchQuery, String typeFilter, String gedungFilter) {
-        
-        String uri = "http://localhost:8081/api/v1/ruangan";
+        // Validate apiBaseUrl
+        if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+            Notification.show("Error: API base URL is not configured!", 3000, Notification.Position.MIDDLE);
+            throw new IllegalStateException("API base URL is not configured in application.properties");
+        }
+        // Ensure apiBaseUrl ends with a scheme and no trailing slash
+        String normalizedBaseUrl = apiBaseUrl.trim();
+        if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+            Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+            throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+        }
+        if (normalizedBaseUrl.endsWith("/")) {
+            normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+        }
+
+        String uri = normalizedBaseUrl + "/api/v1/ruangan";
         boolean hasQuery = false;
         if (searchQuery != null && !searchQuery.isEmpty()) {
             uri += "?keyword=" + URLEncoder.encode(searchQuery, StandardCharsets.UTF_8);
@@ -1439,7 +1458,7 @@ public class AdminManajemenView extends AppLayout {
             System.out.println("POST JSON body: " + jsonBody);
 
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8081/api/v1/ruangan"))
+                .uri(URI.create(apiBaseUrl + "/api/v1/ruangan")) // Use injected base URL
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
@@ -1472,34 +1491,25 @@ public class AdminManajemenView extends AppLayout {
             }
         }
     }
+
     // PUT Update Ruangan
     private void putUpdateRoom(String ruanganId, String tipe, String nama, String kapasitas, String fasilitas, String gedung, String lokasi, String image) {
         try {
-            // Create HTTP CLIENT
             HttpClient client = HttpClient.newHttpClient();
-
-            // Create JSON body
             String jsonBody = String.format(
                 "{\"tipe\":\"%s\",\"nama\":\"%s\",\"kapasitas\":%s,\"fasilitas\":\"%s\",\"gedung\":\"%s\",\"lokasi\":\"%s\",\"pathGambar\":\"%s\"}",
                 tipe, nama, kapasitas, fasilitas, gedung, lokasi, image
             );
-
-            // Create URI Request
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId))
+                .uri(URI.create(apiBaseUrl + "/api/v1/ruangan/" + ruanganId)) // Use injected base URL
                 .PUT(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .build();
-
-            
-            // Send the request and get the response
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            // Check if the response is valid
             if (response.statusCode() == 200) {
                 Notification.show("Ruangan berhasil diperbarui", 3000, Notification.Position.MIDDLE);
-                fetchRoomData(null, null, null); // Refresh room data
+                fetchRoomData(null, null, null);
             } else {
                 Notification.show("Gagal memperbarui ruangan: " + response.statusCode(), 
                                  3000, Notification.Position.MIDDLE);
@@ -1508,7 +1518,6 @@ public class AdminManajemenView extends AppLayout {
             Notification.show("Error connecting to server: " + e.getMessage(), 
                      3000, Notification.Position.MIDDLE);
         }
-        
     }
 
     // DELETE Ruangan
@@ -1516,20 +1525,19 @@ public class AdminManajemenView extends AppLayout {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId))
+                .uri(URI.create(apiBaseUrl + "/api/v1/ruangan/" + ruanganId)) // Use injected base URL
                 .DELETE()
                 .header("Accept", "application/json")
                 .build();
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() == 200) {
                 Notification.show("Ruangan berhasil dihapus", 3000, Notification.Position.MIDDLE);
-                // Delete the image file
                 RoomData room = rooms.stream()
                     .filter(r -> r.getRuanganId().equals(String.valueOf(ruanganId)))
                     .findFirst()
                     .orElse(null);
                 if (room != null && room.getImage() != null && !room.getImage().isEmpty()) {
-                    Path filePath = Paths.get(uploadConfig.getDirectory(),room.getImage());
+                    Path filePath = Paths.get(uploadConfig.getDirectory(), room.getImage());
                     if (Files.exists(filePath)) {
                         try {
                             Files.delete(filePath);

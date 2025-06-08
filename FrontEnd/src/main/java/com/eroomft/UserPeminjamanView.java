@@ -22,13 +22,22 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+
 @Route("user/daftar-peminjaman")
+@org.springframework.stereotype.Component
+@Scope("prototype")
 public class UserPeminjamanView extends HorizontalLayout {
 
     private SidebarComponent sidebar;
     private VerticalLayout mainContent;
 
-    public UserPeminjamanView() {
+    private String apiBaseUrl;
+
+    public UserPeminjamanView(@Value("${api.base.url:http://localhost:8081}") String apiBaseUrl) {
+        this.apiBaseUrl = apiBaseUrl != null ? apiBaseUrl : "http://localhost:8081";
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || (!role.equalsIgnoreCase("mahasiswa") && !role.equalsIgnoreCase("dosen"))) {
             Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
@@ -38,7 +47,6 @@ public class UserPeminjamanView extends HorizontalLayout {
 
         setSizeFull();
         setPadding(false);
-        setSpacing(false);
 
         sidebar = new SidebarComponent();
 
@@ -51,6 +59,16 @@ public class UserPeminjamanView extends HorizontalLayout {
 
         mainContent.add(createContent());
         add(sidebar, mainContent);
+        getElement().getStyle().set("background-color", "#FEE6D5");
+    }
+
+    @PostConstruct
+    private void init() {
+        System.out.println("Injected apiBaseUrl: " + apiBaseUrl);
+        if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+            System.err.println("WARNING: apiBaseUrl is not configured. Using default: http://localhost:8081");
+            apiBaseUrl = "http://localhost:8081";
+        }
     }
 
     private Component createContent() {
@@ -63,7 +81,7 @@ public class UserPeminjamanView extends HorizontalLayout {
         content.setAlignItems(FlexComponent.Alignment.CENTER);
         content.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
 
-        Span title = new Span("Daftar Peminjaman Saya");
+        Span title = new Span("Daftar Peminjaman");
         title.getStyle()
                 .set("font-size", "1.5rem")
                 .set("font-weight", "bold")
@@ -156,23 +174,18 @@ public class UserPeminjamanView extends HorizontalLayout {
                     .set("border-radius", "4px")
                     .set("padding", "0.3rem 0.8rem");
 
-            // Disable button if not cancelable
-            // boolean isCancelable = "MENUNGGU".equalsIgnoreCase(peminjaman.getStatus()) &&
-            //         isFutureBooking(peminjaman.getTanggalPeminjaman(), peminjaman.getWaktuSelesai());
-            // batalkanBtn.setEnabled(isCancelable);
-            // if (!isCancelable) {
-            //     batalkanBtn.getStyle().set("opacity", "0.5");
-            // }
-
             batalkanBtn.addClickListener(e -> {
                 Div confirmText = new Div();
-                confirmText.setText("Apakah Kamu Yakin Ingin\nMenghapus Peminjaman ini?");
+                confirmText.setText("Apakah Anda Yakin Ingin\nMenghapus Peminjaman ini?");
                 confirmText.getStyle()
-                        .set("font-weight", "bold")
-                        .set("font-size", "18px")
-                        .set("text-align", "center");
+                    .set("font-weight", "bold")
+                    .set("font-size", "18px")
+                    .set("text-align", "center");
 
-                Notification notification = Notification.show("", 5000, Notification.Position.MIDDLE);
+                // Fix: Create notification correctly
+                Notification notification = new Notification();
+                notification.setDuration(5000);
+                notification.setPosition(Notification.Position.MIDDLE);
 
                 Button confirmButton = new Button("Ya", event -> {
                     cancelPeminjaman(peminjaman.getIdPeminjaman());
@@ -180,24 +193,24 @@ public class UserPeminjamanView extends HorizontalLayout {
                     Notification.show("Peminjaman sedang dibatalkan...", 3000, Notification.Position.MIDDLE);
                 });
                 confirmButton.getStyle()
-                        .set("background-color", "#28A745")
-                        .set("color", "white")
-                        .set("border", "none")
-                        .set("border-radius", "4px")
-                        .set("padding", "0.3rem 1.2rem")
-                        .set("font-weight", "bold");
+                    .set("background-color", "#28A745")
+                    .set("color", "white")
+                    .set("border", "none")
+                    .set("border-radius", "4px")
+                    .set("padding", "0.3rem 1.2rem")
+                    .set("font-weight", "bold");
 
                 Button cancelButton = new Button("Tidak", event -> {
                     notification.close();
-                    Notification.show("Peminjaman dibatalkan.", 3000, Notification.Position.MIDDLE);
+                    Notification.show("Peminjaman tidak dibatalkan.", 3000, Notification.Position.MIDDLE);
                 });
                 cancelButton.getStyle()
-                        .set("background-color", "#DC3545")
-                        .set("color", "white")
-                        .set("border", "none")
-                        .set("border-radius", "4px")
-                        .set("padding", "0.3rem 1.2rem")
-                        .set("font-weight", "bold");
+                    .set("background-color", "#DC3545")
+                    .set("color", "white")
+                    .set("border", "none")
+                    .set("border-radius", "4px")
+                    .set("padding", "0.3rem 1.2rem")
+                    .set("font-weight", "bold");
 
                 HorizontalLayout confirmationLayout = new HorizontalLayout(confirmButton, cancelButton);
                 confirmationLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
@@ -208,6 +221,7 @@ public class UserPeminjamanView extends HorizontalLayout {
                 dialogLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
 
                 notification.add(dialogLayout);
+                notification.open();
             });
             return batalkanBtn;
         }).setWidth("15%");
@@ -237,15 +251,32 @@ public class UserPeminjamanView extends HorizontalLayout {
             return peminjamanList;
         }
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8081/api/v1/peminjaman?akunId=" + akunId))
-                .header("accept", "application/json")
-                .GET()
-                .build();
-
         try {
+            if (apiBaseUrl == null) {
+                System.err.println("ERROR: apiBaseUrl is null. Using default: http://localhost:8081");
+                apiBaseUrl = "http://localhost:8081";
+            }
+            String normalizedBaseUrl = apiBaseUrl.trim();
+            if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+                Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+            }
+            if (normalizedBaseUrl.endsWith("/")) {
+                normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+            }
+
+            System.out.println("Fetching peminjaman data for akunId: " + akunId + " from URL: " + normalizedBaseUrl + "/api/v1/peminjaman?akunId=" + akunId);
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(normalizedBaseUrl + "/api/v1/peminjaman?akunId=" + akunId))
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
+
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("API Response Status: " + response.statusCode() + ", Body: " + response.body());
+
             if (response.statusCode() == 200) {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response.body());
@@ -265,35 +296,63 @@ public class UserPeminjamanView extends HorizontalLayout {
                         peminjaman.setStatus(node.path("status").asText());
                         peminjamanList.add(peminjaman);
                     }
+                    System.out.println("Fetched " + peminjamanList.size() + " peminjaman records.");
+                } else {
+                    System.out.println("No array found in 'data' field of response.");
                 }
             } else {
-                Notification.show("Gagal mengambil data peminjaman: " + response.body(), 3000, Notification.Position.MIDDLE);
+                Notification.show("Gagal mengambil data peminjaman: HTTP " + response.statusCode() + " - " + response.body(), 3000, Notification.Position.MIDDLE);
             }
         } catch (IOException | InterruptedException e) {
             Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+            System.err.println("Exception during fetchPeminjamanData: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+            System.err.println("IllegalArgumentException: " + e.getMessage());
         }
 
         return peminjamanList;
     }
 
     private void cancelPeminjaman(int idPeminjaman) {
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8081/api/v1/peminjaman/" + idPeminjaman))
-                .header("accept", "application/json")
-                .DELETE()
-                .build();
-
         try {
+            if (apiBaseUrl == null) {
+                System.err.println("ERROR: apiBaseUrl is null. Using default: http://localhost:8081");
+                apiBaseUrl = "http://localhost:8081";
+            }
+            String normalizedBaseUrl = apiBaseUrl.trim();
+            if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+                Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+            }
+            if (normalizedBaseUrl.endsWith("/")) {
+                normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+            }
+
+            System.out.println("Canceling peminjaman with ID: " + idPeminjaman + " at URL: " + normalizedBaseUrl + "/api/v1/peminjaman/" + idPeminjaman);
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(normalizedBaseUrl + "/api/v1/peminjaman/" + idPeminjaman))
+                    .header("Accept", "application/json")
+                    .DELETE()
+                    .build();
+
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Cancel API Response Status: " + response.statusCode() + ", Body: " + response.body());
+
             if (response.statusCode() == 200) {
-                Notification.show("Peminjaman berhasil dibatalkan.", 3000, Notification.Position.MIDDLE);
+                Notification.show("Peminjaman berhasil dibatalkan.", 2000, Notification.Position.MIDDLE);
                 UI.getCurrent().getPage().reload();
             } else {
-                Notification.show("Gagal membatalkan peminjaman: " + response.body(), 3000, Notification.Position.MIDDLE);
+                Notification.show("Gagal membatalkan peminjaman: HTTP " + response.statusCode() + " - " + response.body(), 3000, Notification.Position.MIDDLE);
             }
         } catch (IOException | InterruptedException e) {
             Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+            System.err.println("Exception during cancelPeminjaman: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+            System.err.println("IllegalArgumentException: " + e.getMessage());
         }
     }
 

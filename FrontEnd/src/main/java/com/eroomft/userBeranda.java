@@ -20,9 +20,12 @@ import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.Route;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URLEncoder;
@@ -44,13 +47,22 @@ import java.util.Set;
 @Route("user/beranda")
 @Component
 @Scope("prototype")
-public class userBeranda extends HorizontalLayout {
+public class UserBeranda extends HorizontalLayout {
     private List<RoomData> rooms = new ArrayList<>();
     private Div roomGridContainer;
     private SidebarComponent sidebar;
-    private static final String UPLOAD_DIR = "uploads"; // Hardcoded upload directory
+    private Set<String> distinctGedung = new HashSet<>();
+    
+    // Add field to hold reference to the gedung filter
+    private ComboBox<String> gedungFilter;
 
-    public userBeranda() {
+    @Value("${api.base.url:}")
+    private String apiBaseUrl;
+
+    @Autowired
+    private UploadConfig uploadConfig;
+
+    public UserBeranda() {
         // Validate active session
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || (!role.equalsIgnoreCase("mahasiswa") && !role.equalsIgnoreCase("dosen"))) {
@@ -59,7 +71,7 @@ public class userBeranda extends HorizontalLayout {
             return;
         }
 
-        System.out.println("userBeranda initialized");
+        System.out.println("UserBeranda initialized");
 
         setSizeFull();
         setPadding(false);
@@ -76,6 +88,13 @@ public class userBeranda extends HorizontalLayout {
         mainContent.add(createHeader(), createContent());
 
         add(sidebar, mainContent);
+    }
+
+    @PostConstruct
+    private void init() {
+        System.out.println("Injected apiBaseUrl: " + apiBaseUrl);
+        fetchRoomData(LocalDate.now(), null, null, null, null);
+        fetchGedungData();
     }
 
     private HorizontalLayout createHeader() {
@@ -118,9 +137,6 @@ public class userBeranda extends HorizontalLayout {
 
         contentLayout.add(createSearchSection(), sectionTitle, roomGridContainer);
 
-        // Load initial data
-        fetchRoomData(LocalDate.now(), null, null, null, null);
-
         return contentLayout;
     }
 
@@ -139,8 +155,11 @@ public class userBeranda extends HorizontalLayout {
         ComboBox<String> tipeFilter = new ComboBox<>("Tipe Ruangan");
         tipeFilter.setItems("Kelas", "Laboratorium", "Seminar", "Rapat");
 
-        ComboBox<String> gedungFilter = new ComboBox<>("Gedung");
-        fetchGedungData(gedungFilter);
+        // Store reference to gedung filter as instance field
+        gedungFilter = new ComboBox<>("Gedung");
+        List<String> gedungList = new ArrayList<>(distinctGedung);
+        gedungList.add(0, "Semua");
+        gedungFilter.setItems(gedungList);
 
         Button searchButton = new Button("Cari Ruangan", new Icon(VaadinIcon.SEARCH));
         searchButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -185,7 +204,7 @@ public class userBeranda extends HorizontalLayout {
 
         if (rooms.isEmpty()) {
             Span message = new Span("Tidak ada ruangan yang tersedia sesuai kriteria.");
-            message.getStyle().set("color", "#555").set("font-size", "1rem");
+            message.getStyle().set("color", "#555").set(" Telekom Malaysia Berhad (TM) font-size", "1rem");
             grid.add(message);
         } else {
             for (RoomData room : rooms) {
@@ -222,7 +241,7 @@ public class userBeranda extends HorizontalLayout {
 
         if (room.getImage() != null && !room.getImage().isEmpty()) {
             String imageUrl = "/Uploads/" + room.getImage();
-            Path imagePath = Paths.get(UPLOAD_DIR, room.getImage()).toAbsolutePath();
+            Path imagePath = Paths.get(uploadConfig.getDirectory(), room.getImage());
             System.out.println("Attempting to load image: " + imageUrl + ", file: " + imagePath);
             try {
                 if (Files.exists(imagePath) && Files.isReadable(imagePath) && Files.size(imagePath) > 0) {
@@ -233,7 +252,7 @@ public class userBeranda extends HorizontalLayout {
                             .set("object-fit", "cover")
                             .set("border-radius", "8px 8px 0 0");
                     localImage.getElement().addEventListener("error", e -> {
-                        System.err.println("Client-side image load failed: " + imageUrl + ", check http://localhost:8080" + imageUrl);
+                        System.err.println("Client-side image load failed: " + imageUrl);
                         imageDiv.removeAll();
                         imageDiv.add(new Icon(VaadinIcon.BUILDING));
                     });
@@ -311,84 +330,104 @@ public class userBeranda extends HorizontalLayout {
     private void fetchRoomData(LocalDate tanggal, String waktuMulai, String waktuSelesai, String tipe, String gedung) {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            String uri = buildApiUri(tanggal, waktuMulai, waktuSelesai, tipe, gedung);
-            System.out.println("Fetching room data from: " + uri);
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(uri))
+                    .uri(createUri(tanggal, waktuMulai, waktuSelesai, tipe, gedung))
                     .GET()
                     .header("Accept", "application/json")
                     .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Room data response status: " + response.statusCode() + ", body length: " + response.body().length());
 
             if (response.statusCode() == 200) {
-                System.out.println("Room data fetched, response length: " + response.body().length());
                 parseAndSetRoomData(response.body());
             } else {
                 System.err.println("Failed to fetch room data, status: " + response.statusCode());
                 Notification.show("Gagal memuat data ruangan: " + response.statusCode(), 3000, Notification.Position.MIDDLE);
                 rooms.clear();
             }
-        } catch (IOException e) {
-            System.err.println("IO error fetching room data: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid API URI: " + e.getMessage());
+            Notification.show("URL API tidak valid: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+            rooms.clear();
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error fetching room data: " + e.getMessage());
             Notification.show("Error saat menghubungkan ke server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
             rooms.clear();
-        } catch (InterruptedException e) {
-            System.err.println("Interrupted while fetching room data: " + e.getMessage());
-            Notification.show("Permintaan terputus: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
-            rooms.clear();
-            Thread.currentThread().interrupt();
         }
         updateRoomGrid();
     }
 
-    private void fetchGedungData(ComboBox<String> gedungComboBox) {
+    private void fetchGedungData() {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8081/api/v1/ruangan/gedung"))
+                    .uri(URI.create(apiBaseUrl + "/api/v1/ruangan/gedung"))
                     .GET()
                     .header("Accept", "application/json")
                     .build();
 
-            System.out.println("Fetching gedung data from: http://localhost:8081/api/v1/ruangan/gedung");
-            client.sendAsync(request, HttpResponse.BodyHandlers.ofString())
-                    .thenApply(HttpResponse::body)
-                    .thenAccept(body -> {
-                        System.out.println("Gedung data fetched, response length: " + body.length());
-                        Set<String> gedungSet = parseGedungData(body);
-                        UI.getCurrent().access(() -> {
-                            gedungComboBox.setItems(gedungSet);
-                            System.out.println("Updated gedung combo box with " + gedungSet.size() + " items");
-                        });
-                    })
-                    .exceptionally(e -> {
-                        System.err.println("Error fetching gedung data: " + e.getMessage());
-                        UI.getCurrent().access(() ->
-                                Notification.show("Gagal memuat data gedung: " + e.getMessage(), 3000, Notification.Position.MIDDLE));
-                        return null;
-                    });
-        } catch (Exception e) {
-            System.err.println("Unexpected error fetching gedung data: " + e.getMessage());
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("Gedung data response status: " + response.statusCode() + ", body length: " + response.body().length());
+
+            if (response.statusCode() == 200) {
+                parseGedungData(response.body());
+            } else {
+                System.err.println("Failed to fetch gedung data, status: " + response.statusCode());
+                Notification.show("Gagal memuat data gedung: " + response.statusCode(), 3000, Notification.Position.MIDDLE);
+            }
+        } catch (IllegalArgumentException e) {
+            System.err.println("Invalid URI for gedung data: " + e.getMessage());
+            Notification.show("URL API tidak valid: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+        } catch (IOException | InterruptedException e) {
+            System.err.println("Error fetching gedung data: " + e.getMessage());
             Notification.show("Gagal memuat data gedung: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
     }
 
-    private String buildApiUri(LocalDate tanggal, String waktuMulai, String waktuSelesai, String tipe, String gedung) {
-        StringBuilder uriBuilder = new StringBuilder("http://localhost:8081/api/v1/ruangan?");
-        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-
-        if (tanggal != null) uriBuilder.append("tanggal=").append(urlEncode(tanggal.format(dateFormatter))).append("&");
-        if (waktuMulai != null && !waktuMulai.isEmpty()) uriBuilder.append("waktuMulai=").append(urlEncode(waktuMulai)).append("&");
-        if (waktuSelesai != null && !waktuSelesai.isEmpty()) uriBuilder.append("waktuSelesai=").append(urlEncode(waktuSelesai)).append("&");
-        if (tipe != null && !tipe.isEmpty()) uriBuilder.append("tipe=").append(urlEncode(tipe.toUpperCase())).append("&");
-        if (gedung != null && !gedung.isEmpty()) uriBuilder.append("gedung=").append(urlEncode(gedung)).append("&");
-
-        String uri = uriBuilder.toString();
-        if (uri.endsWith("&")) {
-            uri = uri.substring(0, uri.length() - 1);
+    private URI createUri(LocalDate tanggal, String waktuMulai, String waktuSelesai, String tipe, String gedung) {
+        if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+            Notification.show("Error: API base URL is not configured!", 3000, Notification.Position.MIDDLE);
+            throw new IllegalStateException("API base URL is not configured in application.properties");
         }
-        return uri;
+        String normalizedBaseUrl = apiBaseUrl.trim();
+        if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+            Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+            throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+        }
+        if (normalizedBaseUrl.endsWith("/")) {
+            normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+        }
+
+        StringBuilder uri = new StringBuilder(normalizedBaseUrl + "/api/v1/ruangan");
+        boolean hasQuery = false;
+
+        if (tanggal != null) {
+            DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+            uri.append(hasQuery ? "&" : "?").append("tanggal=").append(urlEncode(tanggal.format(dateFormatter)));
+            hasQuery = true;
+        }
+        if (waktuMulai != null && !waktuMulai.isEmpty()) {
+            uri.append(hasQuery ? "&" : "?").append("waktuMulai=").append(urlEncode(waktuMulai));
+            hasQuery = true;
+        }
+        if (waktuSelesai != null && !waktuSelesai.isEmpty()) {
+            uri.append(hasQuery ? "&" : "?").append("waktuSelesai=").append(urlEncode(waktuSelesai));
+            hasQuery = true;
+        }
+        if (tipe != null && !tipe.isEmpty()) {
+            String normalizedTipe = tipe.toUpperCase();
+            if (normalizedTipe.equals("LABORATORIUM")) {
+                normalizedTipe = "LAB";
+            }
+            uri.append(hasQuery ? "&" : "?").append("tipe=").append(urlEncode(normalizedTipe));
+            hasQuery = true;
+        }
+        if (gedung != null && !gedung.isEmpty() && !gedung.equalsIgnoreCase("Semua")) {
+            uri.append(hasQuery ? "&" : "?").append("gedung=").append(urlEncode(gedung));
+        }
+
+        return URI.create(uri.toString());
     }
 
     private void parseAndSetRoomData(String json) {
@@ -419,57 +458,38 @@ public class userBeranda extends HorizontalLayout {
             }
         } catch (Exception e) {
             System.err.println("Error parsing room data: " + e.getMessage());
-            // Fallback to manual parsing
-            try {
-                String[] roomObjects = json.trim().split("\\},\\{");
-                if (roomObjects.length == 0 || json.contains("\"data\":null")) {
-                    Notification.show("Tidak ada ruangan yang ditemukan", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-                for (String roomObj : roomObjects) {
-                    roomObj = roomObj.trim();
-                    if (!roomObj.startsWith("{")) roomObj = "{" + roomObj;
-                    if (!roomObj.endsWith("}")) roomObj = roomObj + "}";
-                    JSONObject roomJson = new JSONObject(roomObj);
-                    RoomData room = new RoomData(
-                            roomJson.optString("ruanganId"),
-                            roomJson.optString("tipe"),
-                            roomJson.optString("nama"),
-                            String.valueOf(roomJson.optInt("kapasitas")),
-                            roomJson.optString("fasilitas"),
-                            roomJson.optString("gedung"),
-                            roomJson.optString("lokasi"),
-                            roomJson.optString("pathGambar")
-                    );
-                    rooms.add(room);
-                    System.out.println("Added room (fallback): " + room.getName() + ", image: " + room.getImage());
-                }
-            } catch (Exception ex) {
-                System.err.println("Fallback parsing failed: " + ex.getMessage());
-                Notification.show("Error parsing data ruangan: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
-            }
+            Notification.show("Error parsing data ruangan: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
     }
 
-    private Set<String> parseGedungData(String json) {
-        Set<String> gedungSet = new HashSet<>();
+    private void parseGedungData(String json) {
         try {
             JSONObject jsonObject = new JSONObject(json);
             if (jsonObject.has("data") && !jsonObject.isNull("data")) {
                 JSONArray dataArray = jsonObject.getJSONArray("data");
+                distinctGedung.clear();
                 for (int i = 0; i < dataArray.length(); i++) {
                     String gedung = dataArray.getString(i);
                     if (gedung != null && !gedung.trim().isEmpty()) {
-                        gedungSet.add(gedung);
+                        distinctGedung.add(gedung);
                     }
                 }
-                System.out.println("Parsed " + gedungSet.size() + " gedung from API response");
+                System.out.println("Parsed " + distinctGedung.size() + " gedung from API response");
+                
+                // Use the stored reference instead of complex traversal
+                UI.getCurrent().access(() -> {
+                    if (gedungFilter != null) {
+                        List<String> gedungList = new ArrayList<>(distinctGedung);
+                        gedungList.add(0, "Semua");
+                        gedungFilter.setItems(gedungList);
+                        System.out.println("Updated gedung combo box with " + gedungList.size() + " items");
+                    }
+                });
             }
         } catch (Exception e) {
             System.err.println("Error parsing gedung data: " + e.getMessage());
             Notification.show("Error parsing data gedung: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
-        return gedungSet;
     }
 
     private String urlEncode(String value) {

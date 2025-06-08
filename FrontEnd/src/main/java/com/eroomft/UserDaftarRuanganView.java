@@ -31,12 +31,24 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.router.Route;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+
 @Route("user/ruangan")
+@org.springframework.stereotype.Component
+@Scope("prototype")
 public class UserDaftarRuanganView extends HorizontalLayout {
     private List<RoomData> rooms = new ArrayList<>();
     private Div roomGrid;
     private Set<String> distinctGedung = new HashSet<>();
     private SidebarComponent sidebar;
+    
+    // Add instance field to store reference to gedung filter
+    private ComboBox<String> gedungFilter;
+
+    @Value("${api.base.url:}")
+    private String apiBaseUrl;
 
     public UserDaftarRuanganView() {
         // Validasi Sesi Aktif
@@ -59,10 +71,16 @@ public class UserDaftarRuanganView extends HorizontalLayout {
         mainContent.getStyle().set("background-color", "#FEE6D5");
         mainContent.getStyle().set("overflow", "auto");
 
-        // Ensure all preceding blocks are properly closed
         mainContent.add(createContent());
 
         add(sidebar, mainContent);
+    }
+
+    @PostConstruct
+    private void init() {
+        System.out.println("Injected apiBaseUrl: " + apiBaseUrl);
+        fetchRoomData(null, null, null);
+        fetchDistinctGedung();
     }
 
     private Component createContent() {
@@ -92,9 +110,6 @@ public class UserDaftarRuanganView extends HorizontalLayout {
                 .set("display", "inline-block");
 
         headerBox.add(title);
-
-        fetchRoomData(null, null, null);
-        fetchDistinctGedung();
 
         HorizontalLayout searchSection = createSearchSection();
         roomGrid = createRoomGrid();
@@ -142,7 +157,8 @@ public class UserDaftarRuanganView extends HorizontalLayout {
                 .set("border", "2px solid #FF6B35")
                 .set("border-radius", "8px");
 
-        ComboBox<String> gedungFilter = new ComboBox<>();
+        // Store reference as instance field instead of local variable
+        gedungFilter = new ComboBox<>();
         gedungFilter.setPlaceholder("Gedung");
         gedungFilter.addClassNames("no-gray-background");
         List<String> gedungList = new ArrayList<>(distinctGedung);
@@ -166,7 +182,7 @@ public class UserDaftarRuanganView extends HorizontalLayout {
                 .set("border-radius", "8px");
 
         searchBtn.addClickListener(e -> {
-            String searchText = searchField.getValue().trim();
+            String searchText = searchField.getValue() != null ? searchField.getValue().trim() : null;
             String selectedType = typeFilter.getValue();
             String selectedGedung = gedungFilter.getValue();
 
@@ -208,7 +224,7 @@ public class UserDaftarRuanganView extends HorizontalLayout {
                 .set("width", "100%");
 
         if (rooms == null || rooms.isEmpty()) {
-            Notification.show("Tidak ada ruangan yang ditemukan. Memeriksa data: " + rooms.size() + " ruangan", 3000, Notification.Position.MIDDLE);
+            // Notification.show("Tidak ada ruangan yang ditemukan. Memeriksa data: " + rooms.size() + " ruangan", 3000, Notification.Position.MIDDLE);
             grid.getElement().removeAllChildren();
             return grid;
         }
@@ -248,7 +264,7 @@ public class UserDaftarRuanganView extends HorizontalLayout {
                 .set("overflow", "hidden");
 
         if (room.getImage() != null && !room.getImage().isEmpty()) {
-            Image localImage = new Image("/Uploads/" + room.getImage(), room.getImage());
+            Image localImage = new Image("/Uploads/" + room.getImage(), room.getName());
             imageDiv.add(localImage);
             localImage.getStyle()
                     .set("width", "100%")
@@ -264,16 +280,16 @@ public class UserDaftarRuanganView extends HorizontalLayout {
         Div content = new Div();
         content.getStyle().set("padding", "1rem");
 
-        H3 roomName = new H3("Ruang " + toTitleCase(room.tipe) + " " + room.getName());
+        H3 roomName = new H3("Ruang " + toTitleCase(room.getTipe()) + " " + room.getName());
         roomName.getStyle()
                 .set("margin", "0 0 0.5rem 0")
                 .set("font-size", "1.1rem")
                 .set("color", "var(--lumo-header-text-color)");
 
         Div details = new Div();
-        details.add(createDetailItem("Kapasitas", room.capacity));
-        details.add(createDetailItem("Fasilitas", room.facilities));
-        details.add(createDetailItem("Lokasi", room.gedung + " " + room.location));
+        details.add(createDetailItem("Kapasitas", room.getCapacity()));
+        details.add(createDetailItem("Fasilitas", room.getFacilities()));
+        details.add(createDetailItem("Lokasi", room.getGedung() + " " + room.getLocation()));
 
         Button pinjamBtn = new Button("Pinjam");
         pinjamBtn.getStyle()
@@ -321,7 +337,7 @@ public class UserDaftarRuanganView extends HorizontalLayout {
                 .set("font-weight", "600")
                 .set("color", "var(--lumo-secondary-text-color)");
 
-        Span valueSpan = new Span(value);
+        Span valueSpan = new Span(value != null ? value : "-");
         valueSpan.getStyle().set("color", "var(--lumo-body-text-color)");
 
         item.add(labelSpan, valueSpan);
@@ -359,9 +375,13 @@ public class UserDaftarRuanganView extends HorizontalLayout {
 
     private void fetchDistinctGedung() {
         try {
+            if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+                Notification.show("Error: API base URL is not configured!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalStateException("API base URL is not configured in application.properties");
+            }
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8081/api/v1/ruangan/gedung"))
+                    .uri(URI.create(apiBaseUrl + "/api/v1/ruangan/gedung"))
                     .GET()
                     .header("Accept", "application/json")
                     .build();
@@ -370,16 +390,40 @@ public class UserDaftarRuanganView extends HorizontalLayout {
 
             if (response.statusCode() == 200) {
                 parseDistinctGedung(response.body());
+                // Use the stored instance field instead of complex component traversal
+                UI.getCurrent().access(() -> {
+                    if (gedungFilter != null) {
+                        List<String> gedungList = new ArrayList<>(distinctGedung);
+                        gedungList.add(0, "Semua");
+                        gedungFilter.setItems(gedungList.toArray(String[]::new));
+                        System.out.println("Updated gedung combo box with " + gedungList.size() + " items");
+                    }
+                });
             } else {
                 Notification.show("Failed to fetch gedung data: " + response.statusCode(), 3000, Notification.Position.MIDDLE);
             }
         } catch (IOException | InterruptedException e) {
             Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
     }
 
     private URI createUri(String searchQuery, String typeFilter, String gedungFilter) {
-        String uri = "http://localhost:8081/api/v1/ruangan";
+        if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+            Notification.show("Error: API base URL is not configured!", 3000, Notification.Position.MIDDLE);
+            throw new IllegalStateException("API base URL is not configured in application.properties");
+        }
+        String normalizedBaseUrl = apiBaseUrl.trim();
+        if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+            Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+            throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+        }
+        if (normalizedBaseUrl.endsWith("/")) {
+            normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+        }
+
+        String uri = normalizedBaseUrl + "/api/v1/ruangan";
         boolean hasQuery = false;
         if (searchQuery != null && !searchQuery.isEmpty()) {
             uri += "?keyword=" + URLEncoder.encode(searchQuery, StandardCharsets.UTF_8);
@@ -442,7 +486,6 @@ public class UserDaftarRuanganView extends HorizontalLayout {
         }
     }
 
-    @SuppressWarnings("UseSpecificCatch")
     private void parseDistinctGedung(String jsonData) {
         try {
             org.json.JSONObject jsonObject = new org.json.JSONObject(jsonData);
@@ -522,7 +565,12 @@ public class UserDaftarRuanganView extends HorizontalLayout {
         }
 
         public String getRuanganId() { return ruanganId; }
+        public String getTipe() { return tipe; }
         public String getName() { return name; }
+        public String getCapacity() { return capacity; }
+        public String getFacilities() { return facilities; }
+        public String getGedung() { return gedung; }
+        public String getLocation() { return location; }
         public String getImage() { return image; }
     }
 }

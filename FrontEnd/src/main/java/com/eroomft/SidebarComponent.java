@@ -257,7 +257,7 @@ public class SidebarComponent extends VerticalLayout implements AfterNavigationO
     private Class<? extends Component> resolveRouteTarget(String route) {
         return switch (route) {
             // view tapi extend classnya
-            case "user/beranda" -> userBeranda.class;
+            case "user/beranda" -> UserBeranda.class;
             case "user/ruangan" -> UserDaftarRuanganView.class;
             case "user/pengajuan" -> UserPengajuanView.class;
             case "user/daftar-peminjaman" -> UserPeminjamanView.class;

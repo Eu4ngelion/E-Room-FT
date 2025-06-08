@@ -28,6 +28,8 @@ import com.vaadin.flow.router.QueryParameters;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 
+import org.springframework.beans.factory.annotation.Value;
+
 @Route("login")
 @AnonymousAllowed
 public class LoginView extends VerticalLayout implements BeforeEnterObserver {
@@ -35,6 +37,9 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
     private String pickedRole;
     private TextField txtBox;
     private String idLabel = "NIM/NIP";
+
+    @Value("${api.base.url}")
+    private String apiBaseUrl;
 
     public LoginView() {
         String sessionRole = (String) UI.getCurrent().getSession().getAttribute("role");
@@ -182,32 +187,32 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 .set("font-weight", "600")
                 .set("text-align", "center")
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("color", "Black")
+                .set("color", "black")
                 .set("display", "block")
                 .set("margin-bottom", "10px")
                 .set("white-space", "pre-line");
 
         Button btnTutup = new Button("Tutup", event -> dialog.close());
         btnTutup.getStyle()
-                .set("background-color", "#FF7700")
-                .set("color", "white")
-                .set("font-size", "16px")
-                .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-weight", "600")
-                .set("border", "none")
-                .set("border-radius", "5px")
-                .set("cursor", "pointer");
+            .set("background-color", "#FF7700")
+            .set("color", "white")
+            .set("font-size", "16px")
+            .set("font-family", "'Poppins', sans-serif")
+            .set("font-weight", "600")
+            .set("border", "none")
+            .set("border-radius", "5px")
+            .set("cursor", "pointer");
 
-        VerticalLayout lapisan = new VerticalLayout(errorIcon, text, btnTutup);
-        lapisan.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
-        lapisan.setPadding(true);
-        lapisan.setSpacing(false);
-        lapisan.getStyle()
-                .set("background", "#ffffff")
-                .set("border-radius", "10px")
-                .set("text-align", "center");
+        VerticalLayout content = new VerticalLayout(errorIcon, text, btnTutup);
+        content.setDefaultHorizontalComponentAlignment(Alignment.CENTER);
+        content.setPadding(true);
+        content.setSpacing(false);
+        content.getStyle()
+            .set("background", "#ffffff")
+            .set("border-radius", "10px")
+            .set("text-align", "center");
 
-        dialog.add(lapisan);
+        dialog.add(content);
         dialog.open();
     }
 
@@ -245,30 +250,28 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
 
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8081/api/v1/auth/login"))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                    .build();
+                .uri(URI.create(apiBaseUrl + "/api/v1/auth/login"))
+                .header("Content-Type", "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                .build();
 
             HttpResponse<String> response = client.sendAsync(
-                    request, HttpResponse.BodyHandlers.ofString()
+                request, HttpResponse.BodyHandlers.ofString()
             ).join();
 
             mapper = new ObjectMapper();
-            LoginResponse loginResponse = mapper.readValue(response.body(), LoginResponse.class);
-
-            if ("success".equalsIgnoreCase(loginResponse.getStatus())) {
+            LoginResponse responseLogin = mapper.readValue(response.body(), LoginResponse.class);
+            if ("success".equalsIgnoreCase(responseLogin.getStatus())) {
                 String role = "";
-                if (loginResponse.getData() instanceof java.util.Map) {
-                    Object roleObj = ((java.util.Map<?, ?>) loginResponse.getData()).get("role");
+                if (responseLogin.getData() instanceof java.util.Map) {
+                    Object roleObj = ((Map<String, Object>) responseLogin.getData()).get("role");
                     if (roleObj != null) {
                         role = roleObj.toString().toUpperCase();
                     }
                 }
-
                 if (!role.equals(pickedRole)) {
-                    errorPopup("Akun anda tidak ditemukan");
-                    return;
+                    errorPopup("Akun anda tidak ditemukan.");
+                return;
                 }
 
                 String targetRoute = "user/beranda";
@@ -280,13 +283,13 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
                 getUI().ifPresent(ui -> {
                     ui.getSession().setAttribute("role", finalRole);
                     ui.getSession().setAttribute("akunId", akunId);
-                    ui.getSession().setAttribute("email", ((Map<String, Object>) loginResponse.getData()).get("email"));
-                    ui.getSession().setAttribute("nama", ((Map<String, Object>) loginResponse.getData()).get("nama"));
+                    ui.getSession().setAttribute("email", ((Map<String, Object>) responseLogin.getData()).get("email"));
+                    ui.getSession().setAttribute("nama", ((Map<String, Object>) responseLogin.getData()).get("nama"));
                 });
                 String finalTargetRoute = targetRoute;
                 getUI().ifPresent(ui -> ui.navigate(finalTargetRoute));
             } else {
-                errorPopup(idLabel + " atau Kata Sandi salah");
+                errorPopup(idLabel + " atau kata sandi salah.");
             }
         } catch (Exception e) {
             Notification.show("Error: " + e.getMessage(), 3500, Notification.Position.MIDDLE);
@@ -305,7 +308,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         public String getAkunId() { return akunId; }
         public void setAkunId(String akunId) { this.akunId = akunId; }
         public String getPassword() { return password; }
-        public void setPassword(String password) { this.password = password; }
+        public void setPassword(String text) { this.password = text; }
     }
 
     static class LoginResponse {
@@ -319,7 +322,7 @@ public class LoginView extends VerticalLayout implements BeforeEnterObserver {
         public void setStatus(String status) { this.Status = status; }
         public String getMessage() { return Message; }
         public void setMessage(String message) { this.Message = message; }
-        public Object getData() { return Data; }
         public void setData(Object data) { this.Data = data; }
+        public Object getData() { return Data; }
     }
 }

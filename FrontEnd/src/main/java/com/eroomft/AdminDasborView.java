@@ -25,8 +25,14 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+import com.vaadin.flow.router.PageTitle;
 
-@Route("/admin/dashboard")
+import org.springframework.beans.factory.annotation.Value;
+
+import jakarta.annotation.PostConstruct;
+
+@Route("admin/dashboard")
+@PageTitle("Dasbor Admin")
 public class AdminDasborView extends AppLayout {
     // Variabel global
     private int countRuangan = 0;
@@ -36,16 +42,22 @@ public class AdminDasborView extends AppLayout {
     private VerticalLayout peminjamanRows;
     private List<Peminjaman> peminjamanList = new ArrayList<>();
 
+    @Value("${api.base.url}")
+    private String apiBaseUrl;
+
     public AdminDasborView() {
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || !role.equalsIgnoreCase("admin")) {
-            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.BOTTOM_END);
-            UI.getCurrent().access(() -> {
-                UI.getCurrent().navigate("");
-            });
+            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
+            UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
+            return;
         }
-
         createDrawer();
+        getElement().getStyle().set("background-color", "#FEE6D5");
+    }
+
+    @PostConstruct
+    private void init() {
         setContent(createContent());
         fetchDashboardData();
         fetchPeminjamanData();
@@ -176,9 +188,11 @@ public class AdminDasborView extends AppLayout {
             .set("align-items", "center");
 
         button.addClickListener(event -> {
-            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.MIDDLE);
+            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END);
             UI.getCurrent().getSession().setAttribute("role", null);
-            UI.getCurrent().navigate("");
+            UI.getCurrent().getSession().setAttribute("nama", null);
+            UI.getCurrent().getSession().setAttribute("email", null);
+            UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
         });
         return button;
     }
@@ -189,7 +203,8 @@ public class AdminDasborView extends AppLayout {
         content.getStyle()
             .set("padding-left", "2rem")
             .set("padding-right", "2rem")
-            .set("background-color", "#FEE6D5");
+            .set("background-color", "#FEE6D5")
+            .set("min-height", "100vh");
         content.setSpacing(true);
 
         statCards = createStatCards();
@@ -200,25 +215,31 @@ public class AdminDasborView extends AppLayout {
     }
 
     private Component createHeaderBar() {
-        HorizontalLayout header = new HorizontalLayout();
-        header.setWidthFull();
-        header.setPadding(true);
-        header.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
-        header.setAlignItems(FlexComponent.Alignment.CENTER);
-        header.getStyle()
+        Div headerBox = new Div();
+        headerBox.getStyle()
             .set("background-color", "white")
-            .set("border-radius", "20px")
-            .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)");
+            .set("padding", "1.5rem")
+            .set("box-sizing", "border-box")
+            .set("border-radius", "var(--lumo-border-radius-m)")
+            .set("box-shadow", "var(--lumo-box-shadow-xs)")
+            .set("width", "100%");
 
-        Span title = new Span("Dasbor E-ROOM");
+        H2 title = new H2("Dasbor E-ROOM");
         title.getStyle()
-            .set("font-size", "24px")
-            .set("font-weight", "bold")
-            .set("color", "#FF6600");
+            .set("margin", "0 0 0.5rem 0")
+            .set("color", "#FF6B35")
+            .set("border-bottom", "3px solid #FF6B35")
+            .set("padding-bottom", "0.5rem")
+            .set("display", "inline-block");
+
+        HorizontalLayout headerLayout = new HorizontalLayout();
+        headerLayout.setWidthFull();
+        headerLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.BETWEEN);
+        headerLayout.setAlignItems(FlexComponent.Alignment.CENTER);
 
         Span inisial = new Span("AD");
         inisial.getStyle()
-            .set("background-color", "#FF6600")
+            .set("background-color", "#FF6B35")
             .set("color", "white")
             .set("border-radius", "50%")
             .set("width", "50px")
@@ -235,21 +256,21 @@ public class AdminDasborView extends AppLayout {
         String namaAdmin = (String) UI.getCurrent().getSession().getAttribute("nama");
         if (namaAdmin == null) {
             Notification.show("Silakan login kembali.", 3000, Notification.Position.MIDDLE);
-            UI.getCurrent().navigate("");
-            return header;
+            UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
+            return headerBox;
         }
 
         Span nama = new Span(namaAdmin);
         nama.getStyle()
             .set("font-weight", "bold")
-            .set("color", "#FF6600")
+            .set("color", "#FF6B35")
             .set("font-size", "14px");
 
         String emailAdmin = (String) UI.getCurrent().getSession().getAttribute("email");
         if (emailAdmin == null) {
             Notification.show("Silakan login kembali.", 3000, Notification.Position.MIDDLE);
             UI.getCurrent().navigate("");
-            return header;
+            return headerBox;
         }
         Span email = new Span(emailAdmin);
         email.getStyle()
@@ -265,8 +286,9 @@ public class AdminDasborView extends AppLayout {
         profile.setAlignItems(FlexComponent.Alignment.CENTER);
         profile.setSpacing(true);
 
-        header.add(title, profile);
-        return header;
+        headerLayout.add(title, profile);
+        headerBox.add(headerLayout);
+        return headerBox;
     }
 
     private HorizontalLayout createStatCards() {
@@ -285,7 +307,10 @@ public class AdminDasborView extends AppLayout {
         HorizontalLayout header = new HorizontalLayout();
         header.setWidthFull();
         header.setPadding(true);
-        header.getStyle().set("background", "#FFA769").set("border-radius", "10px");
+        header.getStyle()
+            .set("background", "#FF6B35")
+            .set("border-radius", "10px")
+            .set("color", "white");
 
         header.add(
             createHeaderCell("No", "5%"),
@@ -315,7 +340,10 @@ public class AdminDasborView extends AppLayout {
             HorizontalLayout row = new HorizontalLayout();
             row.setWidthFull();
             row.setPadding(true);
-            row.getStyle().set("background", "white").set("border-radius", "10px").set("box-shadow", "0 2px 4px #ccc");
+            row.getStyle()
+                .set("background", "white")
+                .set("border-radius", "10px")
+                .set("box-shadow", "0 2px 4px #ccc");
 
             row.add(
                 createRowCell(String.valueOf(p.getNo()), "5%"),
@@ -408,7 +436,7 @@ public class AdminDasborView extends AppLayout {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(java.net.URI.create("http://localhost:8081/api/v1/peminjaman"))
+                .uri(java.net.URI.create(apiBaseUrl + "/api/v1/peminjaman"))
                 .GET()
                 .header("Accept", "application/json")
                 .build();
@@ -433,7 +461,7 @@ public class AdminDasborView extends AppLayout {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(java.net.URI.create("http://localhost:8081/api/v1/dashboard"))
+                .uri(java.net.URI.create(apiBaseUrl + "/api/v1/dashboard"))
                 .GET()
                 .header("Accept", "application/json")
                 .build();
@@ -503,7 +531,10 @@ public class AdminDasborView extends AppLayout {
             HorizontalLayout row = new HorizontalLayout();
             row.setWidthFull();
             row.setPadding(true);
-            row.getStyle().set("background", "white").set("border-radius", "10px").set("box-shadow", "0 2px 4px #ccc");
+            row.getStyle()
+                .set("background", "white")
+                .set("border-radius", "10px")
+                .set("box-shadow", "0 2px 4px #ccc");
 
             row.add(
                 createRowCell(String.valueOf(p.getNo()), "5%"),

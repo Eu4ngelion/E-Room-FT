@@ -23,12 +23,16 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+
+import jakarta.annotation.PostConstruct;
 
 @Route("admin/verifikasi")
 @PageTitle("Verifikasi Peminjaman")
@@ -37,11 +41,24 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
     private VerticalLayout contentLayout;
     private final List<Peminjaman> peminjamanList = new ArrayList<>();
 
+    @Value("${api.base.url}")
+    private String apiBaseUrl;
+
     public AdminVerifikasiView() {
+        String role = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (role == null || !role.equalsIgnoreCase("admin")) {
+            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
+            UI.getCurrent().navigate("");
+            return;
+        }
         createDrawer();
+        getElement().getStyle().set("background-color", "#FEE6D5");
+    }
+
+    @PostConstruct
+    private void init() {
         setContent(createContent());
         fetchPeminjamanData();
-        getElement().getStyle().set("background-color", "#FEE6D5");
     }
 
     @Override
@@ -54,7 +71,6 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
     }
 
     // Sidebar
-
     private void createDrawer() {
         String currentPage = "admin/verifikasi";
 
@@ -85,8 +101,7 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
             .set("font-weight", "bold")
             .set("color", "black");
 
-
-        Button dashboardBtn = createStyledButton(VaadinIcon.DASHBOARD, "Dasbor", currentPage.equals("dashboard"), "admin/dashboard");
+        Button dashboardBtn = createStyledButton(VaadinIcon.DASHBOARD, "Dasbor", currentPage.equals("admin/dashboard"), "admin/dashboard");
         Button manajemenRuanganBtn = createStyledButton(VaadinIcon.BUILDING, "Manajemen Ruangan", currentPage.equals("admin/manajemen"), "admin/manajemen");
 
         Span peminjamanHeader = new Span("PEMINJAMAN RUANGAN");
@@ -96,10 +111,10 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
             .set("font-weight", "bold")
             .set("color", "black");
 
-        Button verifikasiBtn = createStyledButton(VaadinIcon.CHECK_SQUARE, "Verifikasi Peminjaman", currentPage.equals("verifikasi"), "admin/verifikasi");
-        Button riwayatBtn = createStyledButton(VaadinIcon.CLOCK, "Riwayat Peminjaman", currentPage.equals("riwayat"), "admin/riwayat");
+        Button verifikasiBtn = createStyledButton(VaadinIcon.CHECK_SQUARE, "Verifikasi Peminjaman", currentPage.equals("admin/verifikasi"), "admin/verifikasi");
+        Button riwayatBtn = createStyledButton(VaadinIcon.CLOCK, "Riwayat Peminjaman", currentPage.equals("admin/riwayat"), "admin/riwayat");
         Button keluar = createExitButton(VaadinIcon.SIGN_OUT, "Keluar");
-        
+
         navigation.add(
             utamaHeader,
             dashboardBtn,
@@ -113,20 +128,17 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
         addToDrawer(logoSection, navigation);
     }
 
-    // button hover
     private Button createStyledButton(VaadinIcon icon, String text, boolean isActive, String targetPage) {
         Button btn = new Button(text, new Icon(icon));
-
         btn.getStyle()
-            .set("margin-inline", "1rem") // Horizontal margin
-            .set("padding", "0.5rem") // Optional: Add padding for better spacing
-            .set("gap", "0.5rem"); // Space between icon and text
+            .set("margin-inline", "1rem")
+            .set("padding", "0.5rem")
+            .set("gap", "0.5rem");
 
-        // Set initial styles immediately
         if (isActive) {
             btn.getStyle()
                 .set("background-color", "#FF6B35")
-                .set("width", "calc(100% - 2rem)") // Full width minus margins
+                .set("width", "calc(100% - 2rem)")
                 .set("color", "white");
         } else {
             btn.getStyle()
@@ -134,11 +146,10 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
                 .set("background-color", "transparent");
         }
 
-        // Hover effects
         btn.getElement().addEventListener("mouseenter", e -> {
             btn.getStyle()
                 .set("background-color", "#FB9A59")
-                .set("width", "calc(100% - 2rem)") 
+                .set("width", "calc(100% - 2rem)")
                 .set("color", "white");
         });
 
@@ -146,7 +157,7 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
             if (!isActive) {
                 btn.getStyle()
                     .set("background-color", "transparent")
-                    .remove("width") 
+                    .remove("width")
                     .set("color", "black");
             } else {
                 btn.getStyle()
@@ -155,9 +166,7 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
             }
         });
 
-        // Click listener
         btn.addClickListener(event -> {
-            // Logika untuk navigasi ke halaman yang sesuai
             if (!isActive) {
                 UI.getCurrent().navigate(targetPage);
             }
@@ -173,8 +182,6 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
             LumoUtility.Width.FULL
         );
         button.getStyle()
-        // .set("border", "none")
-            // vertical margin
             .set("margin-top", "100px")
             .set("border-radius", "5px")
             .set("margin-inline", "1rem")
@@ -188,17 +195,16 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
             .set("align-items", "center");
 
         button.addClickListener(event -> {
-            // Logika untuk keluar dari aplikasi
-            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END)
-                .setPosition(Notification.Position.BOTTOM_END);
-            UI.getCurrent().getSession().close(); // Hapus session
-            UI.getCurrent().navigate(""); 
+            Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END);
+            UI.getCurrent().getSession().setAttribute("role", null);
+            UI.getCurrent().getSession().setAttribute("nama", null);
+            UI.getCurrent().getSession().setAttribute("email", null);
+            UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
         });
         return button;
-
     }
 
-private Component createContent() {
+    private Component createContent() {
         contentLayout = new VerticalLayout();
         contentLayout.setPadding(true);
         contentLayout.setSpacing(true);
@@ -223,9 +229,9 @@ private Component createContent() {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(java.net.URI.create("http://localhost:8081/api/v1/peminjaman"))
+                .uri(URI.create(apiBaseUrl + "/api/v1/peminjaman"))
                 .GET()
-                .header("Accept", "*/*")
+                .header("Accept", "application/json")
                 .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -262,6 +268,8 @@ private Component createContent() {
                 ));
             }
         } catch (Exception e) {
+            UI.getCurrent().access(() -> Notification.show("Error parsing peminjaman data: " + e.getMessage(),
+                3000, Notification.Position.MIDDLE));
         }
     }
 
@@ -352,9 +360,9 @@ private Component createContent() {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(java.net.URI.create("http://localhost:8081/api/v1/peminjaman/detail/" + idPeminjaman))
+                .uri(URI.create(apiBaseUrl + "/api/v1/peminjaman/detail/" + idPeminjaman))
                 .GET()
-                .header("Accept", "*/*")
+                .header("Accept", "application/json")
                 .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -516,9 +524,9 @@ private Component createContent() {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(java.net.URI.create("http://localhost:8081/api/v1/peminjaman/" + idPeminjaman + "?isSetuju=" + isSetuju))
+                .uri(URI.create(apiBaseUrl + "/api/v1/peminjaman/" + idPeminjaman + "?isSetuju=" + isSetuju))
                 .method("PATCH", HttpRequest.BodyPublishers.noBody())
-                .header("Accept", "*/*")
+                .header("Accept", "application/json")
                 .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());

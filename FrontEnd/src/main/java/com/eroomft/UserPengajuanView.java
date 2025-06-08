@@ -29,12 +29,21 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+
 @Route("user/pengajuan")
+@org.springframework.stereotype.Component
+@Scope("prototype")
 public class UserPengajuanView extends HorizontalLayout implements HasUrlParameter<String> {
 
     private SidebarComponent sidebar;
     private VerticalLayout mainContent;
     private String ruanganId;
+
+    @Value("${api.base.url:}")
+    private String apiBaseUrl;
 
     public UserPengajuanView() {
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
@@ -57,6 +66,11 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
         mainContent.getStyle().set("overflow", "auto");
 
         add(sidebar, mainContent);
+    }
+
+    @PostConstruct
+    private void init() {
+        System.out.println("Injected apiBaseUrl: " + apiBaseUrl);
     }
 
     @Override
@@ -255,15 +269,28 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
                 akunId, namaRuanganValue, keperluan, tanggal.format(DateTimeFormatter.ISO_LOCAL_DATE), jamMulai, jamSelesai
             );
 
-            HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8081/api/v1/peminjaman"))
-                    .header("Content-Type", "application/json")
-                    .header("accept", "*/*")
-                    .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
-                    .build();
-
             try {
+                if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+                    Notification.show("Error: API base URL is not configured!", 3000, Notification.Position.MIDDLE);
+                    throw new IllegalStateException("API base URL is not configured in application.properties");
+                }
+                String normalizedBaseUrl = apiBaseUrl.trim();
+                if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+                    Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+                    throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+                }
+                if (normalizedBaseUrl.endsWith("/")) {
+                    normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+                }
+
+                HttpClient client = HttpClient.newHttpClient();
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(normalizedBaseUrl + "/api/v1/peminjaman"))
+                        .header("Content-Type", "application/json")
+                        .header("accept", "*/*")
+                        .POST(HttpRequest.BodyPublishers.ofString(jsonPayload))
+                        .build();
+
                 HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                 if (response.statusCode() == 200) {
                     Notification.show("Peminjaman berhasil diajukan!", 3000, Notification.Position.BOTTOM_END);
@@ -279,6 +306,8 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
                 }
             } catch (IOException | InterruptedException e) {
                 Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.BOTTOM_END);
+            } catch (IllegalStateException | IllegalArgumentException e) {
+                Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
             }
         });
 
@@ -292,9 +321,22 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
 
     private void fetchRoomName() {
         try {
+            if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+                Notification.show("Error: API base URL is not configured!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalStateException("API base URL is not configured in application.properties");
+            }
+            String normalizedBaseUrl = apiBaseUrl.trim();
+            if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+                Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+            }
+            if (normalizedBaseUrl.endsWith("/")) {
+                normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+            }
+
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId))
+                    .uri(URI.create(normalizedBaseUrl + "/api/v1/ruangan/" + ruanganId))
                     .GET()
                     .header("Accept", "application/json")
                     .build();
@@ -313,6 +355,8 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
             }
         } catch (IOException | InterruptedException e) {
             Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
     }
 

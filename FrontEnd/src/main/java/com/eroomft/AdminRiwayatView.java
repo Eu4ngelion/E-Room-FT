@@ -1,14 +1,5 @@
 package com.eroomft;
 
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.util.ArrayList;
-import java.util.List;
-
-import org.json.JSONArray;
-import org.json.JSONObject;
-
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -28,6 +19,19 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
+
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
+
+import jakarta.annotation.PostConstruct;
+
 @Route("admin/riwayat")
 @PageTitle("Riwayat Peminjaman")
 public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
@@ -35,11 +39,24 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
     private VerticalLayout contentLayout;
     private final List<RiwayatPeminjaman> riwayatList = new ArrayList<>();
 
+    @Value("${api.base.url}")
+    private String apiBaseUrl;
+
     public AdminRiwayatView() {
+        String role = (String) UI.getCurrent().getSession().getAttribute("role");
+        if (role == null || !role.equalsIgnoreCase("admin")) {
+            Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
+            UI.getCurrent().navigate("");
+            return;
+        }
         createDrawer();
+        getElement().getStyle().set("background-color", "#FEE6D5");
+    }
+
+    @PostConstruct
+    private void init() {
         setContent(createContent());
         fetchRiwayatData();
-        getElement().getStyle().set("background-color", "#FEE6D5");
     }
 
     @Override
@@ -148,7 +165,7 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
 
         btn.addClickListener(event -> {
             if (!isActive) {
-                UI.getCurrent().access(() -> UI.getCurrent().navigate(targetPage));
+                UI.getCurrent().navigate(targetPage);
             }
         });
         return btn;
@@ -177,7 +194,9 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
         button.addClickListener(event -> {
             Notification.show("Anda telah keluar dari aplikasi.", 3000, Notification.Position.BOTTOM_END);
             UI.getCurrent().getSession().setAttribute("role", null);
-            UI.getCurrent().access(() -> UI.getCurrent().navigate(""));
+            UI.getCurrent().getSession().setAttribute("nama", null);
+            UI.getCurrent().getSession().setAttribute("email", null);
+            UI.getCurrent().navigate("");
         });
         return button;
     }
@@ -189,7 +208,7 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
         contentLayout.setWidthFull();
         contentLayout.setHeightFull();
         contentLayout.getStyle()
-            .set("min-height", "100%")
+            .set("min-height", "400px")
             .set("background-color", "#FEE6D5");
         contentLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         contentLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
@@ -207,9 +226,9 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
         try {
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                .uri(java.net.URI.create("http://localhost:8081/api/v1/peminjaman/riwayat"))
+                .uri(URI.create(apiBaseUrl + "/api/v1/peminjaman/riwayat"))
                 .GET()
-                .header("Accept", "*/*")
+                .header("Accept", "application/json")
                 .build();
 
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
@@ -251,6 +270,8 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
                 }
             }
         } catch (Exception e) {
+            UI.getCurrent().access(() -> Notification.show("Error parsing data riwayat: " + e.getMessage(),
+                3000, Notification.Position.MIDDLE));
         }
     }
 
@@ -276,7 +297,7 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
         card.setWidth("90%");
         card.setPadding(true);
         card.setSpacing(true);
-        card.getStyle() 
+        card.getStyle()
             .set("background", "#fff")
             .set("border-radius", "10px")
             .set("box-shadow", "0 2px 8px rgba(0,0,0,0.1)")
@@ -313,30 +334,31 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
         Button status = new Button(riwayat.getStatus());
         switch (riwayat.getStatus().toLowerCase()) {
             case "ditolak":
-            status.getStyle()
-                .set("background-color", "red")
-                .set("color", "#fff");
-            break;
+                status.getStyle()
+                    .set("background-color", "#ef4444")
+                    .set("color", "#fff");
+                break;
             case "dibatalkan":
-            status.getStyle()
-                .set("background-color", "orange")
-                .set("color", "#fff");
-            break;
+                status.getStyle()
+                    .set("background-color", "#f97316")
+                    .set("color", "#fff");
+                break;
             case "selesai":
-            status.getStyle()
-                .set("background-color", "gray")
-                .set("color", "#fff");
-            break;
+                status.getStyle()
+                    .set("background-color", "#6b7280")
+                    .set("color", "#fff");
+                break;
             default:
-            status.getStyle()
-                .set("background-color", "#fff933")
-                .set("color", "#000");
-            break;
+                status.getStyle()
+                    .set("background-color", "#22c55e")
+                    .set("color", "#fff");
+                break;
         }
-        status.getStyle().set("font-weight", "600");
-        status.getStyle().set("border-radius", "5px").set("padding", "0.5rem 1rem");
-        // set the width 
-        status.setWidth("150px");
+        status.getStyle()
+            .set("font-weight", "600")
+            .set("border-radius", "5px")
+            .set("padding", "0.5rem 1rem")
+            .set("width", "150px");
         status.setEnabled(false);
 
         tombol.add(status);

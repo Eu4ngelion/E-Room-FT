@@ -20,13 +20,22 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+
 @Route("user/riwayat")
+@org.springframework.stereotype.Component
+@Scope("prototype")
 public class UserRiwayatPeminjamanView extends HorizontalLayout {
 
     private SidebarComponent sidebar;
     private VerticalLayout mainContent;
 
-    public UserRiwayatPeminjamanView() {
+    private String apiBaseUrl;
+
+    public UserRiwayatPeminjamanView(@Value("${api.base.url:http://localhost:8081}") String apiBaseUrl) {
+        this.apiBaseUrl = apiBaseUrl != null ? apiBaseUrl : "http://localhost:8081";
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || (!role.equalsIgnoreCase("mahasiswa") && !role.equalsIgnoreCase("dosen"))) {
             Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
@@ -49,6 +58,15 @@ public class UserRiwayatPeminjamanView extends HorizontalLayout {
 
         mainContent.add(createContent());
         add(sidebar, mainContent);
+    }
+
+    @PostConstruct
+    private void init() {
+        System.out.println("Injected apiBaseUrl: " + apiBaseUrl);
+        if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+            System.err.println("WARNING: apiBaseUrl is not configured. Using default: http://localhost:8081");
+            apiBaseUrl = "http://localhost:8081";
+        }
     }
 
     private Component createContent() {
@@ -86,7 +104,7 @@ public class UserRiwayatPeminjamanView extends HorizontalLayout {
                 .set("color", "white")
                 .set("border-radius", "8px")
                 .set("display", "grid")
-                .set("grid-template-columns", "7.5% 11% 17% 12% 20% 18.5% 5%")
+                .set("grid-template-columns", "7.5% 15% 17.5% 12.5% 12.5% 20% 15%")
                 .set("gap", "0.5rem")
                 .set("font-weight", "bold")
                 .set("font-size", "0.9rem");
@@ -106,26 +124,26 @@ public class UserRiwayatPeminjamanView extends HorizontalLayout {
         grid.getElement().getThemeList().add("no-header");
 
         grid.addColumn(riwayat -> riwayatList.indexOf(riwayat) + 1)
-                .setWidth("5%");
+                .setWidth("7.5%");
 
         grid.addColumn(riwayat -> {
             String gedung = riwayat.getGedung();
             return gedung != null && !gedung.isEmpty()
                     ? gedung.substring(0, 1).toUpperCase() + gedung.substring(1).toLowerCase()
                     : "";
-        }).setWidth("10%");
+        }).setWidth("15%");
 
         grid.addColumn(RiwayatPeminjaman::getNamaRuangan)
-                .setWidth("15%");
+                .setWidth("17.5%");
 
         grid.addColumn(riwayat -> riwayat.getWaktuMulai() != null ? riwayat.getWaktuMulai().substring(0, 5) : "")
-                .setWidth("10%");
+                .setWidth("12.5%");
 
         grid.addColumn(riwayat -> riwayat.getWaktuSelesai() != null ? riwayat.getWaktuSelesai().substring(0, 5) : "")
-                .setWidth("15%");
+                .setWidth("12.5%");
 
         grid.addColumn(RiwayatPeminjaman::getTanggalPeminjaman)
-                .setWidth("15%");
+                .setWidth("20%");
 
         grid.addComponentColumn(riwayat -> {
             Span statusSpan = new Span(riwayat.getStatus());
@@ -145,7 +163,7 @@ public class UserRiwayatPeminjamanView extends HorizontalLayout {
                 statusSpan.getStyle().set("background-color", "#28A745");
             }
             return statusSpan;
-        }).setWidth("12%");
+        }).setWidth("15%");
 
         if (!riwayatList.isEmpty()) {
             grid.setItems(riwayatList);
@@ -172,15 +190,32 @@ public class UserRiwayatPeminjamanView extends HorizontalLayout {
             return riwayatList;
         }
 
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("http://localhost:8081/api/v1/peminjaman/riwayat?akunId=" + akunId))
-                .header("accept", "application/json")
-                .GET()
-                .build();
-
         try {
+            if (apiBaseUrl == null) {
+                System.err.println("ERROR: apiBaseUrl is null. Using default: http://localhost:8081");
+                apiBaseUrl = "http://localhost:8081";
+            }
+            String normalizedBaseUrl = apiBaseUrl.trim();
+            if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+                Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+            }
+            if (normalizedBaseUrl.endsWith("/")) {
+                normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+            }
+
+            System.out.println("Fetching riwayat peminjaman data for akunId: " + akunId + " from URL: " + normalizedBaseUrl + "/api/v1/peminjaman/riwayat?akunId=" + akunId);
+
+            HttpClient client = HttpClient.newHttpClient();
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(normalizedBaseUrl + "/api/v1/peminjaman/riwayat?akunId=" + akunId))
+                    .header("Accept", "application/json")
+                    .GET()
+                    .build();
+
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            System.out.println("API Response Status: " + response.statusCode() + ", Body: " + response.body());
+
             if (response.statusCode() == 200) {
                 ObjectMapper mapper = new ObjectMapper();
                 JsonNode root = mapper.readTree(response.body());
@@ -203,12 +238,19 @@ public class UserRiwayatPeminjamanView extends HorizontalLayout {
                         riwayat.setDeleted(node.path("deleted").asBoolean());
                         riwayatList.add(riwayat);
                     }
+                    System.out.println("Fetched " + riwayatList.size() + " riwayat peminjaman records.");
+                } else {
+                    System.out.println("No array found in 'data' field of response.");
                 }
             } else {
-                Notification.show("Gagal mengambil data riwayat peminjaman: " + response.body(), 3000, Notification.Position.MIDDLE);
+                Notification.show("Gagal mengambil data riwayat peminjaman: HTTP " + response.statusCode() + " - " + response.body(), 3000, Notification.Position.MIDDLE);
             }
         } catch (IOException | InterruptedException e) {
             Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+            System.err.println("Exception during fetchRiwayatPeminjamanData: " + e.getMessage());
+        } catch (IllegalArgumentException e) {
+            Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+            System.err.println("IllegalArgumentException: " + e.getMessage());
         }
 
         return riwayatList;

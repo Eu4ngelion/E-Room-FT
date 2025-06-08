@@ -30,7 +30,13 @@ import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 
+import jakarta.annotation.PostConstruct;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+
 @Route("user/detail-ruangan")
+@org.springframework.stereotype.Component
+@Scope("prototype")
 public class UserDetailRuanganView extends HorizontalLayout implements HasUrlParameter<String> {
 
     private String ruanganId;
@@ -39,6 +45,9 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
     private Div scheduleList;
     private SidebarComponent sidebar;
     private VerticalLayout mainContent;
+
+    @Value("${api.base.url:}")
+    private String apiBaseUrl;
 
     public UserDetailRuanganView() {
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
@@ -63,6 +72,11 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
         mainContent.getStyle().set("overflow", "auto");
 
         add(sidebar, mainContent);
+    }
+
+    @PostConstruct
+    private void init() {
+        System.out.println("Injected apiBaseUrl: " + apiBaseUrl);
     }
 
     @Override
@@ -94,22 +108,6 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
         }
     }
 
-    // private HorizontalLayout createHeader() {
-    //     H2 title = new H2("Detail Ruangan");
-    //     title.getStyle().set("margin", "0").set("font-size", "1.5rem");
-
-    //     HorizontalLayout header = new HorizontalLayout(title);
-    //     header.setAlignItems(FlexComponent.Alignment.CENTER);
-    //     header.setPadding(true);
-    //     header.setSpacing(true);
-    //     header.setWidthFull();
-    //     header.getStyle()
-    //         .set("color", "white")
-    //         .set("padding", "1rem 2rem")
-    //         .set("border-radius", "0 0 0.75rem 0.75rem");
-    //     return header;
-    // }
-
     private Component createContent() {
         HorizontalLayout content = new HorizontalLayout();
         content.setPadding(true);
@@ -123,7 +121,7 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
         roomDetailsLayout.setWidth("60%");
         roomDetailsLayout.setAlignItems(FlexComponent.Alignment.START);
         roomDetailsLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
-    
+
         roomDetailsLayout.getStyle()
                 .set("background-color", "transparent")
                 .set("border-radius", "8px");
@@ -194,12 +192,12 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
         });
         roomDetailsLayout.add(pinjamBtn);
 
-        VerticalLayout ScheduleLayout = new VerticalLayout();
-        ScheduleLayout.setWidth("40%");
-        ScheduleLayout.setPadding(true);
-        ScheduleLayout.setSpacing(true);
-        ScheduleLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-        ScheduleLayout.getStyle()
+        VerticalLayout scheduleLayout = new VerticalLayout();
+        scheduleLayout.setWidth("40%");
+        scheduleLayout.setPadding(true);
+        scheduleLayout.setSpacing(true);
+        scheduleLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        scheduleLayout.getStyle()
                 .set("background-color", "white")
                 .set("border-radius", "8px")
                 .set("box-shadow", "var(--lumo-box-shadow-xs)")
@@ -226,7 +224,7 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
             }
         });
         scheduleHeader.add(scheduleTitle, datePicker);
-        ScheduleLayout.add(scheduleHeader);
+        scheduleLayout.add(scheduleHeader);
 
         scheduleList = new Div();
         Div scheduleListHeader = new Div();
@@ -248,8 +246,8 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
                 .set("background-color", "#f9f9f9");
         fetchScheduleData(LocalDate.now());
         updateScheduleList();
-        ScheduleLayout.add(scheduleList);
-        content.add(roomDetailsLayout, ScheduleLayout);
+        scheduleLayout.add(scheduleList);
+        content.add(roomDetailsLayout, scheduleLayout);
         return content;
     }
 
@@ -267,7 +265,7 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
         Span valueSpan = new Span(value);
         valueSpan.getStyle()
                 .set("font-weight", "600")
-                .set("color", "var(--lumo-secondary-text-color)");  
+                .set("color", "var(--lumo-secondary-text-color)");
 
         item.add(labelSpan, valueSpan);
         return item;
@@ -275,9 +273,22 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
 
     private void fetchRoomData() {
         try {
+            if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+                Notification.show("Error: API base URL is not configured!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalStateException("API base URL is not configured in application.properties");
+            }
+            String normalizedBaseUrl = apiBaseUrl.trim();
+            if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+                Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+            }
+            if (normalizedBaseUrl.endsWith("/")) {
+                normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+            }
+
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId))
+                    .uri(URI.create(normalizedBaseUrl + "/api/v1/ruangan/" + ruanganId))
                     .GET()
                     .header("Accept", "application/json")
                     .build();
@@ -290,15 +301,30 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
             }
         } catch (IOException | InterruptedException e) {
             Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
     }
 
     private void fetchScheduleData(LocalDate date) {
         try {
+            if (apiBaseUrl == null || apiBaseUrl.trim().isEmpty()) {
+                Notification.show("Error: API base URL is not configured!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalStateException("API base URL is not configured in application.properties");
+            }
+            String normalizedBaseUrl = apiBaseUrl.trim();
+            if (!normalizedBaseUrl.startsWith("http://") && !normalizedBaseUrl.startsWith("https://")) {
+                Notification.show("Error: API base URL missing scheme (http:// or https://)!", 3000, Notification.Position.MIDDLE);
+                throw new IllegalArgumentException("API base URL missing scheme: " + normalizedBaseUrl);
+            }
+            if (normalizedBaseUrl.endsWith("/")) {
+                normalizedBaseUrl = normalizedBaseUrl.substring(0, normalizedBaseUrl.length() - 1);
+            }
+
             String formattedDate = date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId + "/jadwal?tanggal=" + formattedDate))
+                    .uri(URI.create(normalizedBaseUrl + "/api/v1/ruangan/" + ruanganId + "/jadwal?tanggal=" + formattedDate))
                     .GET()
                     .header("Accept", "application/json")
                     .build();
@@ -311,6 +337,8 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
             }
         } catch (IOException | InterruptedException e) {
             Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            Notification.show("Error: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
     }
 
@@ -372,6 +400,16 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
 
     private void updateScheduleList() {
         scheduleList.removeAll();
+        Div scheduleListHeader = new Div();
+        scheduleListHeader.getStyle()
+                .set("display", "flex")
+                .set("justify-content", "space-between")
+                .set("padding", "0.5rem")
+                .set("font-weight", "bold")
+                .set("border-bottom", "1px solid var(--lumo-contrast-10pct)");
+        scheduleListHeader.add(new Span("Jam"), new Span("Status"));
+        scheduleList.add(scheduleListHeader);
+
         if (schedules.isEmpty()) {
             Span noSchedule = new Span("Tidak ada jadwal pada tanggal ini.");
             noSchedule.getStyle().set("color", "var(--lumo-secondary-text-color)");
