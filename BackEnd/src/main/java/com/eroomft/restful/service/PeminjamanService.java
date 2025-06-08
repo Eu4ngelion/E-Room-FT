@@ -395,16 +395,14 @@ public class PeminjamanService {
 
 
     // interval 15 Menit WITA
-    // @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
+    @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
 
-    // Testing interval 1 menit WITA
+    // Interval 1 menit WITA
     // @Scheduled(cron = "0 0/1 * * * *", zone = "Asia/Makassar") 
 
-    // Testing interval 10 detik WITA
-    @Scheduled(cron = "0/10 * * * * *", zone = "Asia/Makassar")
+    // Interval 10 detik WITA
+    // @Scheduled(cron = "0/10 * * * * *", zone = "Asia/Makassar")
     
-    // Testing fixed rate = 5 detik
-    // @Scheduled(fixedRate = 5000)
     // Update Peminjaman -> LogPeminjaman Realtime2
     public void updatePeminjamanStatusScheduled() {
         try {

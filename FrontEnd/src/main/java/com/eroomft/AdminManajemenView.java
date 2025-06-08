@@ -1,20 +1,26 @@
 package com.eroomft;
 
-import java.io.File;
-import java.io.FileOutputStream;
+
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
+import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -40,25 +46,55 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-
+import org.springframework.beans.factory.annotation.Autowired;
 
 @Route("admin/manajemen")
 public class AdminManajemenView extends AppLayout {
 
-    public AdminManajemenView() {
+    @Autowired
+    private final UploadConfig uploadConfig;
+    private String uploadedFileName = null;
+
+    
+    public AdminManajemenView(UploadConfig uploadConfig) {
         // Cek Role
+        this.uploadConfig = uploadConfig;
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || !role.equalsIgnoreCase("admin")) {
             Notification.show("Anda tidak memiliki akses ke halaman ini.", 3000, Notification.Position.MIDDLE);
             UI.getCurrent().navigate("");
             return;
         }
+        cleanUpInvalidFiles();
         createDrawer();
         setContent(createContent());
+        getElement().getStyle().set("background-color", "#FEE6D5");
     }
 
-    private Image roomImage = new Image();
-    private String uploadedFileName = null;
+    private void cleanUpInvalidFiles() {
+        try {
+            Files.walk(Paths.get(uploadConfig.getDirectory()))
+                .filter(Files::isRegularFile)
+                .filter(path -> {
+                    try {
+                        return Files.size(path) == 0;
+                    } catch (IOException e) {
+                        return false;
+                    }
+                })
+                .forEach(path -> {
+                    try {
+                        Files.delete(path);
+                        System.out.println("Deleted empty file: " + path);
+                    } catch (IOException e) {
+                        System.err.println("Failed to delete: " + path);
+                    }
+                });
+        } catch (IOException e) {
+            System.err.println("Error cleaning up files: " + e.getMessage());
+        }
+    }
+
 
     // sidebar
     private void createDrawer() {
@@ -158,7 +194,7 @@ public class AdminManajemenView extends AppLayout {
                 btn.getStyle()
                     .set("background-color", "#FF6B35")
                     .set("color", "white");
-            };
+            }
         });
 
         // Click listener
@@ -361,320 +397,347 @@ public class AdminManajemenView extends AppLayout {
             .set("height", "40px");
 
         // FORM TAMBAH RUANGAN
-            Dialog tambahRuanganDialog = new Dialog();
+        Dialog tambahRuanganDialog = new Dialog();
 
-            H3 dialogTitle = new H3("Tambah Ruangan Baru");
-            dialogTitle.getStyle()
-                .set("margin", "0")
-                .set("padding", "0 0 10px 0")
-                .set("border-bottom", "3px solid #FF6B35")
-                .set("color", "#333")
-                .set("font-weight", "600")
-                .set("margin", "0 auto")
-                .set("text-align", "center");
+        H3 dialogTitle = new H3("Tambah Ruangan Baru");
+        dialogTitle.getStyle()
+            .set("margin", "0")
+            .set("padding", "0 0 10px 0")
+            .set("border-bottom", "3px solid #FF6B35")
+            .set("color", "#333")
+            .set("font-weight", "600")
+            .set("margin", "0 auto")
+            .set("text-align", "center");
 
-            // Layout
-            VerticalLayout mainLayout = new VerticalLayout();
-            mainLayout.setPadding(true);
-            mainLayout.setSpacing(true);
-            mainLayout.setWidth("450px");
-            mainLayout.getStyle().set("background-color", "white");
+        VerticalLayout mainLayout = new VerticalLayout();
+        mainLayout.setPadding(true);
+        mainLayout.setSpacing(true);
+        mainLayout.setWidth("450px");
+        mainLayout.getStyle().set("background-color", "white");
 
-            // Tipe Ruangan
-            ComboBox<String> tipeRuanganCombo = new ComboBox<>("Tipe Ruangan");
-            tipeRuanganCombo.setItems("Kelas", "Seminar", "Rapat", "Lab");
-            tipeRuanganCombo.setPlaceholder("Pilih Tipe Ruangan");
-            tipeRuanganCombo.setWidthFull();
-            tipeRuanganCombo.getStyle()
-                .set("--lumo-border-radius", "8px");
+        ComboBox<String> tipeRuanganCombo = new ComboBox<>("Tipe Ruangan");
+        tipeRuanganCombo.setItems("Kelas", "Seminar", "Rapat", "Lab");
+        tipeRuanganCombo.setPlaceholder("Pilih Tipe Ruangan");
+        tipeRuanganCombo.setWidthFull();
+        tipeRuanganCombo.getStyle().set("--lumo-border-radius", "8px");
 
-            // Nama Ruangan
-            TextField namaRuanganField = new TextField("Nama Ruangan");
-            namaRuanganField.setPlaceholder("Masukkan Nama Ruangan");
-            namaRuanganField.setWidthFull();
-            namaRuanganField.getStyle()
-                .set("--lumo-border-radius", "8px");
+        TextField namaRuanganField = new TextField("Nama Ruangan");
+        namaRuanganField.setPlaceholder("Masukkan Nama Ruangan");
+        namaRuanganField.setWidthFull();
+        namaRuanganField.getStyle().set("--lumo-border-radius", "8px");
 
-            // Kapasitas
-            TextField kapasitasField = new TextField("Kapasitas");
-            kapasitasField.setPlaceholder("Masukkan Jumlah Kapasitas");
-            kapasitasField.setPattern("[0-9]*");
-            kapasitasField.setWidthFull();
-            kapasitasField.getStyle()
-                .set("--lumo-border-radius", "8px");
+        TextField kapasitasField = new TextField("Kapasitas");
+        kapasitasField.setPlaceholder("Masukkan Jumlah Kapasitas");
+        kapasitasField.setPattern("[0-9]*");
+        kapasitasField.setWidthFull();
+        kapasitasField.getStyle().set("--lumo-border-radius", "8px");
 
-            // Fasilitas
-            TextArea fasilitasField = new TextArea("Fasilitas");
-            fasilitasField.setPlaceholder("Contoh : Wifi, Proyektor, AC");
-            fasilitasField.setWidthFull();
-            fasilitasField.setHeight("60px");
-            fasilitasField.getStyle()
-                .set("--lumo-border-radius", "8px");
+        TextArea fasilitasField = new TextArea("Fasilitas");
+        fasilitasField.setPlaceholder("Contoh : Wifi, Proyektor, AC");
+        fasilitasField.setWidthFull();
+        fasilitasField.setHeight("60px");
+        fasilitasField.getStyle().set("--lumo-border-radius", "8px");
 
-            // Layout Gedung dan Lokasi
-            HorizontalLayout gedungLokasiLayout = new HorizontalLayout();
-            gedungLokasiLayout.setWidthFull();
-            gedungLokasiLayout.setSpacing(true);
+        HorizontalLayout gedungLokasiLayout = new HorizontalLayout();
+        gedungLokasiLayout.setWidthFull();
+        gedungLokasiLayout.setSpacing(true);
 
-            // Gedung
-            ComboBox<String> gedungCombo = new ComboBox<>("Gedung");
-            // Set items pada gedungCombo dengan distinct gedung
-            if (distinctGedung == null || distinctGedung.isEmpty()) {
-                distinctGedung = new HashSet<>();
-                for (RoomData room : rooms) {
-                    if (room != null && room.getGedung() != null) {
-                        distinctGedung.add(room.getGedung());
-                    }
+        ComboBox<String> gedungCombo = new ComboBox<>("Gedung");
+        if (distinctGedung == null || distinctGedung.isEmpty()) {
+            distinctGedung = new HashSet<>();
+            for (RoomData room : rooms) {
+                if (room != null && room.getGedung() != null) {
+                    distinctGedung.add(room.getGedung());
                 }
             }
-            // Convert Set to List and add "Semua" option
-            List<String> listGedung = new ArrayList<>(distinctGedung);
-            gedungList.add(0, "Semua"); // Add "Semua" as the first item
-            gedungCombo.setItems(listGedung.toArray(String[]::new));
-            gedungCombo.setPlaceholder("Contoh : Gedung A");
-            gedungCombo.setWidth("50%");
-            gedungCombo.getStyle()
-                .set("--lumo-border-radius", "8px")
-                .setHeight("57px");
-            gedungCombo.setAllowCustomValue(true);
-            gedungCombo.addCustomValueSetListener(event -> {
+        }
+        List<String> listGedung = new ArrayList<>(distinctGedung);
+        listGedung.add(0, "Semua");
+        gedungCombo.setItems(listGedung.toArray(String[]::new));
+        gedungCombo.setPlaceholder("Contoh : Gedung A");
+        gedungCombo.setWidth("50%");
+        gedungCombo.getStyle()
+            .set("--lumo-border-radius", "8px")
+            .setHeight("57px");
+        gedungCombo.setAllowCustomValue(true);
+        gedungCombo.addCustomValueSetListener(event -> {
             String customGedung = event.getDetail();
             if (customGedung != null && !customGedung.trim().isEmpty()) {
                 gedungCombo.setValue(customGedung);
             }
-});
+        });
 
-            // Lokasi
-            TextField lokasiField = new TextField("Lokasi");
-            lokasiField.setPlaceholder("Contoh : Lt. 2");
-            lokasiField.setWidth("50%");
-            lokasiField.getStyle()
-                .set("--lumo-border-radius", "8px");
+        TextField lokasiField = new TextField("Lokasi");
+        lokasiField.setPlaceholder("Contoh : Lt. 2");
+        lokasiField.setWidth("50%");
+        lokasiField.getStyle().set("--lumo-border-radius", "8px");
 
-            gedungLokasiLayout.add(gedungCombo, lokasiField);
+        gedungLokasiLayout.add(gedungCombo, lokasiField);
 
-            // Upload Gambar
-            Div uploadSection = new Div();
-            uploadSection.setWidthFull();
+        Div uploadSection = new Div();
+        uploadSection.setWidthFull();
 
-            Span uploadgambar = new Span("Upload Gambar");
-            uploadgambar.getStyle()
-                .set("font-weight", "500")
-                .set("color", "#8A8A8A")
-                .set("margin-bottom", "8px")
-                .set("display", "block")
-                .set("font-size", "14px");
+        Span uploadgambar = new Span("Upload Gambar");
+        uploadgambar.getStyle()
+            .set("font-weight", "500")
+            .set("color", "#8A8A8A")
+            .set("margin-bottom", "8px")
+            .set("display", "block")
+            .set("font-size", "14px");
 
-            Upload upload = new Upload();
-            File uploadDir = new File("FrontEnd/src/main/resources/static/uploads");
-            if (!uploadDir.exists()) {
-                uploadDir.mkdir();
+        MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
+        Upload upload = new Upload(buffer);
+        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg");
+        upload.setMaxFiles(1);
+        upload.setMaxFileSize(10 * 1024 * 1024); // 10MB limit
+        upload.setWidthFull();
+        upload.getStyle()
+            .set("--lumo-border-radius", "8px")
+            .set("border", "2px dashed #ddd")
+            .set("background-color", "#fafafa");
+
+        upload.getElement().executeJs(
+            "this.querySelector('[part=\"drop-label\"]').textContent = 'Choose File';"
+        );
+
+        upload.addSucceededListener(event -> {
+            String originalFileName = event.getFileName();
+            String safeFileName = originalFileName.replaceAll("[^a-zA-Z0-9.-]", "_");
+            uploadedFileName = UUID.randomUUID().toString() + "_" + safeFileName;
+
+            Path targetPath = null; // Declare targetPath
+            try {
+                targetPath = Paths.get(uploadConfig.getDirectory(), uploadedFileName);
+                Files.createDirectories(targetPath.getParent());
+                InputStream inputStream = buffer.getInputStream(originalFileName);
+                if (inputStream == null) {
+                    System.err.println("InputStream is null for file: " + originalFileName);
+                    Notification.show("Error: Uploaded file stream is null!", 3000, Notification.Position.MIDDLE);
+                    uploadedFileName = null;
+                    return;
+                }
+                long bytesWritten = Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                inputStream.close();
+                System.out.println("Saved file to: " + targetPath + ", bytes written: " + bytesWritten);
+                if (bytesWritten == 0) {
+                    System.err.println("No data written to file: " + targetPath);
+                    Notification.show("Error: No data written to file!", 3000, Notification.Position.MIDDLE);
+                    uploadedFileName = null;
+                    Files.deleteIfExists(targetPath);
+                    return;
+                }
+                if (Files.exists(targetPath) && Files.isReadable(targetPath)) {
+                    System.out.println("File verified: " + targetPath + ", size=" + Files.size(targetPath));
+                    Notification.show("File uploaded: " + uploadedFileName, 3000, Notification.Position.MIDDLE);
+                } else {
+                    System.err.println("File is not accessible: " + targetPath);
+                    Notification.show("Error: File is not accessible!", 3000, Notification.Position.MIDDLE);
+                    uploadedFileName = null;
+                    Files.deleteIfExists(targetPath);
+                }
+            } catch (IOException ex) {
+                System.err.println("Error saving file: " + ex.getMessage());
+                Notification.show("Error saving file: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
+                uploadedFileName = null;
+                if (targetPath != null) {
+                    try {
+                        Files.deleteIfExists(targetPath);
+                    } catch (IOException e) {
+                        System.err.println("Failed to delete file: " + e.getMessage());
+                    }
+                }
+            }
+        });
+
+        upload.addFileRejectedListener(event -> {
+            Notification.show("File rejected: " + event.getErrorMessage(), 3000, Notification.Position.MIDDLE);
+            uploadedFileName = null;
+        });
+
+        upload.addFailedListener(event -> {
+            Notification.show("Upload failed: " + event.getReason().getMessage(), 3000, Notification.Position.MIDDLE);
+            uploadedFileName = null;
+        });
+
+        uploadSection.add(uploadgambar, upload);
+
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setWidthFull();
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        buttonLayout.setSpacing(true);
+        buttonLayout.getStyle().set("margin-top", "5px");
+
+        Button batalBtn = new Button("Batal");
+        batalBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        batalBtn.getStyle()
+            .set("color", "white")
+            .set("border-color", "#FB5959")
+            .set("background-color", "#FB5959")
+            .set("padding", "10px 20px")
+            .set("border-radius", "8px")
+            .set("font-weight", "500");
+
+        batalBtn.addClickListener(e -> {
+            if (uploadedFileName != null) {
+                Path targetPath = Paths.get(uploadConfig.getDirectory(), uploadedFileName);
+                try {
+                    Files.deleteIfExists(targetPath);
+                    System.out.println("Deleted file on cancel: " + targetPath);
+                } catch (IOException ex) {
+                    System.err.println("Failed to delete file: " + ex.getMessage());
+                }
+            }
+            uploadedFileName = null;
+            tipeRuanganCombo.clear();
+            namaRuanganField.clear();
+            kapasitasField.clear();
+            fasilitasField.clear();
+            gedungCombo.clear();
+            lokasiField.clear();
+            upload.getElement().callJsFunction("clearFileList");
+            tambahRuanganDialog.close();
+        });
+
+        Button simpanBtn = new Button("Simpan");
+        simpanBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        simpanBtn.getStyle()
+            .set("background-color", "#FF6B35")
+            .set("border-color", "#FF6B35")
+            .set("color", "white")
+            .set("padding", "10px 20px")
+            .set("border-radius", "8px")
+            .set("font-weight", "500");
+
+        simpanBtn.addClickListener(e -> {
+            if (tipeRuanganCombo.getValue() == null || tipeRuanganCombo.getValue().isEmpty()) {
+                Notification.show("Pilih tipe ruangan terlebih dahulu!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (namaRuanganField.getValue() == null || namaRuanganField.getValue().trim().isEmpty()) {
+                Notification.show("Nama ruangan tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (kapasitasField.getValue() == null || kapasitasField.getValue().trim().isEmpty()) {
+                Notification.show("Kapasitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
+                return;
+            } else if (!kapasitasField.getValue().matches("\\d+")) {
+                Notification.show("Kapasitas harus berupa angka!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (fasilitasField.getValue() == null || fasilitasField.getValue().trim().isEmpty()) {
+                Notification.show("Fasilitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (gedungCombo.getValue() == null || gedungCombo.getValue().trim().isEmpty() || gedungCombo.getValue().equalsIgnoreCase("Semua")) {
+                Notification.show("Pilih gedung terlebih dahulu, atau masukkan nama gedung custom!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (lokasiField.getValue() == null || lokasiField.getValue().trim().isEmpty()) {
+                Notification.show("Lokasi tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (uploadedFileName == null || uploadedFileName.isEmpty()) {
+                Notification.show("Silakan unggah gambar ruangan!", 3000, Notification.Position.MIDDLE);
+                return;
             }
 
-            upload.setReceiver((filename, mimeType) -> {
-                try {
-                    String uniqueId = UUID.randomUUID().toString();
-                    filename = uniqueId + "_" + filename; 
-                    File file = new File(uploadDir, filename);
-                    uploadedFileName = filename;
-                    return new FileOutputStream(file);
-                } catch (IOException e) {
-                    Notification.show("Error uploading file: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
-                    return null;
+            Path targetPath = Paths.get(uploadConfig.getDirectory(), uploadedFileName);
+            try {
+                if (!Files.exists(targetPath) || Files.size(targetPath) == 0) {
+                    System.err.println("Uploaded file is missing or empty: " + targetPath);
+                    Notification.show("Error: Uploaded file is missing or empty!", 3000, Notification.Position.MIDDLE);
+                    uploadedFileName = null;
+                    Files.deleteIfExists(targetPath);
+                    return;
                 }
-            });
+            } catch (IOException ex) {
+                System.err.println("Error verifying file: " + ex.getMessage());
+                Notification.show("Error verifying file: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
+                uploadedFileName = null;
+                try {
+                    Files.deleteIfExists(targetPath);
+                } catch (IOException deleteEx) {
+                    System.err.println("Failed to delete file: " + deleteEx.getMessage());
+                }
+                return;
+            }
 
-            upload.setWidthFull();
-            upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg");
-            upload.setMaxFiles(1);
-            upload.setWidthFull();
-            upload.getStyle()
-                .set("--lumo-border-radius", "8px")
-                .set("border", "2px dashed #ddd")
-                .set("background-color", "#fafafa");
-            
-            upload.getElement().executeJs(
-                "this.querySelector('[part=\"drop-label\"]').textContent = 'Choose File';"
+            System.out.println("Calling postNewRoom with: tipe=" + tipeRuanganCombo.getValue() +
+                               ", nama=" + namaRuanganField.getValue() +
+                               ", kapasitas=" + kapasitasField.getValue() +
+                               ", fasilitas=" + fasilitasField.getValue() +
+                               ", gedung=" + gedungCombo.getValue() +
+                               ", lokasi=" + lokasiField.getValue() +
+                               ", image=" + uploadedFileName);
+            postNewRoom(
+                tipeRuanganCombo.getValue(),
+                namaRuanganField.getValue(),
+                kapasitasField.getValue(),
+                fasilitasField.getValue(),
+                gedungCombo.getValue(),
+                lokasiField.getValue(),
+                uploadedFileName
             );
 
-            uploadSection.add(uploadgambar, upload);
-
-            HorizontalLayout buttonLayout = new HorizontalLayout();
-            buttonLayout.setWidthFull();
-            buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-            buttonLayout.setSpacing(true);
-            buttonLayout.getStyle().set("margin-top", "5px");
-
-            // Tombol Batal
-            Button batalBtn = new Button("Batal");
-            batalBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-            batalBtn.getStyle()
-                .set("color", "white")
-                .set("border-color", "#FB5959")
-                .set("background-color", "#FB5959")
-                .set("padding", "10px 20px")
-                .set("border-radius", "8px")
-                .set("font-weight", "500");
-            
-            batalBtn.addClickListener(e -> {
-                // Clear semua inputan
-                tipeRuanganCombo.clear();
-                namaRuanganField.clear();
-                kapasitasField.clear();
-                fasilitasField.clear();
-                gedungCombo.clear();
-                lokasiField.clear();
-
-                upload.getElement().callJsFunction("clearFileList");
-                tambahRuanganDialog.close();
-            });
-
-            // Tombol Simpan
-            Button simpanBtn = new Button("Simpan");
-            simpanBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-            simpanBtn.getStyle()
-                .set("background-color", "#FF6B35")
-                .set("border-color", "#FF6B35")
-                .set("color", "white")
-                .set("padding", "10px 20px")
-                .set("border-radius", "8px")
-                .set("font-weight", "500");
-
-            simpanBtn.addClickListener(e -> {
-                // Validasi Tipe Ruangan
-                if (tipeRuanganCombo.getValue() == null || tipeRuanganCombo.getValue().isEmpty()) {
-                    Notification.show("Pilih tipe ruangan terlebih dahulu!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                // Validasi Nama Ruangan
-                if (namaRuanganField.getValue() == null || namaRuanganField.getValue().trim().isEmpty()) {
-                    Notification.show("Nama ruangan tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                // Validasi Kapasitas
-                if (kapasitasField.getValue() == null || kapasitasField.getValue().trim().isEmpty()) {
-                    Notification.show("Kapasitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
-                    return;
-                } else if (!kapasitasField.getValue().matches("\\d+")) {
-                    Notification.show("Kapasitas harus berupa angka!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                // Validasi Fasilitas
-                if (fasilitasField.getValue() == null || fasilitasField.getValue().trim().isEmpty()) {
-                    Notification.show("Fasilitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                // Validasi Gedung
-                String selectedGedung = gedungCombo.getValue();
-                if (selectedGedung == null || selectedGedung.trim().isEmpty() || selectedGedung.equalsIgnoreCase("Lainnya")) {
-                    Notification.show("Pilih gedung terlebih dahulu, atau masukkan nama gedung custom!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                // Validasi Lokasi
-                if (lokasiField.getValue() == null || lokasiField.getValue().trim().isEmpty()) {
-                    Notification.show("Lokasi tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                if (uploadedFileName == null || uploadedFileName.isEmpty()) {
-                    Notification.show("Silakan unggah gambar ruangan!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-
-                // Validasi Upload Gambar
-                if (uploadedFileName == null || uploadedFileName.isEmpty()) {
-                    Notification.show("Silakan unggah gambar ruangan!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-                // INI BUAT SIMPAN DATA YANG KITA INPUTKAN, COCOK SUDAH (MASIH BERUPA LIST)
-
-                //     String tipe = tipeRuanganCombo.getValue();
-                //     String nama = namaRuanganField.getValue();
-                //     String kapasitas = kapasitasField.getValue();
-                //     String fasilitas = fasilitasField.getValue();
-                //     String gedung = gedungCombo.getValue();
-                //     String lokasi = lokasiField.getValue();
-                //     String image = uploadedFileName; // dari upload yang sudah kamu simpan sebelumnya
-                    
-                //     // Tambah data baru ke list rooms
-                //     RoomData newRoom = new RoomData(tipe, nama, kapasitas, fasilitas, gedung, lokasi, image);
-                //     rooms.add(newRoom);
-
-                // roomCardsLayout.add(createRoomCard(newRoom));
-
-                // gunakan API POST /api/v1/ruangan untuk membuat ruangan baru
-                postNewRoom(
-                    tipeRuanganCombo.getValue(),
-                    namaRuanganField.getValue(),
-                    kapasitasField.getValue(),
-                    fasilitasField.getValue(),
-                    gedungCombo.getValue(),
-                    lokasiField.getValue(),
-                    uploadedFileName
-                );
-                // Setelah berhasil, bisa menampilkan notifikasi atau melakukan tindakan lain
-                roomGrid.removeAll();
-
-                fetchRoomData(null, null, null);
-                // Tambahkan semua ruangan ke grid
-                for (RoomData room : rooms) {
-                    if (room == null) {
-                        continue; // Skip null room data
-                    }
+            roomGrid.removeAll();
+            fetchRoomData(null, null, null);
+            for (RoomData room : rooms) {
+                if (room != null) {
                     roomGrid.add(createRoomCard(room));
                 }
+            }
+            tipeRuanganCombo.clear();
+            namaRuanganField.clear();
+            kapasitasField.clear();
+            fasilitasField.clear();
+            gedungCombo.clear();
+            lokasiField.clear();
+            upload.getElement().callJsFunction("clearFileList");
+            uploadedFileName = null;
+            tambahRuanganDialog.close();
+        });
 
-                // Notification.show("Ruangan berhasil ditambahkan!", 3000, Notification.Position.MIDDLE);
-                tambahRuanganDialog.close();
-            });
+        batalBtn.setWidth("150px");
+        simpanBtn.setWidth("150px");
 
-            batalBtn.setWidth("150px");
-            simpanBtn.setWidth("150px");
+        Div tombolContainer = new Div();
+        tombolContainer.getStyle()
+            .set("display", "flex")
+            .set("justify-content", "center")
+            .set("gap", "20px");
 
-            Div tombolContainer = new Div();
-            tombolContainer.getStyle()
-                .set("display", "flex")
-                .set("justify-content", "center")
-                .set("gap", "20px");
+        tombolContainer.add(batalBtn, simpanBtn);
+        buttonLayout.add(tombolContainer);
 
-            tombolContainer.add(batalBtn, simpanBtn);
-            buttonLayout.add(tombolContainer);
+        mainLayout.setPadding(false);
+        mainLayout.setSpacing(false);
+        mainLayout.getStyle().set("padding", "10px");
 
-            mainLayout.setPadding(false);
-            mainLayout.setSpacing(false);
-            mainLayout.getStyle().set("padding", "10px");
+        tipeRuanganCombo.getStyle().set("margin-bottom", "0px");
+        namaRuanganField.getStyle().set("margin-bottom", "0px");
+        kapasitasField.getStyle().set("margin-bottom", "0px");
+        fasilitasField.getStyle().set("margin-bottom", "0px");
+        gedungLokasiLayout.getStyle().set("margin-bottom", "0px");
+        uploadSection.getStyle().set("margin-bottom", "0px");
+        uploadgambar.getStyle().set("margin-top", "5px");
+        tombolContainer.getStyle().set("margin-top", "10px").setWidth("431px");
 
-            tipeRuanganCombo.getStyle().set("margin-bottom", "0px");
-            namaRuanganField.getStyle().set("margin-bottom", "0px");
-            kapasitasField.getStyle().set("margin-bottom", "0px");
-            fasilitasField.getStyle().set("margin-bottom", "0px");
-            gedungLokasiLayout.getStyle().set("margin-bottom", "0px");
-            uploadSection.getStyle().set("margin-bottom", "0px");
-            uploadgambar.getStyle().set("margin-top", "5px");
-            tombolContainer.getStyle().set("margin-top", "10px").setWidth("431px");
+        mainLayout.add(
+            dialogTitle,
+            tipeRuanganCombo,
+            namaRuanganField,
+            kapasitasField,
+            fasilitasField,
+            gedungLokasiLayout,
+            uploadSection,
+            buttonLayout,
+            tombolContainer
+        );
 
-            mainLayout.add(
-                dialogTitle,
-                tipeRuanganCombo,
-                namaRuanganField,
-                kapasitasField,
-                fasilitasField,
-                gedungLokasiLayout,
-                uploadSection,
-                buttonLayout,
-                tombolContainer
-            );
+        tambahRuanganDialog.add(mainLayout);
 
-            tambahRuanganDialog.add(mainLayout);
-
-            // Form kebuka pas klik tambah
-            addRoomBtn.addClickListener(e -> tambahRuanganDialog.open());
-    // -------------------------------------------------------------------------------------------
+        // Form kebuka pas klik tambah
+        addRoomBtn.addClickListener(e -> tambahRuanganDialog.open());
 
         HorizontalLayout searchLayout = new HorizontalLayout(
             searchField, typeFilter, gedungFilter, searchBtn, addRoomBtn
@@ -749,7 +812,6 @@ public class AdminManajemenView extends AppLayout {
             .set("box-shadow", "var(--lumo-box-shadow-xs)")
             .set("overflow", "hidden");
 
-        // Room image 
         Div imageDiv = new Div();
         imageDiv.getStyle()
             .set("height", "150px")
@@ -761,42 +823,55 @@ public class AdminManajemenView extends AppLayout {
             .set("font-size", "2rem")
             .set("border-radius", "8px 8px 0 0")
             .set("overflow", "hidden");
-        
-        // Use the image from uploads if available
-        if (room.getImage() != null && !room.getImage().isEmpty()) {
 
-            // Corrected path for serving static resources in Vaadin
-            Image localImage = new Image("/uploads/" + room.getImage(), room.getImage());
-            imageDiv.add(localImage);
-            localImage.getStyle()
-                .set("width", "100%")
-                .set("height", "100%")
-                .set("object-fit", "cover")
-                .set("border-radius", "8px 8px 0 0");
+        if (room.getImage() != null && !room.getImage().isEmpty()) {
+            String imageUrl = "/Uploads/" + room.getImage();
+            System.out.println("Attempting to load image: " + imageUrl + ", file: " + Paths.get(uploadConfig.getDirectory(), room.getImage()));
+            Path imagePath = Paths.get(uploadConfig.getDirectory(), room.getImage());
+            try {
+                if (Files.exists(imagePath) && Files.size(imagePath) > 0 && Files.isReadable(imagePath)) {
+                    System.out.println("Image exists and is readable: " + imagePath + ", size=" + Files.size(imagePath));
+                    Image localImage = new Image(imageUrl, room.getName());
+                    localImage.getStyle()
+                        .set("width", "100%")
+                        .set("height", "100%")
+                        .set("object-fit", "cover")
+                        .set("border-radius", "8px 8px 0 0");
+                    localImage.getElement().addEventListener("error", e -> {
+                        System.err.println("Client-side image load failed: " + imageUrl);
+                        imageDiv.removeAll();
+                        imageDiv.add(new Icon(VaadinIcon.BUILDING));
+                    });
+                    imageDiv.add(localImage);
+                } else {
+                    System.err.println("Image not found, empty, or unreadable: " + imagePath);
+                    imageDiv.add(new Icon(VaadinIcon.BUILDING));
+                }
+            } catch (IOException e) {
+                System.err.println("Error accessing file: " + imagePath + ", " + e.getMessage());
+                imageDiv.add(new Icon(VaadinIcon.BUILDING));
+            }
         } else {
-            // Placeholder icon if no image is available
+            System.out.println("No image specified for room: " + room.getName());
             imageDiv.add(new Icon(VaadinIcon.BUILDING));
         }
 
-        // gambar
         card.add(imageDiv);
 
-        // Card content
         Div content = new Div();
         content.getStyle().set("padding", "1rem");
 
-        H3 roomName = new H3("Ruang " + toTitleCase(room.tipe) + " " + room.getName());
+        H3 roomName = new H3("Ruang " + toTitleCase(room.getTipe()) + " " + room.getName());
         roomName.getStyle()
             .set("margin", "0 0 0.5rem 0")
             .set("font-size", "1.1rem")
             .set("color", "var(--lumo-header-text-color)");
 
         Div details = new Div();
-        details.add(createDetailItem("Kapasitas", room.capacity));
-        details.add(createDetailItem("Fasilitas", room.facilities));
-        details.add(createDetailItem("Lokasi", room.gedung + " " + room.location));
+        details.add(createDetailItem("Kapasitas", room.getCapacity()));
+        details.add(createDetailItem("Fasilitas", room.getFacilities()));
+        details.add(createDetailItem("Lokasi", room.getGedung() + " " + room.getLocation()));
 
-        // Buttons
         Button editBtn = new Button("Edit");
         editBtn.getStyle()
             .set("background-color", "#FFB84D")
@@ -807,331 +882,320 @@ public class AdminManajemenView extends AppLayout {
             .set("margin-right", "0.5rem")
             .set("font-size", "1rem");
 
-            // Dialog Edit Ruangan
-            Dialog editRuanganDialog = new Dialog();
+        Dialog editRuanganDialog = new Dialog();
+        H3 editDialogTitle = new H3("Edit Ruangan");
+        editDialogTitle.getStyle()
+            .set("margin", "0")
+            .set("padding", "0 0 10px 0")
+            .set("border-bottom", "3px solid #FF6B35")
+            .set("color", "#333")
+            .set("font-weight", "600")
+            .set("margin", "0 auto")
+            .set("text-align", "center");
 
-            H3 editDialogTitle = new H3("Edit Ruangan");
-            editDialogTitle.getStyle()
-                .set("margin", "0")
-                .set("padding", "0 0 10px 0")
-                .set("border-bottom", "3px solid #FF6B35")
-                .set("color", "#333")
-                .set("font-weight", "600")
-                .set("margin", "0 auto")
-                .set("text-align", "center");
+        VerticalLayout mainLayout = new VerticalLayout();
+        mainLayout.setPadding(true);
+        mainLayout.setSpacing(true);
+        mainLayout.setWidth("450px");
+        mainLayout.getStyle().set("background-color", "white");
 
-            // Layout utama
-            VerticalLayout mainLayout = new VerticalLayout();
-            mainLayout.setPadding(true);
-            mainLayout.setSpacing(true);
-            mainLayout.setWidth("450px");
-            mainLayout.getStyle().set("background-color", "white");
+        ComboBox<String> tipeRuanganCombo = new ComboBox<>("Tipe Ruangan");
+        tipeRuanganCombo.setItems("Kelas", "Seminar", "Rapat", "Lab");
+        tipeRuanganCombo.setPlaceholder("Pilih Tipe Ruangan");
+        tipeRuanganCombo.setWidthFull();
+        tipeRuanganCombo.getStyle().set("--lumo-border-radius", "8px");
 
-            // Fields (sama kayak tambah form)
-            ComboBox<String> tipeRuanganCombo = new ComboBox<>("Tipe Ruangan");
-            tipeRuanganCombo.setItems("Kelas", "Seminar", "Rapat", "Lab");
-            tipeRuanganCombo.setPlaceholder("Pilih Tipe Ruangan");
-            tipeRuanganCombo.setWidthFull();
-            tipeRuanganCombo.getStyle().set("--lumo-border-radius", "8px");
+        TextField namaRuanganField = new TextField("Nama Ruangan");
+        namaRuanganField.setPlaceholder("Masukkan Nama Ruangan");
+        namaRuanganField.setWidthFull();
+        namaRuanganField.getStyle().set("--lumo-border-radius", "8px");
 
-            TextField namaRuanganField = new TextField("Nama Ruangan");
-            namaRuanganField.setPlaceholder("Masukkan Nama Ruangan");
-            namaRuanganField.setWidthFull();
-            namaRuanganField.getStyle().set("--lumo-border-radius", "8px");
+        TextField kapasitasField = new TextField("Kapasitas");
+        kapasitasField.setPlaceholder("Masukkan Jumlah Kapasitas");
+        kapasitasField.setPattern("[0-9]*");
+        kapasitasField.setWidthFull();
+        kapasitasField.getStyle().set("--lumo-border-radius", "8px");
 
-            TextField kapasitasField = new TextField("Kapasitas");
-            kapasitasField.setPlaceholder("Masukkan Jumlah Kapasitas");
-            kapasitasField.setPattern("[0-9]*");
-            kapasitasField.setWidthFull();
-            kapasitasField.getStyle().set("--lumo-border-radius", "8px");
+        TextArea fasilitasField = new TextArea("Fasilitas");
+        fasilitasField.setPlaceholder("Contoh : Wifi, Proyektor, AC");
+        fasilitasField.setWidthFull();
+        fasilitasField.setHeight("60px");
+        fasilitasField.getStyle().set("--lumo-border-radius", "8px");
 
-            TextArea fasilitasField = new TextArea("Fasilitas");
-            fasilitasField.setPlaceholder("Contoh : Wifi, Proyektor, AC");
-            fasilitasField.setWidthFull();
-            fasilitasField.setHeight("60px");
-            fasilitasField.getStyle().set("--lumo-border-radius", "8px");
+        HorizontalLayout gedungLokasiLayout = new HorizontalLayout();
+        gedungLokasiLayout.setWidthFull();
+        gedungLokasiLayout.setSpacing(true);
 
-            HorizontalLayout gedungLokasiLayout = new HorizontalLayout();
-            gedungLokasiLayout.setWidthFull();
-            gedungLokasiLayout.setSpacing(true);
-
-            ComboBox<String> gedungCombo = new ComboBox<>("Gedung");
-            // Set items pada gedungCombo dengan distinct gedung
-            if (distinctGedung == null || distinctGedung.isEmpty()) {
-                distinctGedung = new HashSet<>();
-                for (RoomData r : rooms) {
-                    if (r != null && r.getGedung() != null) {
-                        distinctGedung.add(r.getGedung());
-                    }
-                }
+        ComboBox<String> gedungCombo = new ComboBox<>("Gedung");
+        List<String> gedungList = new ArrayList<>(distinctGedung);
+        gedungCombo.setItems(gedungList.toArray(String[]::new));
+        gedungCombo.setPlaceholder("Contoh : Gedung A");
+        gedungCombo.setWidth("50%");
+        gedungCombo.getStyle()
+            .set("--lumo-border-radius", "8px")
+            .setHeight("57px");
+        gedungCombo.setAllowCustomValue(true);
+        gedungCombo.addCustomValueSetListener(event -> {
+            String customGedung = event.getDetail();
+            if (customGedung != null && !customGedung.trim().isEmpty()) {
+                gedungCombo.setValue(customGedung);
             }
+        });
 
-            gedungCombo.setAllowCustomValue(true);
-            gedungCombo.addCustomValueSetListener(event -> {
-                String customGedung = event.getDetail();
-                if (customGedung != null && !customGedung.trim().isEmpty()) {
-                    gedungCombo.setValue(customGedung);
-                }
-            });
+        TextField lokasiField = new TextField("Lokasi");
+        lokasiField.setPlaceholder("Contoh : Lt. 2");
+        lokasiField.setWidth("50%");
+        lokasiField.getStyle().set("--lumo-border-radius", "8px");
 
-            List<String> gedungList = new ArrayList<>(distinctGedung);
-            gedungCombo.setItems(gedungList.toArray(String[]::new));
-            gedungCombo.setPlaceholder("Contoh : Gedung A");
-            gedungCombo.setWidth("50%");
-            gedungCombo.getStyle()
-                .set("--lumo-border-radius", "8px")
-                .setHeight("57px");
+        gedungLokasiLayout.add(gedungCombo, lokasiField);
 
-            TextField lokasiField = new TextField("Lokasi");
-            lokasiField.setPlaceholder("Contoh : Lt. 2");
-            lokasiField.setWidth("50%");
-            lokasiField.getStyle().set("--lumo-border-radius", "8px");
+        Div uploadSection = new Div();
+        uploadSection.setWidthFull();
+        Span uploadgambar = new Span("Upload Gambar");
+        uploadgambar.getStyle()
+            .set("font-weight", "500")
+            .set("color", "#8A8A8A")
+            .set("margin-bottom", "8px")
+            .set("display", "block")
+            .set("font-size", "14px");
 
-            gedungLokasiLayout.add(gedungCombo, lokasiField);
-
-            Div uploadSection = new Div();
-            uploadSection.setWidthFull();
-            Span uploadgambar = new Span("Upload Gambar");
-            uploadgambar.getStyle()
+        if (room.getImage() != null && !room.getImage().isEmpty()) {
+            Div currentImageDiv = new Div();
+            currentImageDiv.getStyle()
+                .set("margin-bottom", "10px")
+                .set("text-align", "center");
+            Span currentImageLabel = new Span("Current Image:");
+            currentImageLabel.getStyle()
                 .set("font-weight", "500")
                 .set("color", "#8A8A8A")
-                .set("margin-bottom", "8px")
                 .set("display", "block")
-                .set("font-size", "14px");
+                .set("margin-bottom", "5px");
+            Image currentImage = new Image("/Uploads/" + room.getImage(), "Current room image");
+            currentImage.getStyle()
+                .set("max-width", "200px")
+                .set("max-height", "150px")
+                .set("border-radius", "8px")
+                .set("border", "1px solid #ddd");
+            currentImageDiv.add(currentImageLabel, currentImage);
+            uploadSection.add(currentImageDiv);
+            uploadedFileName = room.getImage();
+        }
 
-            Upload upload = new Upload();
-            upload.setReceiver((filename, mimeType) -> {
-                try {
-                    File uploadDir = new File("FrontEnd/src/main/resources/static/uploads");
-                    if (!uploadDir.exists()) {
-                        uploadDir.mkdirs();
-                    }
+        MultiFileMemoryBuffer editBuffer = new MultiFileMemoryBuffer();
+        Upload upload = new Upload(editBuffer);
+        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg");
+        upload.setMaxFiles(1);
+        upload.setMaxFileSize(10 * 1024 * 1024);
+        upload.setWidthFull();
+        upload.getStyle()
+            .set("--lumo-border-radius", "8px")
+            .set("border", "2px dashed #ddd")
+            .set("background-color", "#fafafa");
 
-                    String uniqueId = UUID.randomUUID().toString();
-                    filename = uniqueId + "_" + filename; 
-                    File file = new File(uploadDir, filename);
-                    uploadedFileName = filename;
-                    return new FileOutputStream(file);
-                } catch (IOException e) {
-                    Notification.show("Error uploading file: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
-                    return null;
+        upload.getElement().executeJs(
+            "this.querySelector('[part=\"drop-label\"]').textContent = 'Choose File';"
+        );
+
+        upload.addSucceededListener(event -> {
+            String originalFileName = event.getFileName();
+            String safeFileName = originalFileName.replaceAll("[^a-zA-Z0-9.-]", "_");
+            uploadedFileName = UUID.randomUUID().toString() + "_" + safeFileName;
+
+            try {
+                Path targetPath = Paths.get(uploadConfig.getDirectory(), uploadedFileName);
+                Files.createDirectories(targetPath.getParent());
+                InputStream inputStream = editBuffer.getInputStream(originalFileName);
+                if (inputStream == null) {
+                    System.err.println("InputStream is null for file: " + originalFileName);
+                    Notification.show("Error: Uploaded file stream is null!", 3000, Notification.Position.MIDDLE);
+                    uploadedFileName = room.getImage();
+                    return;
                 }
-            });
-
-            upload.setWidthFull();
-            upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg");
-            upload.setMaxFiles(1);
-            upload.setWidthFull();
-            upload.getStyle()
-                .set("--lumo-border-radius", "8px")
-                .set("border", "2px dashed #ddd")
-                .set("background-color", "#fafafa");
-
-            upload.getElement().executeJs(
-                "this.querySelector('[part=\"drop-label\"]').textContent = 'Choose File';"
-            );
-
-            upload.addFileRejectedListener(event -> {
-                File file = new File("FrontEnd/src/main/resources/static/uploads/" + uploadedFileName);
-                if (file.exists()) {
-                    file.delete();
+                long bytesWritten = Files.copy(inputStream, targetPath, StandardCopyOption.REPLACE_EXISTING);
+                inputStream.close();
+                System.out.println("Saved file to: " + targetPath + ", bytes written: " + bytesWritten);
+                if (bytesWritten == 0) {
+                    System.err.println("No data written to file: " + targetPath);
+                    Notification.show("Error: No data written to file!", 3000, Notification.Position.MIDDLE);
+                    uploadedFileName = room.getImage();
+                    Files.deleteIfExists(targetPath);
+                    return;
                 }
-            });
-
-            upload.addFailedListener(event -> {
-                File file = new File("FrontEnd/src/main/resources/static/uploads/" + uploadedFileName);
-                if (file.exists()) {
-                    file.delete();
+                if (Files.exists(targetPath) && Files.isReadable(targetPath)) {
+                    System.out.println("File verified: " + targetPath + ", size=" + Files.size(targetPath));
+                    Notification.show("File uploaded: " + uploadedFileName, 3000, Notification.Position.MIDDLE);
+                } else {
+                    System.err.println("File is not accessible: " + targetPath);
+                    Notification.show("Error: File is not accessible!", 3000, Notification.Position.MIDDLE);
+                    uploadedFileName = room.getImage();
+                    Files.deleteIfExists(targetPath);
                 }
-            });
-
-            upload.addSucceededListener(event -> {
-                // WIP
-            });
-
-
-            uploadSection.add(uploadgambar, upload);
-
-            // Add current image display
-            if (room.getImage() != null && !room.getImage().isEmpty()) {
-                Div currentImageDiv = new Div();
-                currentImageDiv.getStyle()
-                    .set("margin-bottom", "10px")
-                    .set("text-align", "center");
-                
-                Span currentImageLabel = new Span("Current Image:");
-                currentImageLabel.getStyle()
-                    .set("font-weight", "500")
-                    .set("color", "#8A8A8A")
-                    .set("display", "block")
-                    .set("margin-bottom", "5px");
-                
-                Image currentImage = new Image("/uploads/" + room.getImage(), "Current room image");
-                currentImage.getStyle()
-                    .set("max-width", "200px")
-                    .set("max-height", "150px")
-                    .set("border-radius", "8px")
-                    .set("border", "1px solid #ddd");
-                
-                currentImageDiv.add(currentImageLabel, currentImage);
-                uploadSection.add(currentImageLabel, currentImage);
-                
-                // Set the current filename so it won't be required to upload new image
+            } catch (IOException ex) {
+                System.err.println("Error saving file: " + ex.getMessage());
+                Notification.show("Error saving file: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
                 uploadedFileName = room.getImage();
             }
+        });
 
-            // Tombol Batal dan Simpan
-            HorizontalLayout buttonLayout = new HorizontalLayout();
-            buttonLayout.setWidthFull();
-            buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
-            buttonLayout.setSpacing(true);
+        upload.addFileRejectedListener(event -> {
+            Notification.show("File rejected: " + event.getErrorMessage(), 3000, Notification.Position.MIDDLE);
+            uploadedFileName = room.getImage();
+        });
 
-            Button batalBtn = new Button("Batal");
-            batalBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
-            batalBtn.getStyle()
-                .set("color", "white")
-                .set("border-color", "#FB5959")
-                .set("background-color", "#FB5959")
-                .set("padding", "10px 20px")
-                .set("border-radius", "8px")
-                .set("font-weight", "500");
+        upload.addFailedListener(event -> {
+            Notification.show("Upload failed: " + event.getReason().getMessage(), 3000, Notification.Position.MIDDLE);
+            uploadedFileName = room.getImage();
+        });
 
-            batalBtn.addClickListener(e -> {
-                editRuanganDialog.close();
-                // hapus gambar dari upload
-                // if (uploadedFileName != null && !uploadedFileName.isEmpty()) {
-                //     File file = new File("FrontEnd/src/main/resources/static/uploads/" + uploadedFileName);
-                //     if (file.exists()) {
-                //         file.delete();
-                //     }
-                // }
-            });
+        uploadSection.add(uploadgambar, upload);
 
-            Button simpanBtn = new Button("Simpan");
-            simpanBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-            simpanBtn.getStyle()
-                .set("background-color", "#FF6B35")
-                .set("border-color", "#FF6B35")
-                .set("color", "white")
-                .set("padding", "10px 20px")
-                .set("border-radius", "8px")
-                .set("font-weight", "500");
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        buttonLayout.setWidthFull();
+        buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
+        buttonLayout.setSpacing(true);
 
-            simpanBtn.addClickListener(e -> {
-                // Validasi & simpan data update ruangan di sini
-                if (tipeRuanganCombo.getValue() == null || tipeRuanganCombo.getValue().isEmpty()) {
-                    Notification.show("Pilih tipe ruangan terlebih dahulu!", 3000, Notification.Position.MIDDLE);
+        Button batalBtn = new Button("Batal");
+        batalBtn.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        batalBtn.getStyle()
+            .set("color", "white")
+            .set("border-color", "#FB5959")
+            .set("background-color", "#FB5959")
+            .set("padding", "10px 20px")
+            .set("border-radius", "8px")
+            .set("font-weight", "500");
+
+        batalBtn.addClickListener(e -> {
+            if (uploadedFileName != null && !uploadedFileName.equals(room.getImage())) {
+                Path targetPath = Paths.get(uploadConfig.getDirectory(), uploadedFileName);
+                try {
+                    Files.deleteIfExists(targetPath);
+                    System.out.println("Deleted file on cancel: " + targetPath);
+                } catch (IOException ex) {
+                    System.err.println("Failed to delete file: " + ex.getMessage());
+                }
+            }
+            uploadedFileName = room.getImage();
+            upload.getElement().callJsFunction("clearFileList");
+            editRuanganDialog.close();
+        });
+
+        Button simpanBtn = new Button("Simpan");
+        simpanBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        simpanBtn.getStyle()
+            .set("background-color", "#FF6B35")
+            .set("border-color", "#FF6B35")
+            .set("color", "white")
+            .set("padding", "10px 20px")
+            .set("border-radius", "8px")
+            .set("font-weight", "500");
+
+        simpanBtn.addClickListener(e -> {
+            if (tipeRuanganCombo.getValue() == null || tipeRuanganCombo.getValue().isEmpty()) {
+                Notification.show("Pilih tipe ruangan terlebih dahulu!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (namaRuanganField.getValue() == null || namaRuanganField.getValue().trim().isEmpty()) {
+                Notification.show("Nama ruangan tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (kapasitasField.getValue() == null || kapasitasField.getValue().trim().isEmpty()) {
+                Notification.show("Kapasitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
+                return;
+            } else if (!kapasitasField.getValue().matches("\\d+")) {
+                Notification.show("Kapasitas harus berupa angka!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (fasilitasField.getValue() == null || fasilitasField.getValue().trim().isEmpty()) {
+                Notification.show("Fasilitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (gedungCombo.getValue() == null || gedungCombo.getValue().trim().isEmpty()) {
+                Notification.show("Pilih gedung terlebih dahulu!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (lokasiField.getValue() == null || lokasiField.getValue().trim().isEmpty()) {
+                Notification.show("Lokasi tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+            if (uploadedFileName == null || uploadedFileName.isEmpty()) {
+                Notification.show("Silakan unggah gambar ruangan!", 3000, Notification.Position.MIDDLE);
+                return;
+            }
+
+            String oldImage = room.getImage();
+            Path targetPath = Paths.get(uploadConfig.getDirectory(), uploadedFileName);
+            try {
+                if (!Files.exists(targetPath) || Files.size(targetPath) == 0) {
+                    System.err.println("Uploaded file is missing or empty: " + targetPath);
+                    Notification.show("Error: Uploaded file is missing or empty!", 3000, Notification.Position.MIDDLE);
+                    uploadedFileName = oldImage;
+                    Files.deleteIfExists(targetPath);
                     return;
                 }
-                if (namaRuanganField.getValue() == null || namaRuanganField.getValue().trim().isEmpty()) {
-                    Notification.show("Nama ruangan tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-                if (kapasitasField.getValue() == null || kapasitasField.getValue().trim().isEmpty()) {
-                    Notification.show("Kapasitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-                if (fasilitasField.getValue() == null || fasilitasField.getValue().trim().isEmpty()) {
-                    Notification.show("Fasilitas tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-                if (gedungCombo.getValue() == null || gedungCombo.getValue().trim().isEmpty()) {
-                    Notification.show("Pilih gedung terlebih dahulu!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-                if (lokasiField.getValue() == null || lokasiField.getValue().trim().isEmpty()) {
-                    Notification.show("Lokasi tidak boleh kosong!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
-                if (uploadedFileName == null || uploadedFileName.isEmpty()) {
-                    uploadedFileName = room.getImage(); // Use current image if no new image uploaded
-                }
-                if (uploadedFileName == null || uploadedFileName.isEmpty()) {
-                    Notification.show("Silakan unggah gambar ruangan!", 3000, Notification.Position.MIDDLE);
-                    return;
-                }
+            } catch (IOException ex) {
+                System.err.println("Error verifying file: " + ex.getMessage());
+                Notification.show("Error verifying file: " + ex.getMessage(), 3000, Notification.Position.MIDDLE);
+                uploadedFileName = oldImage;
+                return;
+            }
 
-                // Simpan update ke database 
-                putUpdateRoom(
-                    room.getRuanganId(),
-                    tipeRuanganCombo.getValue().toUpperCase(),
-                    namaRuanganField.getValue(),
-                    kapasitasField.getValue(),
-                    fasilitasField.getValue(),
-                    gedungCombo.getValue(),
-                    lokasiField.getValue(),
-                    uploadedFileName
-                );
-
-                // refresh the page
-                roomGrid.removeAll();
-                fetchRoomData("", "", "");
-                for (RoomData r : rooms) {
-                    if (r == null) {
-                        continue; // Skip null room data
-                    }
-                    roomGrid.add(createRoomCard(r));
-                }
-                editRuanganDialog.close();
-            });
-
-            batalBtn.setWidth("150px");
-            simpanBtn.setWidth("150px");
-
-            Div tombolContainer = new Div();
-            tombolContainer.getStyle()
-                .set("display", "flex")
-                .set("justify-content", "center")
-                .set("gap", "20px");
-
-            tombolContainer.add(batalBtn, simpanBtn);
-            buttonLayout.add(tombolContainer);
-
-            mainLayout.setPadding(false);
-            mainLayout.setSpacing(false);
-            mainLayout.getStyle().set("padding", "10px");
-
-            tipeRuanganCombo.getStyle().set("margin-bottom", "0px");
-            namaRuanganField.getStyle().set("margin-bottom", "0px");
-            kapasitasField.getStyle().set("margin-bottom", "0px");
-            fasilitasField.getStyle().set("margin-bottom", "0px");
-            gedungLokasiLayout.getStyle().set("margin-bottom", "0px");
-            uploadSection.getStyle().set("margin-bottom", "0px");
-            uploadgambar.getStyle().set("margin-top", "5px");
-            tombolContainer.getStyle().set("margin-top", "10px").setWidth("431px");
-
-            mainLayout.add(
-                editDialogTitle,
-                tipeRuanganCombo,
-                namaRuanganField,
-                kapasitasField,
-                fasilitasField,
-                gedungLokasiLayout,
-                uploadSection,
-                buttonLayout,
-                tombolContainer
+            putUpdateRoom(
+                room.getRuanganId(),
+                tipeRuanganCombo.getValue().toUpperCase(),
+                namaRuanganField.getValue(),
+                kapasitasField.getValue(),
+                fasilitasField.getValue(),
+                gedungCombo.getValue(),
+                lokasiField.getValue(),
+                uploadedFileName
             );
 
-            editRuanganDialog.add(mainLayout);
-
-            editBtn.addClickListener(e -> {
-                tipeRuanganCombo.setValue(room.tipe);
-                namaRuanganField.setValue(room.name);
-                kapasitasField.setValue(room.capacity);
-                fasilitasField.setValue(room.facilities);
-                gedungCombo.setValue(room.gedung);
-                lokasiField.setValue(room.location);
-
-                if (room.image != null && !room.image.isEmpty()) {
-                    String imagePath = "/uploads/" + room.image;
-                    roomImage.setSrc(imagePath);
-                } else {
-                    roomImage.setSrc(""); 
+            if (!uploadedFileName.equals(oldImage) && oldImage != null && !oldImage.isEmpty()) {
+                Path oldImagePath = Paths.get(uploadConfig.getDirectory(), oldImage);
+                try {
+                    Files.deleteIfExists(oldImagePath);
+                    System.out.println("Deleted old image: " + oldImagePath);
+                } catch (IOException ex) {
+                    System.err.println("Failed to delete old image: " + ex.getMessage());
                 }
+            }
 
-                editRuanganDialog.open();
-            });
+            roomGrid.removeAll();
+            fetchRoomData(null, null, null);
+            for (RoomData r : rooms) {
+                if (r != null) {
+                    roomGrid.add(createRoomCard(r));
+                }
+            }
+            editRuanganDialog.close();
+        });
 
+        mainLayout.add(
+            editDialogTitle,
+            tipeRuanganCombo,
+            namaRuanganField,
+            kapasitasField,
+            fasilitasField,
+            gedungLokasiLayout,
+            uploadSection,
+            buttonLayout
+        );
+
+        buttonLayout.add(batalBtn, simpanBtn);
+        editRuanganDialog.add(mainLayout);
+
+        editBtn.addClickListener(e -> {
+            System.out.println("Edit button clicked for room: " + room.getName());
+            tipeRuanganCombo.setValue(room.getTipe());
+            namaRuanganField.setValue(room.getName());
+            kapasitasField.setValue(room.getCapacity());
+            fasilitasField.setValue(room.getFacilities());
+            gedungCombo.setValue(room.getGedung());
+            lokasiField.setValue(room.getLocation());
+            uploadedFileName = room.getImage();
+            upload.getElement().callJsFunction("clearFileList");
+            editRuanganDialog.open();
+        });
 
         Button deleteBtn = new Button("Hapus");
         deleteBtn.getStyle()
@@ -1142,123 +1206,92 @@ public class AdminManajemenView extends AppLayout {
             .set("border-radius", "4px")
             .set("font-size", "1rem");
 
-            Dialog confirmDialog = new Dialog();
-            confirmDialog.setCloseOnOutsideClick(false);
-            confirmDialog.setDraggable(false);
-            confirmDialog.setResizable(false);
-            confirmDialog.getElement().getStyle()
-                .set("background", "transparent")
-                .set("box-shadow", "none")
-                .set("padding", "0px")
-                .set("background-color", "transparent")
-                .set("margin", "0px");
-            
-            confirmDialog.setModal(true);
-            confirmDialog.getElement().executeJs(
-                "this.$.overlay.$.overlay.style.backgroundColor = '#FEF3E2'"
-            );
+        Dialog confirmDialog = new Dialog();
+        confirmDialog.setCloseOnOutsideClick(false);
+        confirmDialog.setDraggable(false);
+        confirmDialog.setResizable(false);
+        confirmDialog.getElement().getStyle()
+            .set("background", "transparent")
+            .set("box-shadow", "none")
+            .set("padding", "0px")
+            .set("background-color", "transparent")
+            .set("margin", "0px");
+        confirmDialog.setModal(true);
+        confirmDialog.getElement().executeJs(
+            "this.$.overlay.$.overlay.style.backgroundColor = '#FEF3E2'"
+        );
 
-            Div trashicon = new Div();
-            trashicon.getElement().setProperty("title", "Hapus");
-            trashicon.setWidth("70px");
-            trashicon.setHeight("70px");
+        Div trashicon = new Div();
+        trashicon.setWidth("70px");
+        trashicon.setHeight("70px");
+        trashicon.add(VaadinIcon.TRASH.create());
+        trashicon.getStyle()
+            .set("display", "flex")
+            .set("align-items", "center")
+            .set("justify-content", "center")
+            .set("color", "#FF6700");
 
-            trashicon.add(VaadinIcon.TRASH.create());
+        Div confirmText = new Div();
+        confirmText.setText("Apakah Kamu Yakin Ingin\nMenghapus Ruangan ini?");
+        confirmText.getStyle()
+            .set("font-weight", "bold")
+            .set("font-size", "18px")
+            .set("text-align", "center")
+            .set("background-color", "transparent");
 
-            trashicon.getStyle()
-                .set("display", "flex")
-                .set("align-items", "center")
-                .set("justify-content", "center")
-                .set("color", "#FF6700");
-
-            Div confirmText = new Div();
-            confirmText.setText("Apakah Kamu Yakin Ingin\nMenghapus Ruangan ini?");
-            confirmText.getStyle()
-                .set("font-weight", "bold")
-                .set("font-size", "18px")
-                .set("text-align", "center")
-                .set("background-color", "transparent");
-
-
-            // Tombol Hapus
-            Button hapusBtn = new Button("Hapus", e -> {
-                // Hapus data ruangan dari database
+        Button hapusBtn = new Button("Hapus", e -> {
+            try {
                 deleteRoomById(Integer.parseInt(room.getRuanganId()));
-
-                // Hapus gambar dari uploads
-                if (room.getImage() != null && !room.getImage().isEmpty()) {
-                    File file = new File("FrontEnd/src/main/resources/static/uploads/" + room.getImage());
-                    if (file.exists()) {
-                        file.delete();
-                    }
-                }
-
-                // fetch ulang data grid
                 roomGrid.removeAll();
-                fetchRoomData("", "", "");
+                fetchRoomData(null, null, null);
                 for (RoomData r : rooms) {
-                    if (r == null) {
-                        continue; // Skip null 
+                    if (r != null) {
+                        roomGrid.add(createRoomCard(r));
                     }
-                    roomGrid.add(createRoomCard(r));
                 }
                 confirmDialog.close();
-            });
-            hapusBtn.getStyle()
-                .set("background-color", "#FF6B6B")
-                .set("color", "white")
-                .set("border", "none")
-                .set("padding", "0.5rem 1.5rem")
-                .set("border-radius", "8px")
-                .set("font-weight", "bold");
+            } catch (NumberFormatException ex) {
+                Notification.show("Invalid room ID format!", 3000, Notification.Position.MIDDLE);
+            }
+        });
+        hapusBtn.getStyle()
+            .set("background-color", "#FF6B6B")
+            .set("color", "white")
+            .set("border", "none")
+            .set("padding", "0.5rem 1.5rem")
+            .set("border-radius", "8px")
+            .set("font-weight", "bold");
 
-            // Tombol Batal
-            Button cancelBtn = new Button("Batal", e -> confirmDialog.close());
-            cancelBtn.getStyle()
-                .set("background-color", "#808080")
-                .set("color", "white")
-                .set("padding", "0.5rem 1.5rem")
-                .set("border-radius", "8px")
-                .set("font-weight", "bold");
+        Button cancelBtn = new Button("Batal", e -> confirmDialog.close());
+        cancelBtn.getStyle()
+            .set("background-color", "#808080")
+            .set("color", "white")
+            .set("padding", "0.5rem 1.5rem")
+            .set("border-radius", "8px")
+            .set("font-weight", "bold");
 
-            cancelBtn.setWidth("110px");
-            hapusBtn.setWidth("110px");
+        cancelBtn.setWidth("110px");
+        hapusBtn.setWidth("110px");
 
-            HorizontalLayout btnLayout = new HorizontalLayout(hapusBtn, cancelBtn);
+        HorizontalLayout btnLayout = new HorizontalLayout(hapusBtn, cancelBtn);
+        btnLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        btnLayout.setSpacing(true);
 
-            btnLayout.setJustifyContentMode(JustifyContentMode.CENTER);
-            btnLayout.setSpacing(true);
+        VerticalLayout boxLayout = new VerticalLayout();
+        boxLayout.setAlignItems(FlexComponent.Alignment.CENTER);
+        boxLayout.setPadding(true);
+        boxLayout.setSpacing(true);
+        boxLayout.setSizeFull();
+        boxLayout.getStyle()
+            .set("border-radius", "12px")
+            .set("background-color", "#FEF3E2")
+            .set("width", "320px")
+            .set("position", "relative");
 
-            // Tombol tutup (X) kanan atas
-            // Button closeBtn = new Button(new Icon(VaadinIcon.CLOSE));
-            // closeBtn.addClickListener(e -> confirmDialog.close());
-            // closeBtn.getElement().getStyle()
-            //     .set("position", "absolute")
-            //     .set("top", "8px")
-            //     .set("right", "8px")
-            //     .set("background", "none")
-            //     .set("border", "none");
+        boxLayout.add(confirmText, trashicon, btnLayout);
+        confirmDialog.add(boxLayout);
 
-            // Icon closeIcon = (Icon) closeBtn.getIcon();
-            // closeIcon.setColor("#FF6700");
-
-            // Layout utama
-            VerticalLayout boxLayout = new VerticalLayout();
-            boxLayout.setAlignItems(FlexComponent.Alignment.CENTER);
-            boxLayout.setPadding(true);
-            boxLayout.setSpacing(true);
-            boxLayout.setSizeFull();
-            boxLayout.getStyle()
-                .set("border-radius", "12px")
-                .set("background-color", "#FEF3E2")
-                .set("width", "320px")
-                .set("position", "relative");
-
-            boxLayout.add(confirmText, trashicon, btnLayout);
-
-            confirmDialog.add(boxLayout);
-
-            deleteBtn.addClickListener(e -> confirmDialog.open());
+        deleteBtn.addClickListener(e -> confirmDialog.open());
 
 
         HorizontalLayout actionButton = new HorizontalLayout();
@@ -1396,44 +1429,49 @@ public class AdminManajemenView extends AppLayout {
     
     // POST Ruangan Baru
     private void postNewRoom(String tipe, String nama, String kapasitas, String fasilitas, String gedung, String lokasi, String image) {
+        Path targetPath = Paths.get(uploadConfig.getDirectory(), image);
         try {
-            // Create HTTP CLIENT
             HttpClient client = HttpClient.newHttpClient();
-            
-            // Create JSON body
             String jsonBody = String.format(
                 "{\"tipe\":\"%s\",\"nama\":\"%s\",\"kapasitas\":%s,\"fasilitas\":\"%s\",\"gedung\":\"%s\",\"lokasi\":\"%s\",\"pathGambar\":\"%s\"}",
                 tipe.toUpperCase(), nama, kapasitas, fasilitas, gedung, lokasi, image
             );
+            System.out.println("POST JSON body: " + jsonBody);
 
-            // Create URI Request
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8081/api/v1/ruangan"))
                 .POST(HttpRequest.BodyPublishers.ofString(jsonBody))
                 .header("Content-Type", "application/json")
                 .header("Accept", "application/json")
                 .build();
-            
-            // Send the request and get the response
+
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            // Check if the response is valid
+            System.out.println("POST response status: " + response.statusCode() + ", body: " + response.body());
+
             if (response.statusCode() == 200) {
                 Notification.show("Ruangan berhasil dibuat", 3000, Notification.Position.MIDDLE);
-            } else if (response.statusCode() == 500) {
-                Notification.show("Gagal Membuat Ruangan Baru: Kesalahan Server", 
-                                 3000, Notification.Position.MIDDLE);
-                Notification.show(jsonBody, 3000, Notification.Position.MIDDLE);
             } else {
-                Notification.show("Gagal Membuat Ruangan Baru: " + response.statusCode(), 
+                Notification.show("Gagal Membuat Ruangan Baru: " + response.statusCode() + " - " + response.body(),
                                  3000, Notification.Position.MIDDLE);
+                try {
+                    Files.deleteIfExists(targetPath);
+                    System.out.println("Deleted file due to API failure: " + targetPath);
+                } catch (IOException ex) {
+                    System.err.println("Failed to delete file: " + ex.getMessage());
+                }
             }
         } catch (IOException | InterruptedException e) {
-            Notification.show("Error connecting to server: " + e.getMessage(), 
-                     3000, Notification.Position.MIDDLE);
+            System.err.println("Error in postNewRoom: " + e.getMessage());
+            e.printStackTrace();
+            Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
+            try {
+                Files.deleteIfExists(targetPath);
+                System.out.println("Deleted file due to exception: " + targetPath);
+            } catch (IOException ex) {
+                System.err.println("Failed to delete file: " + ex.getMessage());
+            }
         }
     }
-
     // PUT Update Ruangan
     private void putUpdateRoom(String ruanganId, String tipe, String nama, String kapasitas, String fasilitas, String gedung, String lokasi, String image) {
         try {
@@ -1476,34 +1514,38 @@ public class AdminManajemenView extends AppLayout {
     // DELETE Ruangan
     private void deleteRoomById(int ruanganId) {
         try {
-            // Create HTTP CLIENT
             HttpClient client = HttpClient.newHttpClient();
-            
-            // Create URI Request
             HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create("http://localhost:8081/api/v1/ruangan/" + ruanganId))
                 .DELETE()
                 .header("Accept", "application/json")
                 .build();
-            
-            // Send the request and get the response
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            // Check if the response is valid
             if (response.statusCode() == 200) {
                 Notification.show("Ruangan berhasil dihapus", 3000, Notification.Position.MIDDLE);
-                // Refresh room data 
+                // Delete the image file
+                RoomData room = rooms.stream()
+                    .filter(r -> r.getRuanganId().equals(String.valueOf(ruanganId)))
+                    .findFirst()
+                    .orElse(null);
+                if (room != null && room.getImage() != null && !room.getImage().isEmpty()) {
+                    Path filePath = Paths.get(uploadConfig.getDirectory(),room.getImage());
+                    if (Files.exists(filePath)) {
+                        try {
+                            Files.delete(filePath);
+                        } catch (IOException ex) {
+                            Notification.show("Failed to delete image file: " + room.getImage(), 3000, Notification.Position.MIDDLE);
+                        }
+                    }
+                }
                 roomGrid.removeAll();
-                fetchRoomData(null, null, null); 
+                fetchRoomData(null, null, null);
             } else {
-                Notification.show("Gagal menghapus ruangan: " + response.statusCode(), 
-                                 3000, Notification.Position.MIDDLE);
+                Notification.show("Gagal menghapus ruangan: " + response.statusCode(), 3000, Notification.Position.MIDDLE);
             }
         } catch (IOException | InterruptedException e) {
-            Notification.show("Error connecting to server: " + e.getMessage(), 
-                     3000, Notification.Position.MIDDLE);
+            Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);
         }
-        
     }
 
     // Parser

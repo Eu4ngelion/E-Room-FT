@@ -7,7 +7,6 @@ import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.Label;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
@@ -36,12 +35,13 @@ import java.util.List;
 public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserver {
 
     private VerticalLayout contentLayout;
-    private List<Peminjaman> peminjamanList = new ArrayList<>();
+    private final List<Peminjaman> peminjamanList = new ArrayList<>();
 
     public AdminVerifikasiView() {
         createDrawer();
         setContent(createContent());
         fetchPeminjamanData();
+        getElement().getStyle().set("background-color", "#FEE6D5");
     }
 
     @Override
@@ -152,7 +152,7 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
                 btn.getStyle()
                     .set("background-color", "#FF6B35")
                     .set("color", "white");
-            };
+            }
         });
 
         // Click listener
@@ -272,7 +272,7 @@ private Component createContent() {
         contentLayout.add(title);
 
         if (peminjamanList.isEmpty()) {
-            Label noData = new Label("Tidak ada peminjaman yang menunggu verifikasi.");
+            Span noData = new Span("Tidak ada peminjaman yang menunggu verifikasi.");
             noData.getStyle().set("font-size", "16px").set("color", "#666");
             contentLayout.add(noData);
         } else {
@@ -302,16 +302,16 @@ private Component createContent() {
         info.setPadding(false);
         info.setSpacing(true);
 
-        Label nama = new Label(peminjaman.getNamaAkun() + " - " + peminjaman.getAkunId());
+        Span nama = new Span(peminjaman.getNamaAkun() + " - " + peminjaman.getAkunId());
         nama.getStyle().set("font-weight", "600").set("font-size", "16px");
 
-        HorizontalLayout ruang = new HorizontalLayout(new Icon(VaadinIcon.BUILDING), new Label(peminjaman.getNamaRuangan()));
+        HorizontalLayout ruang = new HorizontalLayout(new Icon(VaadinIcon.BUILDING), new Span(peminjaman.getNamaRuangan()));
         ruang.setAlignItems(FlexComponent.Alignment.CENTER);
 
-        HorizontalLayout tanggal = new HorizontalLayout(new Icon(VaadinIcon.CALENDAR), new Label(peminjaman.getTanggalPeminjaman()));
+        HorizontalLayout tanggal = new HorizontalLayout(new Icon(VaadinIcon.CALENDAR), new Span(peminjaman.getTanggalPeminjaman()));
         tanggal.setAlignItems(FlexComponent.Alignment.CENTER);
 
-        HorizontalLayout jam = new HorizontalLayout(new Icon(VaadinIcon.CLOCK), new Label(peminjaman.getWaktu()));
+        HorizontalLayout jam = new HorizontalLayout(new Icon(VaadinIcon.CLOCK), new Span(peminjaman.getWaktu()));
         jam.setAlignItems(FlexComponent.Alignment.CENTER);
 
         HorizontalLayout detail = new HorizontalLayout(ruang, tanggal, jam);
@@ -401,7 +401,7 @@ private Component createContent() {
         dialogLayout.setSpacing(false);
         dialogLayout.setWidthFull();
 
-        Label header = new Label("Detail Peminjaman Ruangan");
+        Span header = new Span("Detail Peminjaman Ruangan");
         header.getStyle()
             .set("font-size", "24px")
             .set("font-weight", "800")
@@ -465,7 +465,7 @@ private Component createContent() {
         dialogLayout.setSpacing(false);
         dialogLayout.setWidthFull();
 
-        Label header = new Label("Detail Peminjaman Ruangan");
+        Span header = new Span("Detail Peminjaman Ruangan");
         header.getStyle()
             .set("font-size", "24px")
             .set("font-weight", "800")
@@ -492,7 +492,7 @@ private Component createContent() {
     }
 
     private VerticalLayout createLabeledField(String labelText, String value) {
-        Label label = new Label(labelText);
+        Span label = new Span(labelText);
         label.getStyle().set("font-weight", "700").set("margin-bottom", "4px");
 
         TextField field = new TextField();

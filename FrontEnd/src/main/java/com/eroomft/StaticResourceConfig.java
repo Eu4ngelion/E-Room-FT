@@ -1,14 +1,27 @@
 package com.eroomft;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 public class StaticResourceConfig implements WebMvcConfigurer {
+    @Autowired
+    private UploadConfig uploadConfig;
+
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/");
+        String uploadDir = uploadConfig.getDirectory();
+        uploadDir = uploadDir.replace("\\", "/");
+        if (!uploadDir.endsWith("/")) {
+            uploadDir += "/";
+        }
+        String resourceLocation = "file:" + uploadDir;
+        System.out.println("Mapping /Uploads/** to " + resourceLocation);
+        registry.addResourceHandler("/Uploads/**")
+                .addResourceLocations(resourceLocation)
+                .setCachePeriod(0);
+        registry.setOrder(Integer.MAX_VALUE);
     }
 }

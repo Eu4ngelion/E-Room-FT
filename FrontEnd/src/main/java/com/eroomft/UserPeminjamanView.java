@@ -5,9 +5,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -229,24 +226,6 @@ public class UserPeminjamanView extends HorizontalLayout {
 
         content.add(tableContainer);
         return content;
-    }
-
-    private boolean isFutureBooking(String tanggal, String waktuSelesai) {
-        try {
-            LocalDate bookingDate = LocalDate.parse(tanggal, DateTimeFormatter.ISO_LOCAL_DATE);
-            LocalTime bookingEndTime = LocalTime.parse(waktuSelesai, DateTimeFormatter.ofPattern("HH:mm"));
-            LocalDate today = LocalDate.now();
-            LocalTime now = LocalTime.now();
-
-            if (bookingDate.isBefore(today)) {
-                return false;
-            } else if (bookingDate.isEqual(today)) {
-                return bookingEndTime.isAfter(now);
-            }
-            return true;
-        } catch (Exception e) {
-            return false; // In case of parsing error, assume not cancelable
-        }
     }
 
     private List<Peminjaman> fetchPeminjamanData() {

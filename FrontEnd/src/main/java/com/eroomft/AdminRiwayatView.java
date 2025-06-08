@@ -33,12 +33,13 @@ import com.vaadin.flow.theme.lumo.LumoUtility;
 public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
 
     private VerticalLayout contentLayout;
-    private List<RiwayatPeminjaman> riwayatList = new ArrayList<>();
+    private final List<RiwayatPeminjaman> riwayatList = new ArrayList<>();
 
     public AdminRiwayatView() {
         createDrawer();
         setContent(createContent());
         fetchRiwayatData();
+        getElement().getStyle().set("background-color", "#FEE6D5");
     }
 
     @Override
@@ -188,7 +189,7 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
         contentLayout.setWidthFull();
         contentLayout.setHeightFull();
         contentLayout.getStyle()
-            .set("min-height", "400px")
+            .set("min-height", "100%")
             .set("background-color", "#FEE6D5");
         contentLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         contentLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
