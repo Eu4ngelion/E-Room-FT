@@ -4,9 +4,8 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y curl && \
     curl -fsSL https://deb.nodesource.com/setup_18.x | bash - && \
     apt-get install -y nodejs maven
-COPY ../pom.xml ../pom.xml
 COPY pom.xml .
-COPY FrontEnd/src ./src
+COPY src ./src
 RUN mvn clean package -Pproduction
 
 # Stage 2: Create the runtime image
