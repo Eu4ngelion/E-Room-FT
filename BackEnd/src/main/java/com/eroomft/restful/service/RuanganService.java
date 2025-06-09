@@ -216,7 +216,7 @@ public class RuanganService {
     }
 
     // Get Jadwal Ruangan By Tanggal
-    public ResponseWrapper getJadwalRuanganByTanggal(int ruanganId, LocalDate tanggal){
+    public ResponseWrapper getJadwalRuanganByTanggal(int ruanganId, LocalDate tanggal) {
         try {
             // Validasi Id ruangan
             Optional<Ruangan> optionalRuangan = ruanganRepo.findById(ruanganId);
@@ -227,12 +227,14 @@ public class RuanganService {
 
             // Ambil semua peminjaman untuk ruangan ini pada tanggal yang diberikan
             List<Peminjaman> peminjamanList = peminjamanRepo.findByTanggalPeminjamanStatusBerhasil(
-                tanggal, 
+                tanggal,
                 Peminjaman.Status.DIIZINKAN
             );
+
+            // Filter peminjaman for the specific ruangan
             List<GetJadwalRuanganResponse> jadwalRuangan = new ArrayList<>();
             for (Peminjaman peminjaman : peminjamanList) {
-                if (peminjaman.getRuangan().equals(ruangan)) {
+                if (peminjaman.getRuangan().getRuanganId() == ruangan.getRuanganId()) {
                     GetJadwalRuanganResponse jadwal = new GetJadwalRuanganResponse(
                         peminjaman.getWaktuMulai().toString(),
                         peminjaman.getWaktuSelesai().toString(),
@@ -241,6 +243,12 @@ public class RuanganService {
                     jadwalRuangan.add(jadwal);
                 }
             }
+
+            // Check if the list is empty
+            if (jadwalRuangan.isEmpty()) {
+                return new ResponseWrapper("success", "Tidak ada jadwal untuk ruangan ini pada tanggal tersebut", jadwalRuangan);
+            }
+
             return new ResponseWrapper("success", "Jadwal ruangan berhasil diambil", jadwalRuangan);
 
         } catch (ResponseStatusException e) {
@@ -248,8 +256,6 @@ public class RuanganService {
         } catch (RuntimeException e) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Gagal mengambil jadwal ruangan: " + e.getMessage());
         }
-
-
     }
 
 

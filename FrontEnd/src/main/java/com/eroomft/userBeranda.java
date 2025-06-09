@@ -1,5 +1,30 @@
 package com.eroomft;
 
+import java.io.IOException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.Duration;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
@@ -18,31 +43,8 @@ import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.Route;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
-import org.springframework.stereotype.Component;
 
 import jakarta.annotation.PostConstruct;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 @Route("user/beranda")
 @Component
@@ -204,8 +206,10 @@ public class UserBeranda extends HorizontalLayout {
 
         if (rooms.isEmpty()) {
             Span message = new Span("Tidak ada ruangan yang tersedia sesuai kriteria.");
-            message.getStyle().set("color", "#555").set(" Telekom Malaysia Berhad (TM) font-size", "1rem");
-            grid.add(message);
+            message.getStyle()
+                .set("color", "#555")
+                .set("font-size", "1rem"); // Corrected style property name
+        grid.add(message);
         } else {
             for (RoomData room : rooms) {
                 grid.add(createRoomCard(room));

@@ -9,6 +9,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -16,11 +19,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.UUID;
 
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
-import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
@@ -44,13 +45,10 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextArea;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
+import com.vaadin.flow.component.upload.receivers.MultiFileMemoryBuffer;
+import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.beans.factory.annotation.Autowired;
-
-import com.vaadin.flow.router.PageTitle;
 
 import jakarta.annotation.PostConstruct;
 
@@ -893,9 +891,9 @@ public class AdminManajemenView extends AppLayout {
             .set("background-color", "#FFB84D")
             .set("color", "white")
             .set("border", "none")
-            .set("padding", "0.5rem 2rem")
+            .set("padding", "0.5rem 0.5rem")
             .set("border-radius", "4px")
-            .set("margin-right", "0.5rem")
+            .set("margin-right", "0")
             .set("font-size", "1rem");
 
         Dialog editRuanganDialog = new Dialog();
@@ -1067,6 +1065,7 @@ public class AdminManajemenView extends AppLayout {
 
         HorizontalLayout buttonLayout = new HorizontalLayout();
         buttonLayout.setWidthFull();
+        buttonLayout.setAlignItems(FlexComponent.Alignment.CENTER);
         buttonLayout.setJustifyContentMode(FlexComponent.JustifyContentMode.CENTER);
         buttonLayout.setSpacing(true);
 
@@ -1218,7 +1217,7 @@ public class AdminManajemenView extends AppLayout {
             .set("background-color", "#FF6B6B")
             .set("color", "white")
             .set("border", "none")
-            .set("padding", "0.5rem 2rem")
+            .set("padding", "0.5rem 0.5rem")
             .set("border-radius", "4px")
             .set("font-size", "1rem");
 
@@ -1292,6 +1291,7 @@ public class AdminManajemenView extends AppLayout {
         HorizontalLayout btnLayout = new HorizontalLayout(hapusBtn, cancelBtn);
         btnLayout.setJustifyContentMode(JustifyContentMode.CENTER);
         btnLayout.setSpacing(true);
+        btnLayout.setWidthFull();
 
         VerticalLayout boxLayout = new VerticalLayout();
         boxLayout.setAlignItems(FlexComponent.Alignment.CENTER);
