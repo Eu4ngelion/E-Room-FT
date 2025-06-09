@@ -3,6 +3,9 @@ package com.eroomft.restful.model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -11,6 +14,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+
 
 @Entity
 @Table(name = "peminjaman")
@@ -22,32 +26,35 @@ public class Peminjaman {
     @ManyToOne
     @JoinColumn(name = "akun_id", referencedColumnName = "akunId", nullable = false)
     private Akun akun;
-    
+
     @ManyToOne
     @JoinColumn(name = "ruangan_id", referencedColumnName = "ruanganId", nullable = false)
     private Ruangan ruangan;
 
     @Column(nullable = true)
-    private String keperluan; 
+    private String keperluan;
 
     @Column(nullable = false)
     private LocalDate tanggalPeminjaman;
 
-    @Column(nullable = false, columnDefinition = "TIME")
+    @JdbcTypeCode(SqlTypes.TIME)
+    @Column(nullable = false)
     private LocalTime waktuMulai;
 
-    @Column(nullable = false, columnDefinition = "TIME")
+    @JdbcTypeCode(SqlTypes.TIME)
+    @Column(nullable = false)
     private LocalTime waktuSelesai;
 
     @Column(nullable = false)
-    private Status status; 
+    private Status status;
+
     public enum Status {
         DITOLAK,
         DIBATALKAN,
         MENUNGGU,
         DIIZINKAN,
         SELESAI
-    } 
+    }
 
     public Peminjaman() {
     }

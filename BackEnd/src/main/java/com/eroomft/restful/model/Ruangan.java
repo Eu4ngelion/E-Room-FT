@@ -15,7 +15,7 @@ public class Ruangan {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int ruanganId;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false, unique = true, length = 50)
     private String nama;
 
     @Column(nullable = false)
@@ -33,10 +33,10 @@ public class Ruangan {
     @Column(nullable = false)
     private String fasilitas;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String gedung;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String lokasi;
 
     @Column(nullable = false)

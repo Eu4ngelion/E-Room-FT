@@ -15,12 +15,13 @@ import jakarta.persistence.Table;
 public abstract class Akun {
 
     @Id
+    @Column(length = 50)
     private String akunId;
-    @Column(unique=true, nullable = false)
+    @Column(unique=true, nullable = false, length = 50)
     private String email;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String password;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 50)
     private String nama;
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

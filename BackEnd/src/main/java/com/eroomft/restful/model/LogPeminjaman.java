@@ -3,6 +3,7 @@ package com.eroomft.restful.model;
 import java.time.LocalDate;
 import java.time.LocalTime;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -16,7 +17,9 @@ public class LogPeminjaman {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int logPeminjamanId;
+    @Column(length = 50)
     private String akunId; 
+    @Column(length = 50)
     private String namaPeminjam;
     private Tipe tipeRuangan;
     public enum Tipe {
@@ -25,7 +28,9 @@ public class LogPeminjaman {
         SEMINAR,
         RAPAT
     }
+    @Column(length = 50)
     private String gedung;
+    @Column(length = 50)
     private String namaRuangan;
     private String keperluan;
     private LocalDate tanggalPeminjaman;
