@@ -15,8 +15,7 @@ public class UploadConfig {
 
     public String getDirectory() {
         if (directory == null || directory.isEmpty()) {
-            // Default to ./uploads/ relative to JAR
-            directory = Paths.get("uploads").toAbsolutePath().toString();
+            directory = Paths.get("/app/uploads").toAbsolutePath().toString();
         }
         return directory;
     }
