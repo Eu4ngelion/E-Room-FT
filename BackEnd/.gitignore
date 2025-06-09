@@ -32,3 +32,17 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+
+# Application properties with sensitive data
+application-dev.properties
+application-local.properties
+*.env
+.env
+.env.local
+
+# Other common Spring Boot ignores
+application-*.properties
+!application.properties
+!application-prod.properties
