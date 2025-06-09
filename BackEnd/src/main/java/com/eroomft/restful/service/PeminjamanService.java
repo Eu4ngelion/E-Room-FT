@@ -358,11 +358,11 @@ public class PeminjamanService {
             }
             // Proses Pembatalan Peminjaman
             switch (peminjaman.getStatus()) {
-                case MENUNGGU -> {
+                case MENUNGGU: {
                     peminjamanRepo.delete(peminjaman);
                     return new ResponseWrapper("success", "Peminjaman berhasil dibatalkan", null);
                 }
-                case DIIZINKAN -> {
+                case DIIZINKAN: {
                     // Log Peminjaman Status DIBATALKAN
                     LogPeminjaman logPeminjamanDibatalkan = new LogPeminjaman(
                     peminjaman.getAkun().getAkunId(),
@@ -383,7 +383,7 @@ public class PeminjamanService {
                     return new ResponseWrapper("success", "Peminjaman berhasil dibatalkan dan dicatat dalam log", null);
 
                 }
-                default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Peminjaman gagal dibatalkan karena status(" + peminjaman.getStatus() + ") tidak valid");
+                default: throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Peminjaman gagal dibatalkan karena status(" + peminjaman.getStatus() + ") tidak valid");
             }
         } catch (ResponseStatusException e) {
             throw e;
@@ -412,11 +412,17 @@ public class PeminjamanService {
             List<Peminjaman> peminjamanList = peminjamanRepo.findByTanggalPeminjamanAndWaktuSelesai(today, now);
             for (Peminjaman peminjaman : peminjamanList) {
                 // Pilih Status Baru
-                Peminjaman.Status newStatus = switch (peminjaman.getStatus()) {
-                    case MENUNGGU -> Peminjaman.Status.DITOLAK;
-                    case DIIZINKAN -> Peminjaman.Status.SELESAI;
-                    default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status peminjaman tidak valid untuk update");
-                };
+                Peminjaman.Status newStatus;
+                switch (peminjaman.getStatus()) {
+                    case MENUNGGU:
+                        newStatus = Peminjaman.Status.DITOLAK;
+                        break;
+                    case DIIZINKAN:
+                        newStatus = Peminjaman.Status.SELESAI;
+                        break;
+                    default:
+                        throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Status peminjaman tidak valid untuk update");
+                }
 
                 // Tambahkan Log Peminjaman Baru sesuai dengan status baru
                 LogPeminjaman logPeminjaman = new LogPeminjaman();

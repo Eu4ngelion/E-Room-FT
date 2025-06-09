@@ -33,10 +33,10 @@ public class Peminjaman {
     @Column(nullable = false)
     private LocalDate tanggalPeminjaman;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TIME")
     private LocalTime waktuMulai; 
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TIME")
     private LocalTime waktuSelesai; 
 
     @Column(nullable = false)
