@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install -y curl && \
     apt-get install -y nodejs maven
 COPY ../pom.xml ../pom.xml
 COPY pom.xml .
-COPY src ./src
+COPY FrontEnd/src ./src
 RUN mvn clean package -Pproduction
 
 # Stage 2: Create the runtime image
