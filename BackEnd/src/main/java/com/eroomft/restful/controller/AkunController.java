@@ -129,13 +129,11 @@ public class AkunController {
 
     //  ## Schema
     @Schema(
-        example="""
-        {
-            "status": "success",
-            "message": "Akun berhasil dibuat",
-            "data": {}
-        }
-        """
+        example = "{\n" +
+                  "    \"status\": \"success\",\n" +
+                  "    \"message\": \"Akun berhasil dibuat\",\n" +
+                  "    \"data\": {}\n" +
+                  "}"
     )
     class CreateAkunSuccessSchema extends ResponseWrapper {
         public CreateAkunSuccessSchema(String status, String message, Object data) {
@@ -143,34 +141,31 @@ public class AkunController {
         }
     }
 
-
     @Schema(
-        example="""
-            {
-                "status": "success",
-                "message": "Daftar akun berhasil diambil",
-                "data": [
-                    {
-                        "akunId": "2309106001",
-                        "nama": "Mahasiswa 1",
-                        "email": "mahasiswa1@gmail.com",
-                        "role": "MAHASISWA"
-                    },
-                    {
-                        "akunId": "2309106002",
-                        "nama": "Dosen 1",
-                        "email": "admin1@gmail.com",
-                        "role": "DOSEN"
-                    },
-                    {
-                        "akunId": "2309106003",
-                        "nama": "Admin 1",
-                        "email": "Admin@gmail.com",
-                        "role": "ADMIN"
-                    }
-                ]
-            }   
-        """
+        example = "{\n" +
+                  "    \"status\": \"success\",\n" +
+                  "    \"message\": \"Daftar akun berhasil diambil\",\n" +
+                  "    \"data\": [\n" +
+                  "        {\n" +
+                  "            \"akunId\": \"2309106001\",\n" +
+                  "            \"nama\": \"Mahasiswa 1\",\n" +
+                  "            \"email\": \"mahasiswa1@gmail.com\",\n" +
+                  "            \"role\": \"MAHASISWA\"\n" +
+                  "        },\n" +
+                  "        {\n" +
+                  "            \"akunId\": \"2309106002\",\n" +
+                  "            \"nama\": \"Dosen 1\",\n" +
+                  "            \"email\": \"admin1@gmail.com\",\n" +
+                  "            \"role\": \"DOSEN\"\n" +
+                  "        },\n" +
+                  "        {\n" +
+                  "            \"akunId\": \"2309106003\",\n" +
+                  "            \"nama\": \"Admin 1\",\n" +
+                  "            \"email\": \"Admin@gmail.com\",\n" +
+                  "            \"role\": \"ADMIN\"\n" +
+                  "        }\n" +
+                  "    ]\n" +
+                  "}"
     )
     class GetAllAkunSuccessSchema extends ResponseWrapper {
         public GetAllAkunSuccessSchema(String status, String message, Object data) {
@@ -179,13 +174,11 @@ public class AkunController {
     }
 
     @Schema(
-        example="""
-        {
-            "status": "success",
-            "message": "Akun berhasil diperbarui",
-            "data": {}
-        }
-        """
+        example = "{\n" +
+                  "    \"status\": \"success\",\n" +
+                  "    \"message\": \"Akun berhasil diperbarui\",\n" +
+                  "    \"data\": {}\n" +
+                  "}"
     )
     class UpdateAkunSuccessSchema extends ResponseWrapper {
         public UpdateAkunSuccessSchema(String status, String message, Object data) {

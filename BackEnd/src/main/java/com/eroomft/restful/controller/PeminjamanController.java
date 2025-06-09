@@ -43,7 +43,7 @@ public class PeminjamanController {
         } catch (ResponseStatusException e) {
             return ResponseEntity.status(e.getStatusCode())
                 .body(new ResponseWrapper("error", e.getReason(), null));
-        }catch (Exception e) {
+        } catch (Exception e) {
             return ResponseEntity.status(500).body(new ResponseWrapper("error", "Internal Server Error", null));
         }
     }
@@ -145,21 +145,7 @@ public class PeminjamanController {
 
     
     // SCHEMA Ruangan Berhasil Dipinjam
-    @Schema(example = """
-        {
-            "status": "success",
-            "message": "Peminjaman berhasil dibuat",
-            "data": {
-                "id": 1,
-                "akunId": 123,
-                "namaRuangan": "Ruang Rapat A",
-                "tanggalPeminjaman": "2023-10-01",
-                "waktuMulai": "10:00:00",
-                "waktuSelesai": "12:00:00",
-                "status": "DIPINJAM"
-            }
-        }
-        """)    
+    @Schema(example = "{ \"status\": \"success\", \"message\": \"Peminjaman berhasil dibuat\", \"data\": { \"id\": 1, \"akunId\": 123, \"namaRuangan\": \"Ruang Rapat A\", \"tanggalPeminjaman\": \"2023-10-01\", \"waktuMulai\": \"10:00:00\", \"waktuSelesai\": \"12:00:00\", \"status\": \"DIPINJAM\" } }")    
     public static class CreatePeminjamanSuccessSchema extends ResponseWrapper {
         public CreatePeminjamanSuccessSchema(String status, String message, Object data) {
             super(status, message, data);
@@ -167,13 +153,7 @@ public class PeminjamanController {
     }
 
     // SCHEMA Ruangan Sudah dpinjam
-    @Schema(example = """
-        {
-              "status": "error",
-              "message": "Ruangan A202 sudah dipinjam dari 07:00 sampai 08:00 pada tanggal 2025-05-30",
-              "data": null
-        }
-        """)
+    @Schema(example = "{ \"status\": \"error\", \"message\": \"Ruangan A202 sudah dipinjam dari 07:00 sampai 08:00 pada tanggal 2025-05-30\", \"data\": null }")
     public static class RuanganSudahDipinjamSchema extends ResponseWrapper {
         public RuanganSudahDipinjamSchema(String status, String message, Object data) {
             super(status, message, data);
@@ -181,32 +161,7 @@ public class PeminjamanController {
     }
 
     // SCHEMA Get All Peminjaman Response
-    @Schema(example = """
-        [
-            {
-                "idPeminjaman": 1,
-                "namaAkun": "John Doe",
-                "akunId": "123",
-                "tipeRuangan": "Ruang Rapat",
-                "namaRuangan": "Ruang Rapat A",
-                "tanggalPeminjaman": "2023-10-01",
-                "waktuMulai": "10:00",
-                "waktuSelesai": "12:00",
-                "status": "MENUNGGU"
-            },
-            {
-                "idPeminjaman": 2,
-                "namaAkun": "Jane Smith",
-                "akunId": "456",
-                "tipeRuangan": "Ruang Kelas",
-                "namaRuangan": "Ruang Kelas B",
-                "tanggalPeminjaman": "2023-10-02",
-                "waktuMulai": "14:00",
-                "waktuSelesai": "16:00",
-                "status": "DITERIMA"
-            }
-        ]
-        """)
+    @Schema(example = "[ { \"idPeminjaman\": 1, \"namaAkun\": \"John Doe\", \"akunId\": \"123\", \"tipeRuangan\": \"Ruang Rapat\", \"namaRuangan\": \"Ruang Rapat A\", \"tanggalPeminjaman\": \"2023-10-01\", \"waktuMulai\": \"10:00\", \"waktuSelesai\": \"12:00\", \"status\": \"MENUNGGU\" }, { \"idPeminjaman\": 2, \"namaAkun\": \"Jane Smith\", \"akunId\": \"456\", \"tipeRuangan\": \"Ruang Kelas\", \"namaRuangan\": \"Ruang Kelas B\", \"tanggalPeminjaman\": \"2023-10-02\", \"waktuMulai\": \"14:00\", \"waktuSelesai\": \"16:00\", \"status\": \"DITERIMA\" } ]")
     public static class GetAllPeminjamanSchema extends ResponseWrapper {
         public GetAllPeminjamanSchema(String status, String message, Object data) {
             super(status, message, data);
@@ -214,38 +169,14 @@ public class PeminjamanController {
     }
 
 
-    @Schema(example = """
-        {
-            "status": "success",
-            "message": "Detail peminjaman berhasil diambil",
-            "data": {
-                "peminjamanId": 2,
-                "namaPeminjam": "john doe",
-                "emailPeminjam": "email@gmail.com",
-                "keperluan": "Kelas Pengganti Matkul OOP",
-                "tipeRuangan": "KELAS",
-                "namaRuangan": "A202",
-                "kapasitas": 1,
-                "tanggalPeminjaman": "2025-05-30",
-                "waktuMulai": "07:00",
-                "waktuSelesai": "08:00",
-                "status": "MENUNGGU"
-            }
-        }
-    """)
+    @Schema(example = "{ \"status\": \"success\", \"message\": \"Detail peminjaman berhasil diambil\", \"data\": { \"peminjamanId\": 2, \"namaPeminjam\": \"john doe\", \"emailPeminjam\": \"email@gmail.com\", \"keperluan\": \"Kelas Pengganti Matkul OOP\", \"tipeRuangan\": \"KELAS\", \"namaRuangan\": \"A202\", \"kapasitas\": 1, \"tanggalPeminjaman\": \"2025-05-30\", \"waktuMulai\": \"07:00\", \"waktuSelesai\": \"08:00\", \"status\": \"MENUNGGU\" } }")
     public static class GetSinglePeminjamanSchema extends ResponseWrapper {
         public GetSinglePeminjamanSchema(String status, String message, Object data) {
             super(status, message, data);
         }
     }
 
-    @Schema(example = """
-        {
-            "status": "success",
-            "message": "Peminjaman berhasil dibatalkan",
-            "data": null
-        }
-        """)
+    @Schema(example = "{ \"status\": \"success\", \"message\": \"Peminjaman berhasil dibatalkan\", \"data\": null }")
     public static class BatalkanPeminjamanSchema extends ResponseWrapper {
         public BatalkanPeminjamanSchema(String status, String message, Object data) {
             super(status, message, data);

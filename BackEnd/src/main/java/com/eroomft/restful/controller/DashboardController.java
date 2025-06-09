@@ -40,17 +40,16 @@ public class DashboardController {
 
     
     // SCHEMA
-    @Schema(example = """
-        {
-            "status": "success",
-            "message": "Data Dasbor berhasil diambil",
-            "data": {
-                "jumlahRuangan": 99,
-                "jumlahPeminjamanHariIni": 50,
-                "jumlahPeminjamanMenunggu": 15
-            }
-        }
-        """)
+    @Schema(example = 
+        "{\n" +
+        "    \"status\": \"success\",\n" +
+        "    \"message\": \"Data Dasbor berhasil diambil\",\n" +
+        "    \"data\": {\n" +
+        "        \"jumlahRuangan\": 99,\n" +
+        "        \"jumlahPeminjamanHariIni\": 50,\n" +
+        "        \"jumlahPeminjamanMenunggu\": 15\n" +
+        "    }\n" +
+        "}")
     public static class GetDashboardSuccessSchema extends ResponseWrapper {
         public GetDashboardSuccessSchema() {
             super("success", "Dashboard data retrieved successfully", null);

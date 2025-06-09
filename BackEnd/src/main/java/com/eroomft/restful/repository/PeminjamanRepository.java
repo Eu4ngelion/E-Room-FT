@@ -35,15 +35,13 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     List<Peminjaman> findByStatusAndAkun(Peminjaman.Status status, Akun akun);
 
     // Method find peminjaman aktif by tanggal dan waktu selesai
-    @Query("""
-        SELECT p
-        FROM Peminjaman p
-        WHERE
-            p.ruangan = :ruangan
-            AND p.tanggalPeminjaman = :tanggalPeminjaman
-            AND p.status NOT IN (:statusDitolak, :statusSelesai, :statusMenunggu)
-            AND (p.waktuMulai < :waktuSelesai AND p.waktuSelesai > :waktuMulai)
-        """)
+    @Query("SELECT p " +
+           "FROM Peminjaman p " +
+           "WHERE " +
+           "p.ruangan = :ruangan " +
+           "AND p.tanggalPeminjaman = :tanggalPeminjaman " +
+           "AND p.status NOT IN (:statusDitolak, :statusSelesai, :statusMenunggu) " +
+           "AND (p.waktuMulai < :waktuSelesai AND p.waktuSelesai > :waktuMulai)")
     Optional<Peminjaman> findRuanganSedangDipinjam(
         @Param("ruangan") Ruangan ruangan,
         @Param("tanggalPeminjaman") LocalDate tanggalPeminjaman,
@@ -60,13 +58,11 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     List<Peminjaman> findAllPeminjamanStatusMenunggu(@Param("statusMenunggu") Peminjaman.Status statusMenunggu);
 
     // Get All Peminjaman by tanggal dan waktu selesai
-    @Query("""
-        SELECT p
-        FROM Peminjaman p
-        WHERE 
-            (p.tanggalPeminjaman = :tanggal AND p.waktuSelesai <= :waktu)
-            OR p.tanggalPeminjaman < CURRENT_DATE
-        """)
+    @Query("SELECT p " +
+           "FROM Peminjaman p " +
+           "WHERE " +
+           "(p.tanggalPeminjaman = :tanggal AND p.waktuSelesai <= :waktu) " +
+           "OR p.tanggalPeminjaman < CURRENT_DATE")
     List<Peminjaman> findByTanggalPeminjamanAndWaktuSelesai(@Param("tanggal") LocalDate tanggal, @Param("waktu") LocalTime waktu);
 
     // Count Jumlah Peminjaman Hari ini
@@ -78,15 +74,13 @@ public interface PeminjamanRepository extends JpaRepository<Peminjaman, Integer>
     int countPeminjamanMenunggu(@Param("statusMenunggu") Peminjaman.Status statusMenunggu);
 
     // cari semua peminjaman dengan status:, dan waktu mulai < :waktumulai and waktu selesai > :waktumulai
-    @Query("""
-    SELECT p
-    FROM Peminjaman p
-    WHERE
-        p.status = :status
-        AND p.tanggalPeminjaman = :tanggalPeminjaman
-        AND p.waktuMulai < :waktuSelesai
-        AND p.waktuSelesai > :waktuMulai
-            """)
+    @Query("SELECT p " +
+           "FROM Peminjaman p " +
+           "WHERE " +
+           "p.status = :status " +
+           "AND p.tanggalPeminjaman = :tanggalPeminjaman " +
+           "AND p.waktuMulai < :waktuSelesai " +
+           "AND p.waktuSelesai > :waktuMulai")
     List<Peminjaman> findByStatusAndTanggalPeminjamanAndWaktuMulai(
         @Param("status") Peminjaman.Status status,
         @Param("tanggalPeminjaman") LocalDate tanggalPeminjaman,
