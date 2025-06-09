@@ -394,11 +394,18 @@ public class PeminjamanService {
 
 
 
-    // interval 15 Menit WITA
-    @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
 
-    // Interval 1 menit WITA
-    // @Scheduled(cron = "0 0/1 * * * *", zone = "Asia/Makassar") 
+
+    // Interval 24 Jam WITA
+    @Scheduled(cron = "0 0 0 * * *", zone = "Asia/Makassar")
+
+
+    // interval 1 Jam WITA
+    // @Scheduled(cron = "0 0 * * * *", zone = "Asia/Makassar")
+
+
+    // interval 15 Menit WITA
+    // @Scheduled(cron = "0 0/15 * * * *", zone = "Asia/Makassar")
 
     // Interval 10 detik WITA
     // @Scheduled(cron = "0/10 * * * * *", zone = "Asia/Makassar")
