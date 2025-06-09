@@ -46,10 +46,11 @@ import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.PostConstruct;
 
+//
 @Route("user/beranda")
 @Component
 @Scope("prototype")
-public class UserBeranda extends HorizontalLayout {
+public class UserBeranda2 extends HorizontalLayout {
     private List<RoomData> rooms = new ArrayList<>();
     private Div roomGridContainer;
     private SidebarComponent sidebar;
@@ -64,7 +65,7 @@ public class UserBeranda extends HorizontalLayout {
     @Autowired
     private UploadConfig uploadConfig;
 
-    public UserBeranda() {
+    public UserBeranda2() {
         // Validate active session
         String role = (String) UI.getCurrent().getSession().getAttribute("role");
         if (role == null || (!role.equalsIgnoreCase("mahasiswa") && !role.equalsIgnoreCase("dosen"))) {
