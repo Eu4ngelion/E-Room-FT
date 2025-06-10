@@ -108,7 +108,7 @@ public class Landing extends VerticalLayout {
 
         headerKanan.add(
             btnNavbar("Halaman Utama", ""),
-            btnNavbar("Tentang Kami", "tentang-kammi"),
+            btnNavbar("Tentang Kami", "tentang-kami"),
             btnNavbar("Kontak", "contact-us")
         );
 
