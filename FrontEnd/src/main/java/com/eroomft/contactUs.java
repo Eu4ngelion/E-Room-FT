@@ -75,8 +75,8 @@ public class contactUs extends VerticalLayout {
 
         contactLayout.add(
             contactCard(VaadinIcon.ENVELOPE_O, "Email", "info@ft.unmul.ac.id", "mailto:info@ft.unmul.ac.id", "Kami siap membantu Anda melalui email!"),
-            contactCard(VaadinIcon.PHONE, "Phone", "(0541) 736834", "tel:+62541736834", "Hubungi kami melalui telepon!"),
-            contactCard(VaadinIcon.MAP_MARKER, "Address", "Jalan Sambaliung No.9", "https://maps.google.com/?q=Fakultas+Teknik+Universitas+Mulawarman", "Kunjungi kami di lokasi ini!")
+            contactCard(VaadinIcon.PHONE, "Telepon", "(0541) 736834", "tel:+62541736834", "Hubungi kami melalui telepon!"),
+            contactCard(VaadinIcon.MAP_MARKER, "Alamat", "Jalan Sambaliung No.9", "https://maps.google.com/?q=Fakultas+Teknik+Universitas+Mulawarman", "Kunjungi kami di lokasi ini!")
         );
         
         content.add(judul, contactLayout);
@@ -209,7 +209,7 @@ public class contactUs extends VerticalLayout {
         headerKanan.getStyle().set("gap", "20px");
         headerKanan.add(
             btnNavbar("Halaman Utama", ""), 
-            btnNavbar("Tentang Kami", "about-us"),
+            btnNavbar("Tentang Kami", "tentang-kami"),
             btnNavbar("Kontak", "contact-us") 
         );
 

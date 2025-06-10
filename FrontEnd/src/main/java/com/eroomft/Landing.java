@@ -108,7 +108,7 @@ public class Landing extends VerticalLayout {
 
         headerKanan.add(
             btnNavbar("Halaman Utama", ""),
-            btnNavbar("Tentang Kami", "about-us"),
+            btnNavbar("Tentang Kami", "tentang-kammi"),
             btnNavbar("Kontak", "contact-us")
         );
 
@@ -152,7 +152,7 @@ public class Landing extends VerticalLayout {
         content.add(judul, deskripsi, kotak);
 
         Div footer = new Div();
-        footer.setText("Copyright © 2025 RoomQue FT");
+        footer.setText("Copyright © 2025 RoomQue");
         footer.getStyle()
                 .set("display", "flex")
                 .set("align-items", "center")

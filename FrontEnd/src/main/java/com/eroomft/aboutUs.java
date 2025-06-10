@@ -13,7 +13,7 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
-@Route("/about-us")
+@Route("/tentang-kami")
 public class aboutUs extends VerticalLayout {
 
     public aboutUs() {
@@ -108,7 +108,7 @@ public class aboutUs extends VerticalLayout {
 
         headerKanan.add(
             btnNavbar("Halaman Utama", ""),
-            btnNavbar("Tentang Kami", "about-us"),
+            btnNavbar("Tentang Kami", "tentang-kami"),
             btnNavbar("Kontak", "contact-us")
         );
 
@@ -120,7 +120,7 @@ public class aboutUs extends VerticalLayout {
         content.setSpacing(true);
         content.getStyle().set("padding", "40px 20px");
 
-        H1 judul = new H1("ABOUT US");
+        H1 judul = new H1("TENTANG KAMI");
         judul.getStyle()
                 .set("color", "#FF7700")
                 .set("font-weight", "600")
