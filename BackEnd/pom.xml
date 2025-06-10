@@ -11,10 +11,10 @@
     </parent>
 
     <groupId>com.eroomft</groupId>
-    <artifactId>RoomQue API</artifactId>
+    <artifactId>ERoomAPI</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>BackEnd</name>
-    <description>Backend Project for RoomQue Website</description>
+    <description>Backend Project for RoomQue</description>
 
     <properties>
         <java.version>17</java.version>
