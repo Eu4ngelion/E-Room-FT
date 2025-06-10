@@ -3,7 +3,7 @@ package com.eroomft;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.router.PageTitle;
 
-@PageTitle("E-ROOM")
+@PageTitle("RoomQue")
 public class MainLayout extends AppLayout {
 
     public MainLayout() {

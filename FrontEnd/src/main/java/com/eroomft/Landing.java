@@ -120,7 +120,7 @@ public class Landing extends VerticalLayout {
         content.setSpacing(true);
         content.getStyle().set("padding-top", "40px");
 
-        H1 judul = new H1("E-ROOM FT");
+        H1 judul = new H1("RoomQue");
         judul.getStyle()
                 .set("color", "#FF7700")
                 .set("font-weight", "600")

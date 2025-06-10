@@ -224,7 +224,7 @@ public class AdminDasborView extends AppLayout {
             .set("box-shadow", "var(--lumo-box-shadow-xs)")
             .set("width", "100%");
 
-        H2 title = new H2("Dasbor E-ROOM");
+        H2 title = new H2("Dasbor RoomQue");
         title.getStyle()
             .set("margin", "0 0 0.5rem 0")
             .set("color", "#FF6B35")

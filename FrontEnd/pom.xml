@@ -9,7 +9,7 @@
     <version>0.0.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>FrontEnd</name>
-    <description>Frontend for E-Room FT</description>
+    <description>Frontend for RooomQue Website</description>
 
     <properties>
         <java.version>17</java.version>
