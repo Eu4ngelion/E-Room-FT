@@ -8,6 +8,9 @@ import java.net.http.HttpResponse;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vaadin.flow.component.Component;
@@ -21,8 +24,6 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 
 @Route("user/riwayat")
 @org.springframework.stereotype.Component
@@ -243,7 +244,7 @@ public class UserRiwayatPeminjamanView extends HorizontalLayout {
                     System.out.println("No array found in 'data' field of response.");
                 }
             } else {
-                Notification.show("Gagal mengambil data riwayat peminjaman: HTTP " + response.statusCode() + " - " + response.body(), 3000, Notification.Position.MIDDLE);
+                // Notification.show("Gagal mengambil data riwayat peminjaman: HTTP " + response.statusCode() + " - " + response.body(), 3000, Notification.Position.MIDDLE);
             }
         } catch (IOException | InterruptedException e) {
             Notification.show("Error connecting to server: " + e.getMessage(), 3000, Notification.Position.MIDDLE);

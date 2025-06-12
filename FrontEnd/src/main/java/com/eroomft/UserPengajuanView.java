@@ -6,11 +6,13 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
@@ -24,14 +26,13 @@ import com.vaadin.flow.component.orderedlayout.FlexComponent;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.TextField;
+import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.BeforeEvent;
 import com.vaadin.flow.router.HasUrlParameter;
 import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 
 @Route("user/pengajuan")
 @org.springframework.stereotype.Component
@@ -153,8 +154,9 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
         Div jamMulaiLabel = new Div();
         jamMulaiLabel.setText("Jam Mulai:");
         jamMulaiLabel.getStyle().set("font-weight", "bold");
-        TextField jamMulaiField = new TextField();
-        jamMulaiField.setPlaceholder("Ex: 08:15");
+        TimePicker jamMulaiField = new TimePicker();
+        jamMulaiField.setPlaceholder("Pilih Jam Mulai");
+        jamMulaiField.setStep(java.time.Duration.ofMinutes(15));
         jamMulaiField.setWidthFull();
         jamMulaiField.getStyle().set("margin-bottom", "1rem");
         jamMulaiLayout.add(jamMulaiLabel, jamMulaiField);
@@ -165,9 +167,10 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
         Div jamSelesaiLabel = new Div();
         jamSelesaiLabel.setText("Jam Selesai:");
         jamSelesaiLabel.getStyle().set("font-weight", "bold");
-        TextField jamSelesaiField = new TextField();
-        jamSelesaiField.setPlaceholder("Ex: 08:45");
+        TimePicker jamSelesaiField = new TimePicker();
+        jamSelesaiField.setPlaceholder("Pilih Jam Selesai");
         jamSelesaiField.setWidthFull();
+        jamSelesaiField.setStep(java.time.Duration.ofMinutes(15));
         jamSelesaiField.getStyle().set("margin-bottom", "1rem");
         jamSelesaiLayout.add(jamSelesaiLabel, jamSelesaiField);
 
@@ -205,65 +208,46 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
         submitButton.addClickListener(event -> {
             String keperluan = keperluanField.getValue();
             LocalDate tanggal = tanggalPicker.getValue();
-            String jamMulai = jamMulaiField.getValue();
-            String jamSelesai = jamSelesaiField.getValue();
+            LocalTime jamMulai = jamMulaiField.getValue();
+            LocalTime jamSelesai = jamSelesaiField.getValue();
             String namaRuanganValue = ruanganField.getValue();
             String akunId = (String) UI.getCurrent().getSession().getAttribute("akunId");
 
-            if (tanggal == null || jamMulai.isEmpty() || jamSelesai.isEmpty() || namaRuanganValue.isEmpty() || akunId == null) {
+            // Validation: Ensure all fields are filled
+            if (tanggal == null || jamMulai == null || jamSelesai == null || namaRuanganValue.isEmpty() || akunId == null) {
                 Notification.show("Semua field harus diisi.", 3000, Notification.Position.BOTTOM_END);
                 return;
             }
 
+            // Validation: Ensure the selected date is today or later
             if (tanggal.isBefore(LocalDate.now())) {
                 Notification.show("Tanggal peminjaman hanya boleh hari ini atau setelahnya.", 3000, Notification.Position.BOTTOM_END);
                 return;
             }
 
-            if (!jamMulai.matches("\\d{2}:\\d{2}") || !jamSelesai.matches("\\d{2}:\\d{2}")) {
-                Notification.show("Format jam harus HH:MM.", 3000, Notification.Position.BOTTOM_END);
-                return;
-            }
-
+            // Validation: Ensure the start time is after the current time if the date is today
             if (tanggal.equals(LocalDate.now())) {
                 ZoneId zoneId = ZoneId.of("Asia/Makassar");
-                LocalDateTime nowWITA = LocalDateTime.now(zoneId);
-                int currentHour = nowWITA.getHour();
-                int currentMinute = nowWITA.getMinute();
-                String[] jamMulaiParts = jamMulai.split(":");
-                if (Integer.parseInt(jamMulaiParts[0]) < currentHour ||
-                    (Integer.parseInt(jamMulaiParts[0]) == currentHour && Integer.parseInt(jamMulaiParts[1]) <= currentMinute)) {
+                LocalTime nowWITA = LocalTime.now(zoneId);
+                if (!jamMulai.isAfter(nowWITA)) {
                     Notification.show("Jam mulai harus lebih besar dari jam sekarang.", 3000, Notification.Position.BOTTOM_END);
                     return;
                 }
             }
 
-            try {
-                LocalTime mulai = LocalTime.parse(jamMulai);
-                LocalTime selesai = LocalTime.parse(jamSelesai);
-                if (!mulai.isBefore(selesai)) {
-                    Notification.show("Jam mulai harus lebih kecil dari jam selesai.", 3000, Notification.Position.BOTTOM_END);
-                    return;
-                }
-            } catch (Exception e) {
-                Notification.show("Format jam tidak valid.", 3000, Notification.Position.BOTTOM_END);
+            // Validation: Ensure the start time is before the end time
+            if (!jamMulai.isBefore(jamSelesai)) {
+                Notification.show("Jam mulai harus lebih kecil dari jam selesai.", 3000, Notification.Position.BOTTOM_END);
                 return;
             }
 
-            try {
-                String[] mulaiParts = jamMulai.split(":");
-                String[] selesaiParts = jamSelesai.split(":");
-                int mulaiMenit = Integer.parseInt(mulaiParts[1]);
-                int selesaiMenit = Integer.parseInt(selesaiParts[1]);
-                if (!(mulaiMenit % 15 == 0 && selesaiMenit % 15 == 0)) {
-                    Notification.show("Jam hanya boleh diisi pada interval 15 menit (00, 15, 30, 45).", 3000, Notification.Position.BOTTOM_END);
-                    return;
-                }
-            } catch (Exception e) {
-                Notification.show("Format jam tidak valid.", 3000, Notification.Position.BOTTOM_END);
+            // Validation: Ensure times are in 15-minute intervals
+            if (jamMulai.getMinute() % 15 != 0 || jamSelesai.getMinute() % 15 != 0) {
+                Notification.show("Jam hanya boleh diisi pada interval 15 menit (00, 15, 30, 45).", 3000, Notification.Position.BOTTOM_END);
                 return;
             }
 
+            // Prepare JSON payload
             String jsonPayload = String.format(
                 "{\"akunId\": \"%s\", \"namaRuangan\": \"%s\", \"keperluan\": \"%s\", \"tanggalPeminjaman\": \"%s\", \"waktuMulai\": \"%s\", \"waktuSelesai\": \"%s\"}",
                 akunId, namaRuanganValue, keperluan, tanggal.format(DateTimeFormatter.ISO_LOCAL_DATE), jamMulai, jamSelesai

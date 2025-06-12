@@ -270,8 +270,6 @@ public class AdminRiwayatView extends AppLayout implements BeforeEnterObserver {
                 }
             }
         } catch (Exception e) {
-            UI.getCurrent().access(() -> Notification.show("Error parsing data riwayat: " + e.getMessage(),
-                3000, Notification.Position.MIDDLE));
         }
     }
 

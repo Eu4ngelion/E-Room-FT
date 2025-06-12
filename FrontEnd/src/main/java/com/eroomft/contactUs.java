@@ -41,106 +41,112 @@ public class contactUs extends VerticalLayout {
             return;
         }
 
+        // Set layout properties to prevent scrolling
         setSizeFull();
         setPadding(false);
         setSpacing(false);
         getStyle()
-                .set("background", "linear-gradient(rgba(245, 238, 232, 0.85), rgba(245, 238, 232, 0.85)), url('/frontend/background.png') no-repeat center center / cover")
-                .set("background-attachment", "fixed")
+                .set("background",
+                        "linear-gradient(rgba(245, 238, 232, 0.85), rgba(245, 238, 232, 0.85)), url('/frontend/background.png') no-repeat center center / cover")
                 .set("flex-direction", "column")
-                .set("min-height", "100vh");
+                .set("height", "100vh") // Set height to viewport height
+                .set("overflow", "hidden"); // Prevent scrolling
 
         Div header = createHeader();
 
         VerticalLayout content = new VerticalLayout();
-        content.setSizeFull();
         content.setAlignItems(Alignment.CENTER);
         content.setJustifyContentMode(JustifyContentMode.CENTER);
-        content.setSpacing(true);
-        content.getStyle().set("padding", "40px 20px");
+        content.setSpacing(false); // Remove extra spacing
+        content.getStyle()
+                .set("padding", "20px 10px") // Reduce padding
+                .set("flex-grow", "1"); // Ensure content takes available space
 
-        H1 judul = new H1("CONTACT");
+        H1 judul = new H1("KONTAK");
         judul.getStyle()
                 .set("color", "#FF7700")
                 .set("font-weight", "600")
                 .set("font-family", "'poppins', sans-serif")
-                .set("text-shadow", "2px 2px 4px rgba(0, 0, 0, 0.3)")
-                .set("font-size", "50px")
+                .set("font-size", "30px") // Reduce font size
                 .set("text-align", "center")
-                .set("margin-bottom", "40px");
+                .set("margin-bottom", "20px"); // Reduce margin
 
         HorizontalLayout contactLayout = new HorizontalLayout();
-        contactLayout.setSpacing(true);
-        contactLayout.getStyle().set("gap", "40px");
+        contactLayout.setJustifyContentMode(JustifyContentMode.CENTER);
+        contactLayout.setSpacing(false); // Remove extra spacing
+        contactLayout.getStyle().set("gap", "15px"); // Reduce gap between cards
 
         contactLayout.add(
-            contactCard(VaadinIcon.ENVELOPE_O, "Email", "info@ft.unmul.ac.id", "mailto:info@ft.unmul.ac.id", "Kami siap membantu Anda melalui email!"),
-            contactCard(VaadinIcon.PHONE, "Telepon", "(0541) 736834", "tel:+62541736834", "Hubungi kami melalui telepon!"),
-            contactCard(VaadinIcon.MAP_MARKER, "Alamat", "Jalan Sambaliung No.9", "https://maps.google.com/?q=Fakultas+Teknik+Universitas+Mulawarman", "Kunjungi kami di lokasi ini!")
-        );
-        
+                contactCard(VaadinIcon.ENVELOPE_O, "Email", "info@ft.unmul.ac.id", "mailto:info@ft.unmul.ac.id",
+                        "Kami siap membantu Anda melalui email!"),
+                contactCard(VaadinIcon.PHONE, "Telepon", "(0541) 736834", "tel:+62541736834",
+                        "Hubungi kami melalui telepon!"),
+                contactCard(VaadinIcon.MAP_MARKER, "Alamat", "Jalan Sambaliung No.9",
+                        "https://maps.google.com/?q=Fakultas+Teknik+Universitas+Mulawarman",
+                        "Kunjungi kami di lokasi ini!"));
+
         content.add(judul, contactLayout);
 
         Div footer = createFooter();
 
         add(header, content, footer);
-        expand(content);
+        expand(content); // Ensure content expands to fill available space
     }
-    
+
     private Div contactCard(VaadinIcon icon, String title, String detail, String link, String description) {
         Div card = new Div();
         card.getStyle()
-            .set("width", "300px")
-            .set("height", "280px")
-            .set("padding", "30px")
-            .set("box-shadow", "0 4px 15px rgba(0,0,0,0.1)")
-            .set("border-radius", "15px")
-            .set("background-color", "rgba(255, 255, 255, 0.9)")
-            .set("display", "flex")
-            .set("flex-direction", "column")
-            .set("align-items", "center")
-            .set("text-align", "center");
-    
+                .set("width", "250px") // Reduce card width
+                .set("height", "200px") // Reduce card height
+                .set("padding", "15px") // Reduce padding
+                .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)") // Adjust shadow
+                .set("border-radius", "10px") // Reduce border radius
+                .set("background-color", "rgba(255, 255, 255, 0.9)")
+                .set("display", "flex")
+                .set("flex-direction", "column")
+                .set("align-items", "center")
+                .set("text-align", "center");
+
         Div iconCircle = new Div();
         iconCircle.getStyle()
-            .set("width", "80px")
-            .set("height", "80px")
-            .set("background-color", "#FCE0A8")
-            .set("border-radius", "50%")
-            .set("display", "flex")
-            .set("align-items", "center")
-            .set("justify-content", "center")
-            .set("margin-bottom", "15px");
+                .set("width", "60px") // Reduce icon circle size
+                .set("height", "60px")
+                .set("background-color", "#FCE0A8")
+                .set("border-radius", "50%")
+                .set("display", "flex")
+                .set("align-items", "center")
+                .set("justify-content", "center")
+                .set("margin-bottom", "10px"); // Reduce margin
 
         Icon vaadinIcon = new Icon(icon);
-        vaadinIcon.setSize("40px");
+        vaadinIcon.setSize("30px"); // Reduce icon size
         vaadinIcon.setColor("#FF7700");
         iconCircle.add(vaadinIcon);
 
         Paragraph cardTitle = new Paragraph(title);
         cardTitle.getStyle()
-            .set("font-family", "'poppins', sans-serif")
-            .set("font-weight", "600")
-            .set("font-size", "22px")
-            .set("color", "black")
-            .set("margin", "0");
+                .set("font-family", "'poppins', sans-serif")
+                .set("font-weight", "600")
+                .set("font-size", "16px") // Reduce font size
+                .set("color", "black")
+                .set("margin", "0");
 
         Anchor detailLink = new Anchor(link, detail);
-        detailLink.setTarget("_blank"); 
+        detailLink.setTarget("_blank");
         detailLink.getStyle()
-            .set("font-family", "'Plus Jakarta Sans', sans-serif")
-            .set("font-size", "16px")
-            .set("font-weight", "600")
-            .set("color", "#FF7700")
-            .set("text-decoration", "underline")
-            .set("margin", "5px 0");
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-size", "12px") // Reduce font size
+                .set("font-weight", "500")
+                .set("color", "#FF7700")
+                .set("text-decoration", "underline")
+                .set("margin", "5px 0");
 
         Paragraph cardDescription = new Paragraph(description);
         cardDescription.getStyle()
-            .set("font-family", "'Plus Jakarta Sans', sans-serif")
-            .set("font-size", "14px")
-            .set("color", "#666666")
-            .set("margin", "10px 0 0 0");
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-size", "12px") // Reduce font size
+                .set("color", "#666666")
+                .set("margin", "5px 0 0 0"); // Reduce margin
 
         card.add(iconCircle, cardTitle, detailLink, cardDescription);
         return card;
@@ -151,11 +157,11 @@ public class contactUs extends VerticalLayout {
         header.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
         header.getStyle()
                 .set("width", "100%")
-                .set("height", "80px")
+                .set("height", "60px") // Reduce header height
                 .set("background-color", "transparent")
                 .set("align-items", "center")
                 .set("justify-content", "space-between")
-                .set("padding", "0 20px")
+                .set("padding", "0 15px") // Reduce padding
                 .set("box-sizing", "border-box");
 
         Div headerKiri = new Div();
@@ -167,30 +173,27 @@ public class contactUs extends VerticalLayout {
 
         Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
         logo.getStyle()
-                .set("width", "55px")
-                .set("height", "55px")
-                .set("margin-top", "10px");
-        
+                .set("width", "50px") // Reduce logo size
+                .set("height", "50px")
+                .set("cursor", "pointer");
         logo.addClickListener(e -> UI.getCurrent().navigate(""));
-        logo.getStyle().set("cursor", "pointer");
 
         Span garis = new Span("|");
         garis.getStyle()
-                .set("font-size", "50px");
+                .set("font-size", "30px"); // Reduce separator size
 
         Div blokNamaWeb = new Div();
         blokNamaWeb.getStyle()
                 .set("display", "flex")
                 .set("flex-direction", "column")
-                .set("line-height", "1")
-                .set("margin-top", "10px");
+                .set("line-height", "1");
 
         Paragraph namaWeb = new Paragraph("RoomQue");
-        namaWeb.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
+        namaWeb.addClassNames(LumoUtility.FontSize.MEDIUM, LumoUtility.FontWeight.BOLD);
         namaWeb.getStyle()
                 .set("margin", "0")
                 .set("font-family", "'poppins', sans-serif")
-                .set("font-size", "30px")
+                .set("font-size", "20px") // Reduce font size
                 .set("font-weight", "600");
 
         Paragraph subText = new Paragraph("Sistem Peminjaman Ruangan");
@@ -198,20 +201,20 @@ public class contactUs extends VerticalLayout {
         subText.getStyle()
                 .set("margin", "0")
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-size", "20px")
-                .set("font-weight", "600");
+                .set("font-size", "14px") // Reduce font size
+                .set("font-weight", "500");
 
         blokNamaWeb.add(namaWeb, subText);
         headerKiri.add(logo, garis, blokNamaWeb);
 
         Div headerKanan = new Div();
         headerKanan.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
-        headerKanan.getStyle().set("gap", "20px");
+        headerKanan.getStyle().set("gap", "10px"); // Reduce gap between buttons
+
         headerKanan.add(
-            btnNavbar("Halaman Utama", ""), 
-            btnNavbar("Tentang Kami", "tentang-kami"),
-            btnNavbar("Kontak", "contact-us") 
-        );
+                btnNavbar("Halaman Utama", ""),
+                btnNavbar("Tentang Kami", "tentang-kami"),
+                btnNavbar("Kontak", "contact-us"));
 
         header.add(headerKiri, headerKanan);
         return header;
@@ -224,9 +227,9 @@ public class contactUs extends VerticalLayout {
                 .set("display", "flex")
                 .set("align-items", "center")
                 .set("justify-content", "center")
-                .set("height", "80px")
+                .set("height", "50px") // Reduce footer height
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-size", "16px")
+                .set("font-size", "12px") // Reduce font size
                 .set("font-weight", "500")
                 .set("background-color", "#FF7700")
                 .set("color", "black")
@@ -241,15 +244,12 @@ public class contactUs extends VerticalLayout {
                 .set("background-color", "transparent")
                 .set("color", "black")
                 .set("font-family", "'poppins', sans-serif")
-                .set("font-size", "16px")
+                .set("font-size", "14px") // Reduce font size
                 .set("font-weight", "500")
                 .set("border", "none")
-                .set("border-radius", "0")
                 .set("cursor", "pointer");
 
-        button.addClickListener(e -> 
-            UI.getCurrent().navigate(route)
-        );
+        button.addClickListener(e -> UI.getCurrent().navigate(route));
 
         button.getElement().addEventListener("mouseenter", e -> {
             button.getStyle().set("border-bottom", "2px solid #FF7700");

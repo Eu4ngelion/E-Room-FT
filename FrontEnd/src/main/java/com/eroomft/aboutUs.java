@@ -38,23 +38,26 @@ public class aboutUs extends VerticalLayout {
             return;
         }
 
+        // Set layout properties to prevent scrolling
         setSizeFull();
         setPadding(false);
         setSpacing(false);
         getStyle()
-                .set("background", "linear-gradient(rgba(239, 222, 210, 0.8)), url('/frontend/background.png') no-repeat center center / cover")
+                .set("background",
+                        "linear-gradient(rgba(255, 255, 255, 0.9)), url('/frontend/background.png') no-repeat center center / cover")
                 .set("flex-direction", "column")
-                .set("min-height", "135vh");
+                .set("height", "100vh") // Set height to viewport height
+                .set("overflow", "hidden"); // Prevent scrolling
 
         Div header = new Div();
         header.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
         header.getStyle()
                 .set("width", "100%")
-                .set("height", "80px")
+                .set("height", "60px") // Reduce header height
                 .set("background-color", "transparent")
                 .set("align-items", "center")
                 .set("justify-content", "space-between")
-                .set("padding", "0 20px")
+                .set("padding", "0 15px") // Reduce padding
                 .set("box-sizing", "border-box");
 
         Div headerKiri = new Div();
@@ -66,29 +69,27 @@ public class aboutUs extends VerticalLayout {
 
         Image logo = new Image("/frontend/RoomQue.png", "Logo RoomQue");
         logo.getStyle()
-                .set("width", "55px")
-                .set("height", "55px")
-                .set("margin-top", "10px")
+                .set("width", "50px")
+                .set("height", "50px")
                 .set("cursor", "pointer");
         logo.addClickListener(e -> UI.getCurrent().navigate(""));
 
         Span garis = new Span("|");
         garis.getStyle()
-                .set("font-size", "50px");
+                .set("font-size", "30px");
 
         Div blokNamaWeb = new Div();
         blokNamaWeb.getStyle()
                 .set("display", "flex")
                 .set("flex-direction", "column")
-                .set("line-height", "1")
-                .set("margin-top", "10px");
+                .set("line-height", "1");
 
         Paragraph namaWeb = new Paragraph("RoomQue");
         namaWeb.addClassNames(LumoUtility.FontSize.XLARGE, LumoUtility.FontWeight.BOLD);
         namaWeb.getStyle()
                 .set("margin", "0")
                 .set("font-family", "'poppins', sans-serif")
-                .set("font-size", "30px")
+                .set("font-size", "20px")
                 .set("font-weight", "600");
 
         Paragraph subText = new Paragraph("Sistem Peminjaman Ruangan");
@@ -96,69 +97,69 @@ public class aboutUs extends VerticalLayout {
         subText.getStyle()
                 .set("margin", "0")
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-size", "20px")
-                .set("font-weight", "600");
+                .set("font-size", "14px")
+                .set("font-weight", "500");
 
         blokNamaWeb.add(namaWeb, subText);
         headerKiri.add(logo, garis, blokNamaWeb);
 
         Div headerKanan = new Div();
         headerKanan.addClassNames(LumoUtility.Display.FLEX, LumoUtility.FlexDirection.ROW);
-        headerKanan.getStyle().set("gap", "20px");
+        headerKanan.getStyle().set("gap", "10px");
 
         headerKanan.add(
-            btnNavbar("Halaman Utama", ""),
-            btnNavbar("Tentang Kami", "tentang-kami"),
-            btnNavbar("Kontak", "contact-us")
-        );
+                btnNavbar("Halaman Utama", ""),
+                btnNavbar("Tentang Kami", "tentang-kami"),
+                btnNavbar("Kontak", "contact-us"));
 
         header.add(headerKiri, headerKanan);
 
         VerticalLayout content = new VerticalLayout();
         content.setAlignItems(Alignment.CENTER);
         content.setJustifyContentMode(JustifyContentMode.START);
-        content.setSpacing(true);
-        content.getStyle().set("padding", "40px 20px");
+        content.setSpacing(false); // Remove extra spacing
+        content.getStyle()
+                .set("padding", "20px 10px") // Reduce padding
+                .set("flex-grow", "1") // Ensure content takes available space
+                .set("overflow", "hidden"); // Prevent scrolling inside content
 
         H1 judul = new H1("TENTANG KAMI");
         judul.getStyle()
                 .set("color", "#FF7700")
                 .set("font-weight", "600")
                 .set("font-family", " 'poppins', sans-serif")
-                .set("text-shadow", "2px 2px 4px rgba(0, 0, 0, 0.3)")
-                .set("font-size", "50px")
+                .set("font-size", "30px") // Reduce font size
                 .set("text-align", "center");
 
-        Paragraph deskripsi = new Paragraph("Sistem Peminjaman Ruangan ini mendukung efisiensi dan transparansi pemanfaatan ruang di Fakultas Teknik Universitas Mulawarman. Pengguna dapat meminjam ruangan secara daring dengan mudah dan terorganisir untuk keperluan kuliah, laboratorium, maupun kegiatan lainnya.");
+        Paragraph deskripsi = new Paragraph(
+                "Sistem Peminjaman Ruangan ini mendukung efisiensi dan transparansi pemanfaatan ruang di Fakultas Teknik Universitas Mulawarman. Pengguna dapat meminjam ruangan secara daring dengan mudah dan terorganisir untuk keperluan kuliah, laboratorium, maupun kegiatan lainnya.");
         deskripsi.getStyle()
                 .set("text-align", "center")
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-size", "17.5px")
-                .set("font-weight", "600")
-                .set("max-width", "800px");
+                .set("font-size", "14px") // Reduce font size
+                .set("font-weight", "500")
+                .set("max-width", "700px"); // Reduce max width
 
         VerticalLayout infoGrid = new VerticalLayout();
         infoGrid.setAlignItems(Alignment.CENTER);
-        infoGrid.setSpacing(true);
-        infoGrid.getStyle().set("gap", "25px");
+        infoGrid.setSpacing(false); // Remove extra spacing
+        infoGrid.getStyle().set("gap", "15px"); // Reduce gap between rows
 
         HorizontalLayout row1 = new HorizontalLayout();
         row1.setJustifyContentMode(JustifyContentMode.CENTER);
-        row1.setSpacing(true);
-        row1.getStyle().set("gap", "25px");
+        row1.setSpacing(false); // Remove extra spacing
+        row1.getStyle().set("gap", "15px"); // Reduce gap between cards
         row1.add(
-            infoCard("Pencarian dan Filter Ruangan", "Pesan ruangan secara mudah tanpa harus datang langsung."),
-            infoCard("Cek Ketersediaan Ruangan", "Lihat jadwal penggunaan ruangan secara real-time.")
-        );
+                infoCard("Pencarian dan Filter Ruangan", "Pesan ruangan secara mudah tanpa harus datang langsung."),
+                infoCard("Cek Ketersediaan Ruangan", "Lihat jadwal penggunaan ruangan secara real-time."));
 
         HorizontalLayout row2 = new HorizontalLayout();
         row2.setJustifyContentMode(JustifyContentMode.CENTER);
-        row2.setSpacing(true);
-        row2.getStyle().set("gap", "25px");
+        row2.setSpacing(false); // Remove extra spacing
+        row2.getStyle().set("gap", "15px"); // Reduce gap between cards
         row2.add(
-            infoCard("Login Mahasiswa & Dosen", "Akses sistem dengan NIM/NIP yang sudah terdaftar."),
-            infoCard("Riwayat Peminjaman", "Pantau semua peminjaman yang pernah dilakukan.")
-        );
+                infoCard("Login Mahasiswa & Dosen", "Akses sistem dengan NIM/NIP yang sudah terdaftar."),
+                infoCard("Riwayat Peminjaman", "Pantau semua peminjaman yang pernah dilakukan."));
 
         infoGrid.add(row1, row2);
         content.add(judul, deskripsi, infoGrid);
@@ -169,9 +170,9 @@ public class aboutUs extends VerticalLayout {
                 .set("display", "flex")
                 .set("align-items", "center")
                 .set("justify-content", "center")
-                .set("height", "80px")
+                .set("height", "50px") // Reduce footer height
                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
-                .set("font-size", "16px")
+                .set("font-size", "12px") // Reduce font size
                 .set("font-weight", "500")
                 .set("background-color", "#FF7700")
                 .set("color", "black")
@@ -179,7 +180,7 @@ public class aboutUs extends VerticalLayout {
                 .set("flex-shrink", "0");
 
         add(header, content, footer);
-        expand(content);
+        expand(content); // Ensure content expands to fill available space
     }
 
     private Button btnNavbar(String text, String route) {
@@ -188,14 +189,14 @@ public class aboutUs extends VerticalLayout {
                 .set("background-color", "transparent")
                 .set("color", "black")
                 .set("font-family", " 'poppins', sans-serif ")
-                .set("font-size", "16px")
+                .set("font-size", "14px") // Reduce font size
                 .set("font-weight", "500")
                 .set("border", "none")
                 .set("border-radius", "0")
                 .set("cursor", "pointer");
 
         button.addClickListener(e -> UI.getCurrent().navigate(route));
-        
+
         button.getElement().addEventListener("mouseenter", e -> {
             button.getStyle().set("border-bottom", "2px solid #FF7700");
         });
@@ -210,33 +211,33 @@ public class aboutUs extends VerticalLayout {
     private Div infoCard(String title, String description) {
         Div card = new Div();
         card.getStyle()
-            .set("width", "380px")
-            .set("min-height", "140px")
-            .set("padding", "20px")
-            .set("box-shadow", "0 4px 8px rgba(0,0,0,0.1)")
-            .set("border-radius", "15px")
-            .set("border", "2px solid rgba(255, 119, 0, 0.3)")
-            .set("background-color", "rgba(255, 255, 255, 0.85)")
-            .set("display", "flex")
-            .set("flex-direction", "column")
-            .set("justify-content", "center");
+                .set("width", "300px") // Reduce card width
+                .set("min-height", "120px") // Reduce card height
+                .set("padding", "15px") // Reduce padding
+                .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)") // Adjust shadow
+                .set("border-radius", "10px") // Reduce border radius
+                .set("border", "1px solid rgba(255, 119, 0, 0.3)")
+                .set("background-color", "rgba(255, 255, 255, 0.85)")
+                .set("display", "flex")
+                .set("flex-direction", "column")
+                .set("justify-content", "center");
 
         Paragraph cardTitle = new Paragraph(title);
         cardTitle.getStyle()
-            .set("font-family", "'poppins', sans-serif")
-            .set("font-weight", "600")
-            .set("font-size", "18px")
-            .set("color", "#D46500")
-            .set("margin", "0 0 8px 0");
+                .set("font-family", "'poppins', sans-serif")
+                .set("font-weight", "600")
+                .set("font-size", "16px") // Reduce font size
+                .set("color", "#D46500")
+                .set("margin", "0 0 5px 0"); // Reduce margin
 
         Paragraph cardDescription = new Paragraph(description);
         cardDescription.getStyle()
-            .set("font-family", "'Plus Jakarta Sans', sans-serif")
-            .set("font-size", "14px")
-            .set("font-weight", "500")
-            .set("color", "black")
-            .set("margin", "0")
-            .set("line-height", "1.4");
+                .set("font-family", "'Plus Jakarta Sans', sans-serif")
+                .set("font-size", "12px") // Reduce font size
+                .set("font-weight", "500")
+                .set("color", "black")
+                .set("margin", "0")
+                .set("line-height", "1.2"); // Adjust line height
 
         card.add(cardTitle, cardDescription);
         return card;
