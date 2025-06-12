@@ -268,8 +268,6 @@ public class AdminVerifikasiView extends AppLayout implements BeforeEnterObserve
                 ));
             }
         } catch (Exception e) {
-            UI.getCurrent().access(() -> Notification.show("Error parsing peminjaman data: " + e.getMessage(),
-                3000, Notification.Position.MIDDLE));
         }
     }
 
