@@ -45,8 +45,6 @@ import com.vaadin.flow.component.timepicker.TimePicker;
 import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.PostConstruct;
-
-//
 @Route("user/beranda")
 @Component
 @Scope("prototype")
@@ -156,13 +154,16 @@ public class UserBeranda2 extends HorizontalLayout {
         waktuSelesaiFilter.setPlaceholder("12:00");
 
         ComboBox<String> tipeFilter = new ComboBox<>("Tipe Ruangan");
-        tipeFilter.setItems("Kelas", "Laboratorium", "Seminar", "Rapat");
+        tipeFilter.setItems("Semua", "Kelas", "Laboratorium", "Seminar", "Rapat");
+        tipeFilter.setValue("Semua");
+
 
         // Store reference to gedung filter as instance field
         gedungFilter = new ComboBox<>("Gedung");
         List<String> gedungList = new ArrayList<>(distinctGedung);
         gedungList.add(0, "Semua");
         gedungFilter.setItems(gedungList);
+        gedungFilter.setValue("Semua");
 
         Button searchButton = new Button("Cari Ruangan", new Icon(VaadinIcon.SEARCH));
         searchButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
@@ -425,6 +426,9 @@ public class UserBeranda2 extends HorizontalLayout {
             if (normalizedTipe.equals("LABORATORIUM")) {
                 normalizedTipe = "LAB";
             }
+            if (normalizedTipe.equals("SEMUA")){
+                normalizedTipe = "";
+            }
             uri.append(hasQuery ? "&" : "?").append("tipe=").append(urlEncode(normalizedTipe));
             hasQuery = true;
         }
@@ -487,6 +491,7 @@ public class UserBeranda2 extends HorizontalLayout {
                         List<String> gedungList = new ArrayList<>(distinctGedung);
                         gedungList.add(0, "Semua");
                         gedungFilter.setItems(gedungList);
+                        gedungFilter.setValue("Semua");
                         System.out.println("Updated gedung combo box with " + gedungList.size() + " items");
                     }
                 });

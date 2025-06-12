@@ -44,7 +44,7 @@ public class aboutUs extends VerticalLayout {
         setSpacing(false);
         getStyle()
                 .set("background",
-                        "linear-gradient(rgba(255, 255, 255, 0.9)), url('/frontend/background.png') no-repeat center center / cover")
+                                        "linear-gradient(rgba(245, 238, 232, 0.85), rgba(245, 238, 232, 0.85)), url('/frontend/background.png') no-repeat center center / cover")
                 .set("flex-direction", "column")
                 .set("height", "100vh") // Set height to viewport height
                 .set("overflow", "hidden"); // Prevent scrolling

@@ -10,6 +10,7 @@ import java.time.LocalTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
@@ -157,7 +158,12 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
         TimePicker jamMulaiField = new TimePicker();
         jamMulaiField.setPlaceholder("Pilih Jam Mulai");
         jamMulaiField.setStep(java.time.Duration.ofMinutes(15));
+        jamMulaiField.setLocale(Locale.forLanguageTag("id-ID")); 
         jamMulaiField.setWidthFull();
+        LocalTime now = LocalTime.now();
+        int minute = now.getMinute();
+        int roundedMinute = (minute / 15 + 1) * 15 % 60;
+        jamMulaiField.setValue(now.withMinute(roundedMinute).withSecond(0).withNano(0)); 
         jamMulaiField.getStyle().set("margin-bottom", "1rem");
         jamMulaiLayout.add(jamMulaiLabel, jamMulaiField);
 
@@ -170,7 +176,9 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
         TimePicker jamSelesaiField = new TimePicker();
         jamSelesaiField.setPlaceholder("Pilih Jam Selesai");
         jamSelesaiField.setWidthFull();
+        jamSelesaiField.setValue(jamMulaiField.getValue().plusHours(1)); // Default 1 jam setelahnya
         jamSelesaiField.setStep(java.time.Duration.ofMinutes(15));
+        jamSelesaiField.setLocale(Locale.forLanguageTag("id-ID"));
         jamSelesaiField.getStyle().set("margin-bottom", "1rem");
         jamSelesaiLayout.add(jamSelesaiLabel, jamSelesaiField);
 
@@ -230,7 +238,7 @@ public class UserPengajuanView extends HorizontalLayout implements HasUrlParamet
                 ZoneId zoneId = ZoneId.of("Asia/Makassar");
                 LocalTime nowWITA = LocalTime.now(zoneId);
                 if (!jamMulai.isAfter(nowWITA)) {
-                    Notification.show("Jam mulai harus lebih besar dari jam sekarang.", 3000, Notification.Position.BOTTOM_END);
+                    Notification.show("Jam mulai harus lebih besar dari jam sekarang (" + nowWITA.format(DateTimeFormatter.ofPattern("HH:mm")) + " WITA).", 3000, Notification.Position.BOTTOM_END);
                     return;
                 }
             }

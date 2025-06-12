@@ -40,7 +40,7 @@ public class Landing extends VerticalLayout {
                 setSpacing(false);
                 getStyle()
                                 .set("background",
-                                                "linear-gradient(rgba(255, 255, 255, 0.9)), url('/frontend/background.png') no-repeat center center / cover")
+                                                "linear-gradient(rgba(245, 238, 232, 0.85), rgba(245, 238, 232, 0.85)), url('/frontend/background.png') no-repeat center center / cover")
                                 .set("flex-direction", "column")
                                 .set("height", "100vh") // Set height to viewport height
                                 .set("overflow", "hidden"); // Prevent scrolling
@@ -133,7 +133,8 @@ public class Landing extends VerticalLayout {
                                 .set("font-family", "'Plus Jakarta Sans', sans-serif")
                                 .set("font-size", "14px") // Reduce font size
                                 .set("font-weight", "500")
-                                .set("max-width", "500px"); // Reduce max width
+                                .set("max-width", "500px") // Reduce max width
+                                .set("margin-bottom", "40px"); // Add margin bottom
 
                 HorizontalLayout kotak = new HorizontalLayout();
                 kotak.setJustifyContentMode(JustifyContentMode.CENTER);
@@ -194,8 +195,8 @@ public class Landing extends VerticalLayout {
                 Div card = new Div();
                 card.getStyle()
                                 .set("width", "150px") // Reduce card width
-                                .set("height", "180px") // Reduce card height
-                                .set("padding", "20px 5px 5px 10px") // Reduce padding
+                                .set("height", "150px") // Reduce card height
+                                .set("padding", "30px 10px 20px 10px") // Reduce padding
                                 .set("box-shadow", "0 2px 6px rgba(0,0,0,0.1)")
                                 .set("border-radius", "10px")
                                 .set("background-color", "#ffffff")
