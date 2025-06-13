@@ -23,7 +23,7 @@ Automated API documentation and testing support.
 - **Live Update**: Real-time updates of booking availability.
 
 ## Website https://roomque.my.id
-![Web Image](Public\Landing.png)
+![Web Image](/Public/Landing.png)
 
 **Documentation**
 
