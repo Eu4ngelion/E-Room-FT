@@ -501,9 +501,9 @@ public class AdminManajemenView extends AppLayout {
 
         MultiFileMemoryBuffer buffer = new MultiFileMemoryBuffer();
         Upload upload = new Upload(buffer);
-        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg");
+        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg", "image/webp");
         upload.setMaxFiles(1);
-        upload.setMaxFileSize(10 * 1024 * 1024); // 10MB limit
+        upload.setMaxFileSize(10 * 1024 * 1024);
         upload.setWidthFull();
         upload.getStyle()
             .set("--lumo-border-radius", "8px")
@@ -997,7 +997,7 @@ public class AdminManajemenView extends AppLayout {
 
         MultiFileMemoryBuffer editBuffer = new MultiFileMemoryBuffer();
         Upload upload = new Upload(editBuffer);
-        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg");
+        upload.setAcceptedFileTypes("image/jpeg", "image/png", "image/jpg", "image/webp");
         upload.setMaxFiles(1);
         upload.setMaxFileSize(10 * 1024 * 1024);
         upload.setWidthFull();

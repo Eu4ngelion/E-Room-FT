@@ -10,6 +10,9 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
+
 import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -31,8 +34,6 @@ import com.vaadin.flow.router.OptionalParameter;
 import com.vaadin.flow.router.Route;
 
 import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
 
 @Route("user/detail-ruangan")
 @org.springframework.stereotype.Component
@@ -136,7 +137,7 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
         Div imageDiv = new Div();
         imageDiv.getStyle()
                 .set("width", "100%")
-                .set("height", "300px")
+                .set("height", "500px")
                 .set("background", "linear-gradient(135deg, #667eea 0%, #764ba2 100%)")
                 .set("display", "flex")
                 .set("align-items", "center")
@@ -158,20 +159,60 @@ public class UserDetailRuanganView extends HorizontalLayout implements HasUrlPar
         }
         roomDetailsLayout.add(imageDiv);
 
-        VerticalLayout roomInfo = new VerticalLayout();
+        // VerticalLayout roomInfo = new VerticalLayout();
+        // roomInfo.setWidthFull();
+        // roomInfo.setSpacing(false);
+        // roomInfo.getStyle()
+        //         .set("background-color", "transparent")
+        //         .set("padding", "0")
+        //         .set("margin", "0");
+        // roomInfo.add(createDetailItem("Gedung", roomData.getGedung()));
+        // roomInfo.add(createDetailItem("Tipe", toTitleCase(roomData.getTipe())));
+        // roomInfo.add(createDetailItem("Lokasi", roomData.getLocation()));
+        // roomInfo.add(createDetailItem("Fasilitas", roomData.getFacilities()));
+        // roomInfo.add(createDetailItem("Kapasitas", roomData.getCapacity()));
+        // roomInfo.add(createDetailItem("Kode", roomData.getName()));
+        // roomDetailsLayout.add(roomInfo);
+
+        // New Room Info
+        HorizontalLayout roomInfo = new HorizontalLayout();
         roomInfo.setWidthFull();
-        roomInfo.setSpacing(false);
+        roomInfo.setSpacing(true);
         roomInfo.getStyle()
-                .set("background-color", "transparent")
+                .set("background-color", "white")
                 .set("padding", "0")
-                .set("margin", "0");
-        roomInfo.add(createDetailItem("Gedung", roomData.getGedung()));
-        roomInfo.add(createDetailItem("Tipe", toTitleCase(roomData.getTipe())));
-        roomInfo.add(createDetailItem("Lokasi", roomData.getLocation()));
-        roomInfo.add(createDetailItem("Fasilitas", roomData.getFacilities()));
-        roomInfo.add(createDetailItem("Kapasitas", roomData.getCapacity()));
-        roomInfo.add(createDetailItem("Kode", roomData.getName()));
+                .set("margin", "0")
+                .set("border-radius", "8px")
+                .set("box-shadow", "var(--lumo-box-shadow-xs)");
+        roomInfo.setAlignItems(FlexComponent.Alignment.START);
+        roomInfo.setJustifyContentMode(FlexComponent.JustifyContentMode.START);
+
+        VerticalLayout leftInfo = new VerticalLayout();
+        leftInfo.setWidth("50%");
+        leftInfo.setPadding(true);
+        leftInfo.setSpacing(true);
+        leftInfo.getStyle()
+                .set("background-color", "transparent")
+                .set("padding", "1.5rem");
+        leftInfo.add(createDetailItem("Nama Gedung", roomData.getGedung()));
+        leftInfo.add(createDetailItem("Tipe Ruangan", toTitleCase(roomData.getTipe())));
+        leftInfo.add(createDetailItem("Lokasi Ruangan", roomData.getLocation()));
+
+        VerticalLayout rightInfo = new VerticalLayout();
+        rightInfo.setWidth("50%");
+        rightInfo.setPadding(true);
+        rightInfo.setSpacing(true);
+        rightInfo.getStyle()
+                .set("background-color", "transparent")
+                .set("padding", "1.5rem");
+        rightInfo.add(createDetailItem("Fasilitas", roomData.getFacilities()));
+        rightInfo.add(createDetailItem("Kapasitas", roomData.getCapacity()));
+        rightInfo.add(createDetailItem("Kode Ruangan", roomData.getName()));
+        roomInfo.add(leftInfo, rightInfo);
         roomDetailsLayout.add(roomInfo);
+
+
+
 
         Button pinjamBtn = new Button("Pinjam");
         pinjamBtn.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
