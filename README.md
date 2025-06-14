@@ -4,7 +4,7 @@
 # RoomQue Website
 Streamlining Room Reservations with Intuitive Space Management
 
-![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green?logo=spring) ![Vaadin](https://img.shields.io/badge/Vaadin-24-blue?logo=vaadin) ![React](https://img.shields.io/badge/React-18-blue?logo=react) ![MIT License](https://img.shields.io/badge/License-MIT-green?logo=opensource)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green?logo=spring) ![Vaadin](https://img.shields.io/badge/Vaadin-24-blue?logo=vaadin) ![React](https://img.shields.io/badge/React-18-blue?logo=react)
 
 
 ## Overview
